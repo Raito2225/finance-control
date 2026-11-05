@@ -690,13 +690,37 @@
     }
 
     // -------------------------------------------------------------
-    // SISTEMA DE TEMAS
+    // SISTEMA DE TEMAS (Interface Web & Configurações)
     // -------------------------------------------------------------
     const mapaCoresTema = {
       esmeralda: { bg: 'bg-emerald-500', hover: 'hover:bg-emerald-600', text: 'text-emerald-400', shadow: 'shadow-emerald-500/30' },
       azul: { bg: 'bg-sky-500', hover: 'hover:bg-sky-600', text: 'text-sky-400', shadow: 'shadow-sky-500/30' },
       roxo: { bg: 'bg-violet-500', hover: 'hover:bg-violet-600', text: 'text-violet-400', shadow: 'shadow-violet-500/30' },
       ambar: { bg: 'bg-amber-500', hover: 'hover:bg-amber-600', text: 'text-amber-400', shadow: 'shadow-amber-500/30' }
+    };
+
+    // Mapa de Cores RGB Dinâmico para Relatórios em PDF
+    const mapaCoresPDF = {
+      esmeralda: {
+        cabecalho: [6, 78, 59],      // emerald-900
+        alternada: [240, 253, 244],  // emerald-50
+        destaque: [16, 185, 129]     // emerald-500
+      },
+      azul: {
+        cabecalho: [12, 74, 110],    // sky-900
+        alternada: [240, 249, 255],  // sky-50
+        destaque: [14, 165, 233]     // sky-500
+      },
+      roxo: {
+        cabecalho: [76, 29, 149],    // violet-900
+        alternada: [245, 243, 255],  // violet-50
+        destaque: [139, 92, 246]     // violet-500
+      },
+      ambar: {
+        cabecalho: [120, 53, 15],    // amber-900
+        alternada: [254, 252, 232],  // amber-50
+        destaque: [245, 158, 11]     // amber-500
+      }
     };
 
     window.definirTema = function(cor) {
@@ -797,7 +821,6 @@
     };
 
     function exportarCSV(dados, nomeArquivo) {
-      const colunas = ['Data', 'Descricao', 'Categoria', 'Conta', 'Tipo', 'Parcela', 'Valor', 'Status'];
       const cabecalhos = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parcela', 'Valor (R$)', 'Status'];
       
       let csvContent = '\uFEFF' + cabecalhos.join(';') + '\n';
@@ -847,7 +870,6 @@
 
       const ws = XLSX.utils.json_to_sheet(linhasFormatadas);
 
-      // Larguras personalizadas de colunas
       ws['!cols'] = [
         { wch: 12 }, // Data
         { wch: 32 }, // Descrição
@@ -871,19 +893,38 @@
         return;
       }
 
+      // Obtém as cores do tema ativo
+      const temaConfig = mapaCoresPDF[temaAtivo] || mapaCoresPDF.esmeralda;
+
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-      // Cabeçalho do Relatório
+      // ---------------------------------------------------------
+      // BADGE VETORIAL NATIVO COM AS CORES DO TEMA
+      // ---------------------------------------------------------
+      doc.setFillColor(temaConfig.cabecalho[0], temaConfig.cabecalho[1], temaConfig.cabecalho[2]);
+      doc.roundedRect(14, 12, 10, 10, 2.5, 2.5, 'F');
+
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
+      doc.setFontSize(11);
+      doc.setTextColor(255, 255, 255);
+      doc.text('$', 19, 19, { align: 'center' });
+
+      // Título e Competência
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
       doc.setTextColor(15, 23, 42); // slate-900
-      doc.text('Relatório Financeiro Mensal', 14, 18);
+      doc.text('FinanceControl', 28, 17);
 
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setTextColor(100, 116, 139); // slate-500
-      doc.text(`Competência: ${mesAtual}  •  Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 14, 25);
+      doc.text(`Relatório Financeiro  •  Competência: ${mesAtual}  •  Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 28, 22);
+
+      // Linha sutil separadora
+      doc.setDrawColor(226, 232, 240); // slate-200
+      doc.setLineWidth(0.3);
+      doc.line(14, 26, 196, 26);
 
       // Totais calculados
       let totalReceitas = 0;
@@ -906,7 +947,7 @@
 
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(16, 185, 129); // emerald
+      doc.setTextColor(temaConfig.destaque[0], temaConfig.destaque[1], temaConfig.destaque[2]);
       doc.text(`RECEITAS: ${totalReceitas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 18, 41);
 
       doc.setTextColor(244, 63, 94); // rose
@@ -936,29 +977,33 @@
         body: tableRows,
         startY: 53,
         theme: 'striped',
+        margin: { left: 14, right: 14 },
         styles: {
           font: 'helvetica',
           fontSize: 8,
           textColor: [30, 41, 59],
-          cellPadding: 2.5
+          cellPadding: { top: 2.5, right: 2, bottom: 2.5, left: 2 },
+          lineColor: [226, 232, 240],
+          lineWidth: 0.1
         },
         headStyles: {
-          fillColor: [15, 23, 42],
+          fillColor: temaConfig.cabecalho, // Dinâmico de acordo com o tema selecionado
           textColor: [255, 255, 255],
-          fontStyle: 'bold'
+          fontStyle: 'bold',
+          halign: 'left'
         },
         alternateRowStyles: {
-          fillColor: [248, 250, 252]
+          fillColor: temaConfig.alternada  // Dinâmico de acordo com o tema selecionado
         },
         columnStyles: {
-          0: { cellWidth: 20 },
-          1: { cellWidth: 42 },
-          2: { cellWidth: 28 },
-          3: { cellWidth: 28 },
+          0: { cellWidth: 18, halign: 'center' },
+          1: { cellWidth: 46 },
+          2: { cellWidth: 26 },
+          3: { cellWidth: 26 },
           4: { cellWidth: 20 },
           5: { cellWidth: 12, halign: 'center' },
-          6: { cellWidth: 20, halign: 'right' },
-          7: { cellWidth: 18, halign: 'center' }
+          6: { cellWidth: 20, halign: 'right', fontStyle: 'bold' },
+          7: { cellWidth: 14, halign: 'center' }
         },
         foot: [[
           'Total Registros',
@@ -968,9 +1013,19 @@
           ''
         ]],
         footStyles: {
-          fillColor: [241, 245, 249],
-          textColor: [15, 23, 42],
+          fillColor: [15, 23, 42],
+          textColor: [255, 255, 255],
           fontStyle: 'bold'
+        },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 6) {
+            const linhaRaw = dados[data.row.index];
+            if (linhaRaw && linhaRaw.Tipo === 'Receita') {
+              data.cell.styles.textColor = [16, 185, 129];
+            } else {
+              data.cell.styles.textColor = [225, 29, 72];
+            }
+          }
         }
       });
 
