@@ -2,16 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fluxo Financeiro | Gestão Completa</title>
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase JS Client v2 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Chart.js via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FinanceControl</title>
+  
   <!-- Configurações PWA e Tela Cheia -->
   <meta name="theme-color" content="#020617">
   <meta name="mobile-web-app-capable" content="yes">
@@ -20,31 +13,37 @@
   <meta name="apple-mobile-web-app-title" content="FinanceControl">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-12">
 
   <!-- ========================================== -->
-  <!-- 1. TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO) -->
+  <!-- 1. TELA DE AUTENTICAÇÃO                    -->
   <!-- ========================================== -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl backdrop-blur-xl">
-      <div class="flex items-center gap-3 mb-8 justify-center">
+    <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <div class="flex items-center gap-3 mb-6 justify-center">
         <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
           <i data-lucide="wallet" class="w-6 h-6"></i>
         </div>
         <h1 class="text-xl font-bold tracking-tight text-white">FinanceControl</h1>
       </div>
 
-      <!-- Alternador Login / Cadastro -->
       <div class="flex bg-slate-950/60 p-1 rounded-xl mb-6 border border-slate-800">
-        <button type="button" id="tab-login" class="flex-1 py-2 text-sm font-medium rounded-lg bg-emerald-500/20 text-emerald-300 transition-all">Entrar</button>
-        <button type="button" id="tab-signup" class="flex-1 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white transition-all">Criar Conta</button>
+        <button type="button" id="tab-login" class="flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all">Entrar</button>
+        <button type="button" id="tab-signup" class="flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">Criar Conta</button>
       </div>
 
-      <!-- Mensagens de Alerta -->
       <div id="auth-msg" class="hidden text-xs p-3 rounded-lg mb-4"></div>
 
-      <!-- Formulário de Auth -->
       <form id="auth-form" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">E-mail</label>
@@ -54,7 +53,7 @@
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Senha</label>
           <input type="password" id="auth-password" required placeholder="••••••••" minlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
         </div>
-        <button type="submit" id="auth-btn-submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] transition text-slate-950 font-bold rounded-xl text-sm shadow-lg shadow-emerald-500/20 mt-2">
+        <button type="submit" id="auth-btn-submit" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] transition text-slate-950 font-bold rounded-xl text-sm shadow-lg shadow-emerald-500/20 mt-2">
           Acessar Painel
         </button>
       </form>
@@ -62,159 +61,140 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 2. DASHBOARD FINANCEIRO (ÁREA PROTEGIDA)   -->
+  <!-- 2. DASHBOARD MOBILE-FIRST                  -->
   <!-- ========================================== -->
   <div id="dashboard-screen" class="hidden min-h-screen flex flex-col">
-    <!-- Topbar -->
-    <header class="border-b border-slate-800 bg-slate-900/40 backdrop-blur sticky top-0 z-20">
-      <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <i data-lucide="wallet" class="w-4 h-4"></i>
+    
+    <!-- Topbar Responsiva -->
+    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        
+        <div class="flex items-center justify-between w-full sm:w-auto">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i data-lucide="wallet" class="w-4 h-4"></i>
+            </div>
+            <span class="font-bold text-base text-white tracking-tight">FinanceControl</span>
           </div>
-          <span class="font-bold text-white tracking-tight hidden sm:inline">FinanceControl</span>
-        </div>
 
-        <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
-          <!-- Navegador Rápido de Mês e Ano -->
-          <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5">
-            <button type="button" id="btn-mes-anterior" title="Mês Anterior" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg transition">
+          <!-- Navegação Mês no mobile à direita -->
+          <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1">
+            <button type="button" id="btn-mes-anterior" title="Mês Anterior" class="p-1 text-slate-400 hover:text-white transition">
               <i data-lucide="chevron-left" class="w-4 h-4"></i>
             </button>
-            <input type="month" id="filtro-mes" class="bg-transparent border-0 px-2 py-1 text-xs text-slate-200 font-medium focus:outline-none cursor-pointer">
-            <button type="button" id="btn-mes-proximo" title="Próximo Mês" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-lg transition">
+            <input type="month" id="filtro-mes" class="bg-transparent border-0 px-1 py-0.5 text-xs text-slate-200 font-semibold focus:outline-none cursor-pointer">
+            <button type="button" id="btn-mes-proximo" title="Próximo Mês" class="p-1 text-slate-400 hover:text-white transition">
               <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </button>
           </div>
+        </div>
 
-          <!-- Botão Nova Categoria -->
-          <button type="button" id="btn-abrir-modal-categoria" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-3 py-1.5 rounded-lg text-xs transition border border-slate-700">
-            <i data-lucide="tags" class="w-3.5 h-3.5 text-sky-400"></i> <span class="hidden sm:inline">+</span> Categoria
+        <!-- Barra de Ações Rápidas -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button type="button" id="btn-abrir-modal" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md shadow-emerald-500/10 active:scale-95">
+            <i data-lucide="plus" class="w-4 h-4"></i> Lançamento
           </button>
-
-          <!-- Botão Novo Cartão / Conta -->
-          <button type="button" id="btn-abrir-modal-conta" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-3 py-1.5 rounded-lg text-xs transition border border-slate-700">
-            <i data-lucide="credit-card" class="w-3.5 h-3.5 text-emerald-400"></i> <span class="hidden sm:inline">+</span> Cartão / Conta
+          <button type="button" id="btn-abrir-modal-conta" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Novo Cartão / Conta">
+            <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Cartão</span>
           </button>
-
-          <!-- Botão Novo Lançamento -->
-          <button type="button" id="btn-abrir-modal" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-3 py-1.5 rounded-lg text-xs transition">
-            <i data-lucide="plus" class="w-4 h-4"></i> Novo Lançamento
+          <button type="button" id="btn-abrir-modal-categoria" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Nova Categoria">
+            <i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> <span class="hidden md:inline">Categoria</span>
           </button>
-
-          <button type="button" id="btn-logout" title="Sair da Conta" class="text-slate-400 hover:text-rose-400 transition ml-1">
+          <button type="button" id="btn-logout" title="Sair da Conta" class="p-2 text-slate-400 hover:text-rose-400 transition ml-auto sm:ml-0">
             <i data-lucide="log-out" class="w-4 h-4"></i>
           </button>
         </div>
+
       </div>
     </header>
 
     <!-- Conteúdo Principal -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5">
       
-      <!-- Indicadores / Cards de Topo -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <span class="text-xs font-medium text-slate-400">Saldo Previsto do Mês</span>
-          <div id="card-saldo" class="text-xl font-bold text-white mt-1">R$ 0,00</div>
+      <!-- Indicadores / Cards de Topo (2 colunas no celular) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <span class="text-[11px] font-medium text-slate-400 block truncate">Saldo do Mês</span>
+          <div id="card-saldo" class="text-base sm:text-xl font-bold text-white mt-0.5 truncate">R$ 0,00</div>
         </div>
-        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <span class="text-xs font-medium text-slate-400">Fatura Total de Cartões</span>
-          <div id="card-fatura" class="text-xl font-bold text-amber-400 mt-1">R$ 0,00</div>
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <span class="text-[11px] font-medium text-slate-400 block truncate">Faturas Cartão</span>
+          <div id="card-fatura" class="text-base sm:text-xl font-bold text-amber-400 mt-0.5 truncate">R$ 0,00</div>
         </div>
-        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <span class="text-xs font-medium text-slate-400">Receitas Confirmadas</span>
-          <div id="card-receita" class="text-xl font-bold text-emerald-400 mt-1">R$ 0,00</div>
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <span class="text-[11px] font-medium text-slate-400 block truncate">Receitas</span>
+          <div id="card-receita" class="text-base sm:text-xl font-bold text-emerald-400 mt-0.5 truncate">R$ 0,00</div>
         </div>
-        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <span class="text-xs font-medium text-slate-400">Total de Despesas</span>
-          <div id="card-despesa" class="text-xl font-bold text-rose-400 mt-1">R$ 0,00</div>
+        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <span class="text-[11px] font-medium text-slate-400 block truncate">Despesas</span>
+          <div id="card-despesa" class="text-base sm:text-xl font-bold text-rose-400 mt-0.5 truncate">R$ 0,00</div>
         </div>
       </div>
 
-      <!-- Seção: Gráfico de Projeção de Fluxo de Caixa (Próximos 6 Meses) -->
-      <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção de Fluxo de Caixa (Próximos 6 Meses)
-            </h2>
-            <span class="text-[11px] text-slate-500">Comparativo entre receitas esperadas e obrigações/faturas já agendadas</span>
-          </div>
-          <div id="badge-projecao" class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300 w-fit">
-            Média de Comprometimento: <span id="val-media-comp" class="font-bold text-emerald-400">0%</span>
+      <!-- Gráfico de Projeção -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção 6 Meses
+          </h2>
+          <div id="badge-projecao" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300">
+            Comprometimento: <span id="val-media-comp" class="font-bold text-emerald-400">0%</span>
           </div>
         </div>
-        <div class="h-64 sm:h-72 w-full">
+        <div class="h-48 sm:h-64 w-full">
           <canvas id="grafico-projecao"></canvas>
         </div>
       </div>
 
-      <!-- Seção: Meus Cartões & Contas -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> Meus Cartões & Contas
-          </h2>
-          <span class="text-[11px] text-slate-500">Valores para a competência ativa</span>
-        </div>
-        <div id="grid-cartoes-contas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Renderizado via JS -->
-        </div>
+      <!-- Meus Cartões & Contas -->
+      <div class="space-y-2.5">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> Cartões & Contas
+        </h2>
+        <div id="grid-cartoes-contas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- Seção: Teto de Gastos por Categoria (Budgeting) -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-sky-400"></i> Limite Orçamentário por Categoria
-          </h2>
-          <span class="text-[11px] text-slate-500">Monitoramento de despesas vs. teto estipulado</span>
-        </div>
-        <div id="grid-categorias-orcamento" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Renderizado via JS -->
-        </div>
+      <!-- Teto por Categoria -->
+      <div class="space-y-2.5">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-sky-400"></i> Limite por Categoria
+        </h2>
+        <div id="grid-categorias-orcamento" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- Tabela de Transações com Barra de Filtros e Busca -->
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
-            <h2 class="text-sm font-semibold text-slate-200">Extrato da Competência</h2>
-            <span id="label-competencia" class="text-xs font-medium text-slate-500"></span>
+      <!-- Extrato da Competência -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3.5">
+        
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-200">Extrato</h2>
+            <span id="contador-transacoes" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-lg">0 registros</span>
           </div>
 
-          <!-- Barra de Busca e Contador -->
-          <div class="flex items-center gap-2 w-full md:w-auto">
-            <div class="relative w-full md:w-64">
-              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-              <input type="text" id="filtro-busca" placeholder="Buscar descrição ou categoria..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition">
-            </div>
-            <span id="contador-transacoes" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-1 rounded-lg whitespace-nowrap">0 registros</span>
+          <div class="relative w-full">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+            <input type="text" id="filtro-busca" placeholder="Buscar lançamentos..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition">
           </div>
         </div>
 
-        <!-- Abas de Filtros Rápidos -->
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs border-b border-slate-800/80">
-          <button type="button" onclick="aplicarFiltroTipo('todos')" id="btn-filtro-todos" class="btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-emerald-500/20 text-emerald-300">
-            Todos
-          </button>
-          <button type="button" onclick="aplicarFiltroTipo('Despesa Cartão')" id="btn-filtro-cartao" class="btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/60">
-            Cartão
-          </button>
-          <button type="button" onclick="aplicarFiltroTipo('Débito/Pix')" id="btn-filtro-debito" class="btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/60">
-            Débito / Pix
-          </button>
-          <button type="button" onclick="aplicarFiltroTipo('Receita')" id="btn-filtro-receita" class="btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/60">
-            Receitas
-          </button>
-          <button type="button" onclick="aplicarFiltroTipo('pendentes')" id="btn-filtro-pendentes" class="btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap text-amber-400/80 hover:text-amber-300 hover:bg-amber-500/10 flex items-center gap-1.5">
+        <!-- Abas com scroll horizontal suave no touch -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar border-b border-slate-800/80">
+          <button type="button" onclick="aplicarFiltroTipo('todos')" id="btn-filtro-todos" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300">Todos</button>
+          <button type="button" onclick="aplicarFiltroTipo('Despesa Cartão')" id="btn-filtro-cartao" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Cartão</button>
+          <button type="button" onclick="aplicarFiltroTipo('Débito/Pix')" id="btn-filtro-debito" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Débito / Pix</button>
+          <button type="button" onclick="aplicarFiltroTipo('Receita')" id="btn-filtro-receita" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Receitas</button>
+          <button type="button" onclick="aplicarFiltroTipo('pendentes')" id="btn-filtro-pendentes" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-amber-400/80 hover:text-amber-300 flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Pendentes
           </button>
         </div>
 
-        <!-- Tabela -->
-        <div class="overflow-x-auto">
+        <!-- VISUALIZAÇÃO 1: CARDS MOBILE (Até telas sm / 640px) -->
+        <div id="lista-transacoes-mobile" class="space-y-2.5 sm:hidden">
+          <!-- Renderizado via JS -->
+        </div>
+
+        <!-- VISUALIZAÇÃO 2: TABELA DESKTOP (A partir de sm / 640px) -->
+        <div class="hidden sm:block overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead>
               <tr class="text-slate-500 border-b border-slate-800">
@@ -229,84 +209,84 @@
                 <th class="pb-2 font-medium text-center">Ações</th>
               </tr>
             </thead>
-            <tbody id="lista-transacoes" class="divide-y divide-slate-800/60 text-slate-300">
+            <tbody id="lista-transacoes-desktop" class="divide-y divide-slate-800/60 text-slate-300">
               <tr>
                 <td colspan="9" class="py-8 text-center text-slate-500">Nenhum registro para este mês.</td>
               </tr>
             </tbody>
           </table>
         </div>
+
       </div>
     </main>
   </div>
 
   <!-- ========================================== -->
-  <!-- 3. MODAL: NOVA CATEGORIA                   -->
+  <!-- 3. MODAIS (ADAPTADOS PARA MOBILE)         -->
   <!-- ========================================== -->
+
+  <!-- Modal Nova Categoria -->
   <div id="modal-categoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
           <i data-lucide="tag" class="w-4 h-4 text-sky-400"></i> Cadastrar Categoria
         </h3>
-        <button type="button" id="btn-fechar-modal-categoria" class="text-slate-400 hover:text-white">
+        <button type="button" id="btn-fechar-modal-categoria" class="p-1 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="form-categoria" class="space-y-4">
+      <form id="form-categoria" class="space-y-3.5">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Nome da Categoria</label>
-          <input type="text" id="categoria-nome" required placeholder="Ex: Supermercado, Assinaturas, Educação" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
+          <input type="text" id="categoria-nome" required placeholder="Ex: Mercado, Assinaturas" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs text-slate-400 mb-1">Teto Mensal (R$)</label>
             <input type="number" step="0.01" min="0" id="categoria-teto" placeholder="0,00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
-            <span class="text-[10px] text-slate-500 mt-0.5 block">Opcional (para metas)</span>
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">Ícone</label>
             <select id="categoria-icone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
-              <option value="shopping-cart">Carrinho / Mercado</option>
+              <option value="shopping-cart">Mercado</option>
               <option value="utensils">Alimentação</option>
-              <option value="home">Moradia / Casa</option>
+              <option value="home">Moradia</option>
               <option value="car">Transporte</option>
               <option value="tv">Lazer / Streaming</option>
-              <option value="activity">Saúde / Farmácia</option>
+              <option value="activity">Saúde</option>
               <option value="book-open">Educação</option>
-              <option value="tag">Geral / Diversos</option>
+              <option value="tag">Geral</option>
             </select>
           </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btn-cancelar-modal-categoria" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
-          <button type="submit" id="btn-salvar-categoria" class="px-4 py-2 rounded-xl text-xs font-semibold bg-sky-500 hover:bg-sky-600 text-slate-950 transition">Salvar Categoria</button>
+          <button type="button" id="btn-cancelar-modal-categoria" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" id="btn-salvar-categoria" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-sky-500 text-slate-950">Salvar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 4. MODAL: NOVA CONTA / CARTÃO              -->
-  <!-- ========================================== -->
+  <!-- Modal Nova Conta / Cartão -->
   <div id="modal-conta" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Cadastrar Conta ou Cartão
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Conta ou Cartão
         </h3>
-        <button type="button" id="btn-fechar-modal-conta" class="text-slate-400 hover:text-white">
+        <button type="button" id="btn-fechar-modal-conta" class="p-1 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="form-conta" class="space-y-4">
+      <form id="form-conta" class="space-y-3.5">
         <div>
           <label class="block text-xs text-slate-400 mb-1">Nome de Identificação</label>
-          <input type="text" id="conta-nome" required placeholder="Ex: Nubank Ultravioleta, Itaú Débito" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
+          <input type="text" id="conta-nome" required placeholder="Ex: Nubank, Inter, Carteira" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
         </div>
 
         <div>
@@ -319,49 +299,44 @@
           </select>
         </div>
 
-        <!-- Campos específicos para Cartão de Crédito -->
         <div id="campos-especificos-cartao" class="grid grid-cols-2 gap-3 p-3 bg-slate-950/60 border border-slate-800 rounded-xl">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Dia do Fechamento</label>
-            <input type="number" id="conta-fechamento" min="1" max="31" placeholder="Ex: 30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-            <span class="text-[10px] text-slate-500 mt-0.5 block">Melhor dia de compra</span>
+            <label class="block text-xs text-slate-400 mb-1">Dia Fechamento</label>
+            <input type="number" id="conta-fechamento" min="1" max="31" placeholder="Ex: 30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
           </div>
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Dia do Vencimento</label>
-            <input type="number" id="conta-vencimento" min="1" max="31" placeholder="Ex: 5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-            <span class="text-[10px] text-slate-500 mt-0.5 block">Pagamento da fatura</span>
+            <label class="block text-xs text-slate-400 mb-1">Dia Vencimento</label>
+            <input type="number" id="conta-vencimento" min="1" max="31" placeholder="Ex: 5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
           </div>
         </div>
 
         <div>
           <label class="block text-xs text-slate-400 mb-1">Saldo Inicial (R$)</label>
-          <input type="number" step="0.01" id="conta-saldo-inicial" placeholder="0,00" value="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
+          <input type="number" step="0.01" id="conta-saldo-inicial" value="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btn-cancelar-modal-conta" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
-          <button type="submit" id="btn-salvar-conta" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-slate-950 transition">Salvar Cartão / Conta</button>
+          <button type="button" id="btn-cancelar-modal-conta" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" id="btn-salvar-conta" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-slate-950">Salvar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 5. MODAL DE TRANSAÇÃO (COM PARCELAMENTO)   -->
-  <!-- ========================================== -->
+  <!-- Modal Nova Transação -->
   <div id="modal-transacao" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-base font-bold text-white">Novo Lançamento</h3>
-        <button type="button" id="btn-fechar-modal" class="text-slate-400 hover:text-white">
+        <button type="button" id="btn-fechar-modal" class="p-1 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="form-transacao" class="space-y-4">
+      <form id="form-transacao" class="space-y-3.5">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Tipo de Lançamento</label>
+            <label class="block text-xs text-slate-400 mb-1">Tipo</label>
             <select id="tx-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
               <option value="Despesa Cartão">Cartão de Crédito</option>
               <option value="Débito/Pix">Débito / Pix / Boleto</option>
@@ -376,7 +351,7 @@
 
         <div>
           <label class="block text-xs text-slate-400 mb-1">Descrição</label>
-          <input type="text" id="tx-descricao" required placeholder="Ex: Supermercado, Aluguel, Salário" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
+          <input type="text" id="tx-descricao" required placeholder="Ex: Supermercado, Aluguel" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -391,15 +366,15 @@
         </div>
 
         <div>
-          <label class="block text-xs text-slate-400 mb-1">Data da Compra / Entrada</label>
+          <label class="block text-xs text-slate-400 mb-1">Data do Movimento</label>
           <input type="date" id="tx-data" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
         </div>
 
-        <!-- Seção de Parcelas de 1x a 18x (visível para Cartão) -->
+        <!-- Parcelas de 1x a 18x -->
         <div id="container-parcelamento" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
           <div class="flex items-center justify-between">
-            <label class="text-xs font-medium text-slate-300">Quantidade de Parcelas</label>
-            <select id="tx-parcelas" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+            <label class="text-xs font-medium text-slate-300">Parcelamento</label>
+            <select id="tx-parcelas" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
               <option value="1">1x (À vista na fatura)</option>
               <option value="2">2x</option>
               <option value="3">3x</option>
@@ -424,38 +399,31 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btn-cancelar-modal" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
-          <button type="submit" id="btn-salvar-tx" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 text-slate-950 transition">Salvar Lançamento</button>
+          <button type="button" id="btn-cancelar-modal" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" id="btn-salvar-tx" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-slate-950">Salvar</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ========================================== -->
-  <!-- 6. SCRIPT PRINCIPAL                        -->
+  <!-- 4. SCRIPT JAVASCRIPT & SUPABASE            -->
   <!-- ========================================== -->
   <script>
-    // -------------------------------------------------------------
-    // CREDENCIAIS DO SUPABASE:
-    // -------------------------------------------------------------
     const SUPABASE_URL = 'https://vrivgmpdcgpqhuohzkaf.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZnbXBkY2dwcWh1b2h6a2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MjAxODQsImV4cCI6MjEwOTM5NjE4NH0.H7qIvpF3rm-k-moF101qC2JLLe1mHOlqQlMWnzhFGo4';
 
     const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Estado local
     let modoAuth = 'login';
     let mesAtual = new Date().toISOString().slice(0, 7);
     let contasUsuario = [];
     let categoriasUsuario = [];
     let transacoesCarregadas = [];
     let meuGraficoProjecao = null;
-
-    // Estado dos Filtros do Extrato
     let filtroTipoAtivo = 'todos';
     let termoBuscaAtivo = '';
 
-    // Elementos DOM
     const authScreen = document.getElementById('auth-screen');
     const dashboardScreen = document.getElementById('dashboard-screen');
     const tabLogin = document.getElementById('tab-login');
@@ -470,7 +438,6 @@
     const filtroBusca = document.getElementById('filtro-busca');
     const contadorTransacoes = document.getElementById('contador-transacoes');
     
-    // Modal Transação
     const btnAbrirModal = document.getElementById('btn-abrir-modal');
     const btnFecharModal = document.getElementById('btn-fechar-modal');
     const btnCancelarModal = document.getElementById('btn-cancelar-modal');
@@ -485,7 +452,6 @@
     const containerParcelas = document.getElementById('container-parcelamento');
     const previaParcelamento = document.getElementById('previa-parcelamento');
 
-    // Modal Nova Conta/Cartão
     const btnAbrirModalConta = document.getElementById('btn-abrir-modal-conta');
     const btnFecharModalConta = document.getElementById('btn-fechar-modal-conta');
     const btnCancelarModalConta = document.getElementById('btn-cancelar-modal-conta');
@@ -494,20 +460,17 @@
     const contaTipo = document.getElementById('conta-tipo');
     const camposCartao = document.getElementById('campos-especificos-cartao');
 
-    // Modal Nova Categoria
     const btnAbrirModalCategoria = document.getElementById('btn-abrir-modal-categoria');
     const btnFecharModalCategoria = document.getElementById('btn-fechar-modal-categoria');
     const btnCancelarModalCategoria = document.getElementById('btn-cancelar-modal-categoria');
     const modalCategoria = document.getElementById('modal-categoria');
     const formCategoria = document.getElementById('form-categoria');
 
-    // Inicialização
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       filtroMes.value = mesAtual;
       txData.value = new Date().toISOString().slice(0, 10);
 
-      // Ouvir estado da sessão (Persistência automática)
       client.auth.onAuthStateChange((event, session) => {
         if (session) {
           authScreen.classList.add('hidden');
@@ -521,14 +484,12 @@
         }
       });
 
-      // Busca textual no extrato
       filtroBusca.addEventListener('input', (e) => {
         termoBuscaAtivo = e.target.value.toLowerCase().trim();
-        renderizarTabela();
+        renderizarTransacoes();
       });
     });
 
-    // Alternar abas Login / Cadastro
     tabLogin.addEventListener('click', () => setModoAuth('login'));
     tabSignup.addEventListener('click', () => setModoAuth('signup'));
 
@@ -536,17 +497,16 @@
       modoAuth = modo;
       authMsg.classList.add('hidden');
       if (modo === 'login') {
-        tabLogin.className = 'flex-1 py-2 text-sm font-medium rounded-lg bg-emerald-500/20 text-emerald-300 transition-all';
-        tabSignup.className = 'flex-1 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white transition-all';
+        tabLogin.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all';
+        tabSignup.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
         authBtnSubmit.innerText = 'Acessar Painel';
       } else {
-        tabSignup.className = 'flex-1 py-2 text-sm font-medium rounded-lg bg-emerald-500/20 text-emerald-300 transition-all';
-        tabLogin.className = 'flex-1 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-white transition-all';
+        tabSignup.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all';
+        tabLogin.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
         authBtnSubmit.innerText = 'Criar Conta';
       }
     }
 
-    // Processamento de Autenticação
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('auth-email').value;
@@ -582,7 +542,6 @@
       await client.auth.signOut();
     });
 
-    // Navegação de Mês/Ano
     btnMesAnterior.addEventListener('click', () => navegarMes(-1));
     btnMesProximo.addEventListener('click', () => navegarMes(1));
 
@@ -590,13 +549,8 @@
       let [ano, mes] = mesAtual.split('-').map(Number);
       mes += direcao;
 
-      if (mes > 12) {
-        mes = 1;
-        ano += 1;
-      } else if (mes < 1) {
-        mes = 12;
-        ano -= 1;
-      }
+      if (mes > 12) { mes = 1; ano += 1; }
+      else if (mes < 1) { mes = 12; ano -= 1; }
 
       mesAtual = `${ano}-${String(mes).padStart(2, '0')}`;
       filtroMes.value = mesAtual;
@@ -608,31 +562,28 @@
       carregarTransacoes();
     });
 
-    // Filtros por Tipo de Extrato
     window.aplicarFiltroTipo = function(tipo) {
       filtroTipoAtivo = tipo;
-      
       const botoes = document.querySelectorAll('.btn-filtro');
       botoes.forEach(b => {
-        b.className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap text-slate-400 hover:text-white hover:bg-slate-800/60';
+        b.className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white';
       });
 
       if (tipo === 'todos') {
-        document.getElementById('btn-filtro-todos').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-emerald-500/20 text-emerald-300';
+        document.getElementById('btn-filtro-todos').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
       } else if (tipo === 'Despesa Cartão') {
-        document.getElementById('btn-filtro-cartao').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-emerald-500/20 text-emerald-300';
+        document.getElementById('btn-filtro-cartao').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
       } else if (tipo === 'Débito/Pix') {
-        document.getElementById('btn-filtro-debito').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-emerald-500/20 text-emerald-300';
+        document.getElementById('btn-filtro-debito').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
       } else if (tipo === 'Receita') {
-        document.getElementById('btn-filtro-receita').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-emerald-500/20 text-emerald-300';
+        document.getElementById('btn-filtro-receita').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
       } else if (tipo === 'pendentes') {
-        document.getElementById('btn-filtro-pendentes').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5';
+        document.getElementById('btn-filtro-pendentes').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-amber-500/20 text-amber-300 flex items-center gap-1';
       }
 
-      renderizarTabela();
+      renderizarTransacoes();
     };
 
-    // Carregamento Integrado do App
     async function carregarDadosApp() {
       await Promise.all([
         buscarOuCriarContas(),
@@ -643,10 +594,7 @@
 
     async function buscarOuCriarContas() {
       const { data, error } = await client.from('contas').select('*').order('nome');
-      if (error) {
-        console.error('Erro ao ler contas:', error);
-        return;
-      }
+      if (error) return;
 
       if (!data || data.length === 0) {
         const { data: novas } = await client.from('contas').insert([
@@ -658,19 +606,13 @@
         contasUsuario = data;
       }
 
-      txConta.innerHTML = contasUsuario.map(c => `
-        <option value="${c.id}">${c.nome} (${c.tipo})</option>
-      `).join('');
-
+      txConta.innerHTML = contasUsuario.map(c => `<option value="${c.id}">${c.nome} (${c.tipo})</option>`).join('');
       renderizarGridContas();
     }
 
     async function buscarOuCriarCategorias() {
       const { data, error } = await client.from('categorias').select('*').order('nome');
-      if (error) {
-        console.error('Erro ao buscar categorias:', error);
-        return;
-      }
+      if (error) return;
 
       if (!data || data.length === 0) {
         const categoriasPadrao = [
@@ -680,17 +622,13 @@
           { nome: 'Lazer & Assinaturas', icone: 'tv', teto_mensal: 350.00 },
           { nome: 'Saúde', icone: 'activity', teto_mensal: 300.00 }
         ];
-
         const { data: novas } = await client.from('categorias').insert(categoriasPadrao).select();
         categoriasUsuario = novas || [];
       } else {
         categoriasUsuario = data;
       }
 
-      txCategoria.innerHTML = categoriasUsuario.map(cat => `
-        <option value="${cat.id}">${cat.nome}</option>
-      `).join('');
-
+      txCategoria.innerHTML = categoriasUsuario.map(cat => `<option value="${cat.id}">${cat.nome}</option>`).join('');
       renderizarGridCategorias();
     }
 
@@ -700,43 +638,27 @@
 
       container.innerHTML = contasUsuario.map(c => {
         const isCartao = c.tipo === 'Cartão de Crédito';
-        
         let totalNoMes = 0;
         transacoesCarregadas.forEach(t => {
-          if (t.conta_id === c.id) {
-            totalNoMes += Number(t.valor);
-          }
+          if (t.conta_id === c.id) totalNoMes += Number(t.valor);
         });
 
         const valorFmt = totalNoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
         return `
-          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition relative overflow-hidden group">
-            <div class="flex items-start justify-between">
-              <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider ${isCartao ? 'text-amber-400' : 'text-emerald-400'}">
-                  ${c.tipo}
-                </span>
-                <h3 class="text-sm font-bold text-white mt-0.5">${c.nome}</h3>
+          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${isCartao ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+                <h3 class="text-xs font-bold text-white">${c.nome}</h3>
               </div>
-              <div class="w-8 h-8 rounded-lg ${isCartao ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'} flex items-center justify-center">
-                <i data-lucide="${isCartao ? 'credit-card' : 'building-2'}" class="w-4 h-4"></i>
+              <div class="text-[11px] font-mono text-slate-400 mt-1">
+                ${isCartao ? `Fecha dia ${c.dia_fechamento || '--'} • Vence dia ${c.dia_vencimento || '--'}` : 'Conta Corrente'}
               </div>
             </div>
-
-            <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-end justify-between">
-              <div>
-                <span class="text-[10px] text-slate-500 block">${isCartao ? 'Fatura do Mês' : 'Gasto / Movimento'}</span>
-                <span class="text-base font-bold font-mono ${isCartao ? 'text-amber-300' : 'text-white'}">${valorFmt}</span>
-              </div>
-              ${isCartao ? `
-                <div class="text-right text-[11px] text-slate-400 font-mono">
-                  <div>Fecha dia <span class="text-white font-bold">${c.dia_fechamento || '--'}</span></div>
-                  <div>Vence dia <span class="text-white font-bold">${c.dia_vencimento || '--'}</span></div>
-                </div>
-              ` : `
-                <div class="text-right text-[11px] text-slate-500">Conta Ativa</div>
-              `}
+            <div class="text-right">
+              <span class="text-[10px] text-slate-500 block">${isCartao ? 'Fatura' : 'Movimento'}</span>
+              <span class="text-sm font-bold font-mono ${isCartao ? 'text-amber-300' : 'text-white'}">${valorFmt}</span>
             </div>
           </div>
         `;
@@ -749,17 +671,10 @@
       const container = document.getElementById('grid-categorias-orcamento');
       if (!container) return;
 
-      if (categoriasUsuario.length === 0) {
-        container.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-500">Nenhuma categoria cadastrada.</div>`;
-        return;
-      }
-
       container.innerHTML = categoriasUsuario.map(cat => {
         let gastoTotal = 0;
         transacoesCarregadas.forEach(t => {
-          if (t.categoria_id === cat.id && t.tipo !== 'Receita') {
-            gastoTotal += Number(t.valor);
-          }
+          if (t.categoria_id === cat.id && t.tipo !== 'Receita') gastoTotal += Number(t.valor);
         });
 
         const teto = Number(cat.teto_mensal) || 0;
@@ -767,44 +682,26 @@
         const percentual = temTeto ? Math.min(Math.round((gastoTotal / teto) * 100), 100) : 0;
         const estourou = temTeto && (gastoTotal > teto);
 
-        let corBarra = 'bg-emerald-500';
-        let corTexto = 'text-emerald-400';
-        if (estourou) {
-          corBarra = 'bg-rose-500';
-          corTexto = 'text-rose-400';
-        } else if (percentual >= 75) {
-          corBarra = 'bg-amber-500';
-          corTexto = 'text-amber-400';
-        }
+        let corBarra = estourou ? 'bg-rose-500' : (percentual >= 75 ? 'bg-amber-500' : 'bg-emerald-500');
 
         return `
-          <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition space-y-3">
+          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/80 flex items-center justify-center text-slate-300">
-                  <i data-lucide="${cat.icone || 'tag'}" class="w-4 h-4"></i>
-                </div>
-                <div>
-                  <h4 class="text-xs font-bold text-white">${cat.nome}</h4>
-                  <span class="text-[10px] text-slate-500">
-                    ${temTeto ? `Meta: ${teto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : 'Sem teto definido'}
-                  </span>
-                </div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="${cat.icone || 'tag'}" class="w-3.5 h-3.5 text-sky-400"></i>
+                <h4 class="text-xs font-bold text-white">${cat.nome}</h4>
               </div>
-              <span class="text-xs font-mono font-bold ${corTexto}">
+              <span class="text-xs font-mono font-bold ${estourou ? 'text-rose-400' : 'text-slate-200'}">
                 ${gastoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </span>
             </div>
-
             ${temTeto ? `
-              <div class="space-y-1">
-                <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800">
-                  <div class="${corBarra} h-full transition-all duration-500" style="width: ${percentual}%"></div>
-                </div>
-                <div class="flex justify-between text-[10px] text-slate-500">
-                  <span>${percentual}% consumido</span>
-                  ${estourou ? `<span class="text-rose-400 font-semibold">Excedeu em ${(gastoTotal - teto).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>` : `<span>Resta ${(teto - gastoTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>`}
-                </div>
+              <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                <div class="${corBarra} h-full transition-all duration-300" style="width: ${percentual}%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-slate-500">
+                <span>Meta: ${teto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <span class="${estourou ? 'text-rose-400 font-semibold' : ''}">${percentual}%</span>
               </div>
             ` : ''}
           </div>
@@ -814,38 +711,24 @@
       lucide.createIcons();
     }
 
-    // -------------------------------------------------------------
-    // GRÁFICO DE PROJEÇÃO DE FLUXO DE CAIXA (CHART.JS)
-    // -------------------------------------------------------------
     async function carregarGraficoProjecao() {
       const mesesLabels = [];
       const mesesChaves = [];
       let [anoBase, mesBase] = mesAtual.split('-').map(Number);
 
       for (let i = 0; i < 6; i++) {
-        const strMes = `${anoBase}-${String(mesBase).padStart(2, '0')}`;
-        mesesChaves.push(strMes);
-        
+        mesesChaves.push(`${anoBase}-${String(mesBase).padStart(2, '0')}`);
         const dataObj = new Date(anoBase, mesBase - 1, 1);
-        const nomeMes = dataObj.toLocaleDateString('pt-BR', { month: 'short' });
-        mesesLabels.push(`${nomeMes.toUpperCase()} / ${String(anoBase).slice(2)}`);
+        mesesLabels.push(dataObj.toLocaleDateString('pt-BR', { month: 'short' }).slice(0, 3).toUpperCase());
 
         mesBase++;
-        if (mesBase > 12) {
-          mesBase = 1;
-          anoBase++;
-        }
+        if (mesBase > 12) { mesBase = 1; anoBase++; }
       }
 
-      const { data, error } = await client
+      const { data } = await client
         .from('transacoes')
         .select('valor, tipo, mes_competencia')
         .in('mes_competencia', mesesChaves);
-
-      if (error) {
-        console.error('Erro ao buscar dados da projeção:', error);
-        return;
-      }
 
       const receitasPorMes = [0, 0, 0, 0, 0, 0];
       const saidasPorMes = [0, 0, 0, 0, 0, 0];
@@ -854,11 +737,8 @@
         const idx = mesesChaves.indexOf(t.mes_competencia);
         if (idx !== -1) {
           const val = Number(t.valor);
-          if (t.tipo === 'Receita') {
-            receitasPorMes[idx] += val;
-          } else {
-            saidasPorMes[idx] += val;
-          }
+          if (t.tipo === 'Receita') receitasPorMes[idx] += val;
+          else saidasPorMes[idx] += val;
         }
       });
 
@@ -878,10 +758,7 @@
       }
 
       const ctx = document.getElementById('grafico-projecao').getContext('2d');
-
-      if (meuGraficoProjecao) {
-        meuGraficoProjecao.destroy();
-      }
+      if (meuGraficoProjecao) meuGraficoProjecao.destroy();
 
       meuGraficoProjecao = new Chart(ctx, {
         type: 'bar',
@@ -889,24 +766,16 @@
           labels: mesesLabels,
           datasets: [
             {
-              label: 'Receitas Previstas',
+              label: 'Entradas',
               data: receitasPorMes,
-              backgroundColor: 'rgba(16, 185, 129, 0.75)',
-              borderColor: '#10b981',
-              borderWidth: 1,
-              borderRadius: 6,
-              barPercentage: 0.65,
-              categoryPercentage: 0.65
+              backgroundColor: 'rgba(16, 185, 129, 0.8)',
+              borderRadius: 4
             },
             {
-              label: 'Saídas (Faturas + Contas)',
+              label: 'Saídas',
               data: saidasPorMes,
-              backgroundColor: 'rgba(244, 63, 94, 0.75)',
-              borderColor: '#f43f5e',
-              borderWidth: 1,
-              borderRadius: 6,
-              barPercentage: 0.65,
-              categoryPercentage: 0.65
+              backgroundColor: 'rgba(244, 63, 94, 0.8)',
+              borderRadius: 4
             }
           ]
         },
@@ -915,77 +784,38 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: 'top',
-              labels: {
-                color: '#94a3b8',
-                font: { size: 11, family: 'sans-serif' },
-                boxWidth: 12,
-                usePointStyle: true,
-                pointStyle: 'circle'
-              }
-            },
-            tooltip: {
-              backgroundColor: '#0f172a',
-              titleColor: '#fff',
-              bodyColor: '#cbd5e1',
-              borderColor: '#334155',
-              borderWidth: 1,
-              padding: 10,
-              callbacks: {
-                label: function(context) {
-                  const val = context.raw || 0;
-                  return ` ${context.dataset.label}: ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
-                }
-              }
+              labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 }
             }
           },
           scales: {
-            x: {
-              grid: { color: 'rgba(51, 65, 85, 0.3)' },
-              ticks: { color: '#94a3b8', font: { size: 11 } }
-            },
-            y: {
-              grid: { color: 'rgba(51, 65, 85, 0.3)' },
-              ticks: {
-                color: '#94a3b8',
-                font: { size: 10 },
-                callback: function(value) {
-                  return 'R$ ' + value.toLocaleString('pt-BR');
-                }
-              }
-            }
+            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+            y: { grid: { color: 'rgba(51, 65, 85, 0.2)' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
           }
         }
       });
     }
 
     async function carregarTransacoes() {
-      document.getElementById('label-competencia').textContent = `Mês: ${mesAtual}`;
-
-      const { data, error } = await client
+      const { data } = await client
         .from('transacoes')
         .select('*')
         .eq('mes_competencia', mesAtual)
         .order('data_movimento', { ascending: false });
 
-      if (error) {
-        console.error('Erro ao buscar transações:', error);
-        return;
-      }
-
       transacoesCarregadas = data || [];
-      renderizarTabela();
+      renderizarTransacoes();
       atualizarTotais();
       renderizarGridContas();
       renderizarGridCategorias();
       await carregarGraficoProjecao();
     }
 
-   function renderizarTabela() {
-      const tbody = document.getElementById('lista-transacoes');
-      if (!tbody) return;
+    // Renderização Dupla: Cards no Mobile e Tabela no Desktop
+    function renderizarTransacoes() {
+      const containerMobile = document.getElementById('lista-transacoes-mobile');
+      const tbodyDesktop = document.getElementById('lista-transacoes-desktop');
+      if (!containerMobile || !tbodyDesktop) return;
 
-      // Aplicar Filtros (Tipo e Busca Textual)
       let filtradas = transacoesCarregadas.filter(t => {
         if (filtroTipoAtivo === 'pendentes') {
           if (t.status === 'Pago') return false;
@@ -1006,11 +836,77 @@
       contadorTransacoes.innerText = `${filtradas.length} registro${filtradas.length === 1 ? '' : 's'}`;
 
       if (filtradas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-500">Nenhum lançamento corresponde aos filtros em ${mesAtual}.</td></tr>`;
+        const vazioMsg = `<div class="py-8 text-center text-xs text-slate-500">Nenhum lançamento encontrado em ${mesAtual}.</div>`;
+        containerMobile.innerHTML = vazioMsg;
+        tbodyDesktop.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-500">Nenhum lançamento encontrado em ${mesAtual}.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = filtradas.map(t => {
+      // 1. CARDS PARA CELULAR
+      containerMobile.innerHTML = filtradas.map(t => {
+        const valorFmt = Number(t.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const isReceita = t.tipo === 'Receita';
+        const isLiquidado = t.status === 'Pago';
+        const parcelaBadge = t.parcela_total > 1 ? `<span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">${t.parcela_atual}/${t.parcela_total}</span>` : '';
+        
+        const contaObj = contasUsuario.find(c => c.id === t.conta_id);
+        const nomeConta = contaObj ? contaObj.nome : 'Conta';
+
+        const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
+        const nomeCategoria = catObj ? catObj.nome : 'Geral';
+
+        const textoStatus = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
+        const corStatus = isLiquidado ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : (isReceita ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40');
+        const iconeStatus = isLiquidado ? 'check-circle-2' : (isReceita ? 'arrow-down-left' : 'clock');
+
+        return `
+          <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <h4 class="text-sm font-bold text-white">${t.descricao}</h4>
+                  ${parcelaBadge}
+                </div>
+                <div class="flex items-center gap-2 text-[11px] text-slate-400">
+                  <span class="font-mono text-slate-500">${t.data_movimento.split('-').reverse().join('/')}</span>
+                  <span>•</span>
+                  <span>${nomeCategoria}</span>
+                  <span>•</span>
+                  <span>${nomeConta}</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-bold font-mono ${isReceita ? 'text-emerald-400' : 'text-slate-100'}">
+                  ${isReceita ? '+' : '-'} ${valorFmt}
+                </span>
+                <span class="block text-[10px] text-slate-500">${t.tipo}</span>
+              </div>
+            </div>
+
+            <!-- Botões de Ação Otimizados para Toque -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
+              <button 
+                type="button" 
+                onclick="alternarStatus('${t.id}', '${t.status}')" 
+                class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition active:scale-95 ${corStatus}">
+                <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
+                ${textoStatus}
+              </button>
+              
+              <button 
+                type="button" 
+                onclick="deletarTransacao('${t.id}')" 
+                class="p-2 text-slate-500 hover:text-rose-400 transition" 
+                title="Excluir">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 2. TABELA PARA COMPUTADOR
+      tbodyDesktop.innerHTML = filtradas.map(t => {
         const valorFmt = Number(t.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         const isReceita = t.tipo === 'Receita';
         const isLiquidado = t.status === 'Pago';
@@ -1022,31 +918,16 @@
         const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
         const nomeCategoria = catObj ? catObj.nome : 'Sem Categoria';
 
-        // Lógica semântica de exibição: Receita vs Despesa
-        const textoStatus = isReceita 
-          ? (isLiquidado ? 'Recebido' : 'A Receber') 
-          : (isLiquidado ? 'Pago' : 'Previsto');
-
-        const estiloStatus = isLiquidado 
-          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30' 
-          : (isReceita 
-              ? 'bg-sky-500/20 border-sky-500/40 text-sky-300 hover:bg-sky-500/30' 
-              : 'bg-amber-500/20 border-amber-500/40 text-amber-300 hover:bg-amber-500/30');
-
-        const iconeStatus = isLiquidado 
-          ? 'check-circle-2' 
-          : (isReceita ? 'arrow-down-left' : 'clock');
-
-        const dicaTooltip = isReceita 
-          ? 'Clique para alternar entre Recebido e A Receber' 
-          : 'Clique para alternar entre Pago e Previsto';
+        const textoStatus = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
+        const corStatus = isLiquidado ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : (isReceita ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40');
+        const iconeStatus = isLiquidado ? 'check-circle-2' : (isReceita ? 'arrow-down-left' : 'clock');
 
         return `
           <tr class="hover:bg-slate-800/20 transition group">
             <td class="py-2.5 font-mono text-slate-400">${t.data_movimento.split('-').reverse().join('/')}</td>
             <td class="py-2.5 font-medium text-white">${t.descricao}</td>
             <td class="py-2.5 text-slate-300">
-              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 text-[11px]">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 text-[11px]">
                 <i data-lucide="${catObj ? catObj.icone : 'tag'}" class="w-3 h-3 text-sky-400"></i>
                 ${nomeCategoria}
               </span>
@@ -1059,18 +940,13 @@
               <button 
                 type="button" 
                 onclick="alternarStatus('${t.id}', '${t.status}')" 
-                title="${dicaTooltip}"
-                class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition active:scale-95 cursor-pointer shadow-sm ${estiloStatus}">
+                class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition active:scale-95 ${corStatus}">
                 <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
                 ${textoStatus}
               </button>
             </td>
             <td class="py-2.5 text-center">
-              <button 
-                type="button" 
-                onclick="deletarTransacao('${t.id}')" 
-                title="Excluir lançamento"
-                class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition cursor-pointer">
+              <button type="button" onclick="deletarTransacao('${t.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </td>
@@ -1081,41 +957,27 @@
       lucide.createIcons();
     }
 
-    // Alternar Status Direto no Banco com 1 Clique
     window.alternarStatus = async function(id, statusAtual) {
       const novoStatus = (statusAtual === 'Pago') ? 'Previsto' : 'Pago';
-
       const idx = transacoesCarregadas.findIndex(t => t.id === id);
       if (idx !== -1) {
         transacoesCarregadas[idx].status = novoStatus;
-        renderizarTabela();
+        renderizarTransacoes();
         atualizarTotais();
       }
 
-      const { error } = await client
-        .from('transacoes')
-        .update({ status: novoStatus })
-        .eq('id', id);
-
+      const { error } = await client.from('transacoes').update({ status: novoStatus }).eq('id', id);
       if (error) {
-        alert('Erro ao atualizar status: ' + error.message);
+        alert('Erro ao atualizar: ' + error.message);
         carregarTransacoes();
       }
     };
 
     window.deletarTransacao = async function(id) {
-      if (!confirm('Deseja realmente excluir este lançamento?')) return;
-
-      const { error } = await client
-        .from('transacoes')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert('Erro ao excluir lançamento: ' + error.message);
-      } else {
-        carregarTransacoes();
-      }
+      if (!confirm('Deseja excluir este lançamento?')) return;
+      const { error } = await client.from('transacoes').delete().eq('id', id);
+      if (error) alert('Erro ao excluir: ' + error.message);
+      else carregarTransacoes();
     };
 
     function atualizarTotais() {
@@ -1136,18 +998,12 @@
       document.getElementById('card-saldo').innerText = (receita - (fatura + despesa)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    // -------------------------------------------------------------
-    // GESTÃO DE CATEGORIAS (MODAL)
-    // -------------------------------------------------------------
-    btnAbrirModalCategoria.addEventListener('click', () => {
-      modalCategoria.classList.remove('hidden');
-    });
-
+    // Modal Categoria
+    btnAbrirModalCategoria.addEventListener('click', () => modalCategoria.classList.remove('hidden'));
     function fecharModalCategoria() {
       modalCategoria.classList.add('hidden');
       formCategoria.reset();
     }
-
     btnFecharModalCategoria.addEventListener('click', fecharModalCategoria);
     btnCancelarModalCategoria.addEventListener('click', fecharModalCategoria);
 
@@ -1162,47 +1018,32 @@
       const icone = document.getElementById('categoria-icone').value;
 
       try {
-        const { error } = await client.from('categorias').insert([{
-          nome,
-          teto_mensal: tetoMensal,
-          icone
-        }]);
-
+        const { error } = await client.from('categorias').insert([{ nome, teto_mensal: tetoMensal, icone }]);
         if (error) throw error;
-
         fecharModalCategoria();
         await buscarOuCriarCategorias();
         await carregarTransacoes();
       } catch (err) {
-        alert('Erro ao cadastrar categoria: ' + err.message);
+        alert('Erro: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Salvar Categoria';
+        btn.innerText = 'Salvar';
       }
     });
 
-    // -------------------------------------------------------------
-    // GESTÃO DE CARTÕES / CONTAS (MODAL)
-    // -------------------------------------------------------------
-    btnAbrirModalConta.addEventListener('click', () => {
-      modalConta.classList.remove('hidden');
-    });
-
+    // Modal Conta
+    btnAbrirModalConta.addEventListener('click', () => modalConta.classList.remove('hidden'));
     function fecharModalConta() {
       modalConta.classList.add('hidden');
       formConta.reset();
       camposCartao.classList.remove('hidden');
     }
-
     btnFecharModalConta.addEventListener('click', fecharModalConta);
     btnCancelarModalConta.addEventListener('click', fecharModalConta);
 
     contaTipo.addEventListener('change', () => {
-      if (contaTipo.value === 'Cartão de Crédito') {
-        camposCartao.classList.remove('hidden');
-      } else {
-        camposCartao.classList.add('hidden');
-      }
+      if (contaTipo.value === 'Cartão de Crédito') camposCartao.classList.remove('hidden');
+      else camposCartao.classList.add('hidden');
     });
 
     formConta.addEventListener('submit', async (e) => {
@@ -1218,29 +1059,19 @@
       const saldoInicial = parseFloat(document.getElementById('conta-saldo-inicial').value) || 0.00;
 
       try {
-        const { error } = await client.from('contas').insert([{
-          nome,
-          tipo,
-          dia_fechamento: fechamento,
-          dia_vencimento: vencimento,
-          saldo_inicial: saldoInicial
-        }]);
-
+        const { error } = await client.from('contas').insert([{ nome, tipo, dia_fechamento: fechamento, dia_vencimento: vencimento, saldo_inicial: saldoInicial }]);
         if (error) throw error;
-
         fecharModalConta();
         await buscarOuCriarContas();
       } catch (err) {
-        alert('Erro ao cadastrar conta: ' + err.message);
+        alert('Erro: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Salvar Cartão / Conta';
+        btn.innerText = 'Salvar';
       }
     });
 
-    // -------------------------------------------------------------
-    // GESTÃO DE TRANSAÇÃO (MODAL)
-    // -------------------------------------------------------------
+    // Modal Transação
     btnAbrirModal.addEventListener('click', () => {
       modalTransacao.classList.remove('hidden');
       atualizarEstadoTipo();
@@ -1268,11 +1099,8 @@
     txParcelas.addEventListener('change', calcularPrevia);
 
     function atualizarEstadoTipo() {
-      if (txTipo.value === 'Despesa Cartão') {
-        containerParcelas.classList.remove('hidden');
-      } else {
-        containerParcelas.classList.add('hidden');
-      }
+      if (txTipo.value === 'Despesa Cartão') containerParcelas.classList.remove('hidden');
+      else containerParcelas.classList.add('hidden');
     }
 
     function calcularCompetencia(dataIso, contaId) {
@@ -1308,15 +1136,13 @@
 
       const comp = calcularCompetencia(dt, cId);
       const valParcela = (val / parcels).toFixed(2);
-      previaParcelamento.innerText = `${parcels}x de R$ ${valParcela} (1ª parcela na fatura de ${comp.str})`;
+      previaParcelamento.innerText = `${parcels}x de R$ ${valParcela} (1ª em ${comp.str})`;
     }
 
-    // Gravar Lançamento no Banco com proteção anti-duplo clique
     let enviandoTransacao = false;
 
     formTransacao.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
       if (enviandoTransacao) return;
       enviandoTransacao = true;
 
@@ -1344,7 +1170,6 @@
         const linhas = [];
         for (let i = 1; i <= totalParcelas; i++) {
           const valorFinal = (i === 1) ? valorParcela + centavos : valorParcela;
-          
           linhas.push({
             id_agrupador: idAgrupador,
             data_movimento: dataMovimento,
@@ -1360,10 +1185,7 @@
           });
 
           mes++;
-          if (mes > 12) {
-            mes = 1;
-            ano++;
-          }
+          if (mes > 12) { mes = 1; ano++; }
         }
 
         const { error } = await client.from('transacoes').insert(linhas);
@@ -1372,11 +1194,11 @@
         fecharModal();
         await carregarTransacoes();
       } catch (err) {
-        alert('Erro ao gravar lançamento: ' + err.message);
+        alert('Erro ao gravar: ' + err.message);
       } finally {
         enviandoTransacao = false;
         btnSalvar.disabled = false;
-        btnSalvar.innerText = 'Salvar Lançamento';
+        btnSalvar.innerText = 'Salvar';
       }
     });
   </script>
