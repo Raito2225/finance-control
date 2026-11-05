@@ -100,8 +100,9 @@
           <button type="button" id="btn-abrir-modal-categoria" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Nova Categoria">
             <i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> <span class="hidden md:inline">Categoria</span>
           </button>
-          <button type="button" id="btn-logout" title="Sair da Conta" class="p-2 text-slate-400 hover:text-rose-400 transition ml-auto sm:ml-0">
-            <i data-lucide="log-out" class="w-4 h-4"></i>
+          <!-- Botão Central de Configurações -->
+          <button type="button" id="btn-abrir-config" title="Configurações" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0">
+            <i data-lucide="settings" class="w-4 h-4"></i>
           </button>
         </div>
 
@@ -109,9 +110,9 @@
     </header>
 
     <!-- Conteúdo Principal -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5 pb-24 sm:pb-6">
       
-      <!-- Indicadores / Cards de Topo (2 colunas no celular) -->
+      <!-- Indicadores / Cards de Topo -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
           <span class="text-[11px] font-medium text-slate-400 block truncate">Saldo do Mês</span>
@@ -177,8 +178,8 @@
           </div>
         </div>
 
-        <!-- Abas com scroll horizontal suave no touch -->
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar border-b border-slate-800/80">
+        <!-- Abas de Filtros Rápidos -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs border-b border-slate-800/80">
           <button type="button" onclick="aplicarFiltroTipo('todos')" id="btn-filtro-todos" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300">Todos</button>
           <button type="button" onclick="aplicarFiltroTipo('Despesa Cartão')" id="btn-filtro-cartao" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Cartão</button>
           <button type="button" onclick="aplicarFiltroTipo('Débito/Pix')" id="btn-filtro-debito" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Débito / Pix</button>
@@ -189,9 +190,7 @@
         </div>
 
         <!-- VISUALIZAÇÃO 1: CARDS MOBILE (Até telas sm / 640px) -->
-        <div id="lista-transacoes-mobile" class="space-y-2.5 sm:hidden">
-          <!-- Renderizado via JS -->
-        </div>
+        <div id="lista-transacoes-mobile" class="space-y-2.5 sm:hidden"></div>
 
         <!-- VISUALIZAÇÃO 2: TABELA DESKTOP (A partir de sm / 640px) -->
         <div class="hidden sm:block overflow-x-auto">
@@ -219,11 +218,86 @@
 
       </div>
     </main>
+
+    <!-- Botão Flutuante Rápido (FAB) -->
+    <button 
+      type="button" 
+      id="btn-fab-adicionar" 
+      title="Novo Lançamento Rápido"
+      class="fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 border border-emerald-400/30 transition-all duration-200">
+      <i data-lucide="plus" class="w-7 h-7 stroke-[2.5]"></i>
+    </button>
   </div>
 
   <!-- ========================================== -->
-  <!-- 3. MODAIS (ADAPTADOS PARA MOBILE)         -->
+  <!-- 3. MODAIS                                  -->
   <!-- ========================================== -->
+
+  <!-- Modal de Configurações -->
+  <div id="modal-configuracoes" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-5">
+      
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i>
+          <h3 class="text-sm font-bold text-white">Configurações do Sistema</h3>
+        </div>
+        <button type="button" id="btn-fechar-config" class="p-1 text-slate-400 hover:text-white rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Bloco 1: Conta -->
+      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Sessão Conectada</span>
+        <div class="flex items-center justify-between">
+          <div class="truncate mr-2">
+            <p id="config-user-email" class="text-xs font-mono font-medium text-slate-200 truncate">carregando...</p>
+            <span class="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Conectado via Supabase
+            </span>
+          </div>
+          <button type="button" id="config-btn-logout" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition flex items-center gap-1">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair
+          </button>
+        </div>
+      </div>
+
+      <!-- Bloco 2: Feedback Tátil e Sonoro -->
+      <div class="space-y-3">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Interação & Feedback</span>
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/40 border border-slate-800/80">
+          <div>
+            <p class="text-xs font-semibold text-white">Som e Vibração</p>
+            <p class="text-[10px] text-slate-500">Cliques táteis e sons sutis ao salvar ações</p>
+          </div>
+          <button type="button" id="toggle-som-switch" class="w-11 h-6 rounded-full bg-emerald-500 p-0.5 transition-colors duration-200 ease-in-out relative flex items-center">
+            <div id="toggle-som-knob" class="w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition-transform duration-200 ease-in-out"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bloco 3: Tema de Destaque -->
+      <div class="space-y-3">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Cor de Destaque do App</span>
+        <div class="grid grid-cols-4 gap-2">
+          <button type="button" onclick="definirTema('esmeralda')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
+            <span class="w-4 h-4 rounded-full bg-emerald-500"></span> Esmeralda
+          </button>
+          <button type="button" onclick="definirTema('azul')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
+            <span class="w-4 h-4 rounded-full bg-sky-500"></span> Azul Céu
+          </button>
+          <button type="button" onclick="definirTema('roxo')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
+            <span class="w-4 h-4 rounded-full bg-violet-500"></span> Violeta
+          </button>
+          <button type="button" onclick="definirTema('ambar')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
+            <span class="w-4 h-4 rounded-full bg-amber-500"></span> Dourado
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Modal Nova Categoria -->
   <div id="modal-categoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -370,7 +444,7 @@
           <input type="date" id="tx-data" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
         </div>
 
-        <!-- Parcelas de 1x a 18x -->
+        <!-- Parcelamento de 1x a 18x -->
         <div id="container-parcelamento" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
           <div class="flex items-center justify-between">
             <label class="text-xs font-medium text-slate-300">Parcelamento</label>
@@ -407,7 +481,7 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 4. SCRIPT JAVASCRIPT & SUPABASE            -->
+  <!-- 4. SCRIPT PRINCIPAL                        -->
   <!-- ========================================== -->
   <script>
     const SUPABASE_URL = 'https://vrivgmpdcgpqhuohzkaf.supabase.co';
@@ -424,6 +498,11 @@
     let filtroTipoAtivo = 'todos';
     let termoBuscaAtivo = '';
 
+    // Preferências de Configuração
+    let configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
+    let temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
+
+    // Elementos DOM
     const authScreen = document.getElementById('auth-screen');
     const dashboardScreen = document.getElementById('dashboard-screen');
     const tabLogin = document.getElementById('tab-login');
@@ -434,10 +513,20 @@
     const filtroMes = document.getElementById('filtro-mes');
     const btnMesAnterior = document.getElementById('btn-mes-anterior');
     const btnMesProximo = document.getElementById('btn-mes-proximo');
-    const btnLogout = document.getElementById('btn-logout');
     const filtroBusca = document.getElementById('filtro-busca');
     const contadorTransacoes = document.getElementById('contador-transacoes');
+    const btnFabAdicionar = document.getElementById('btn-fab-adicionar');
     
+    // Modal Configurações
+    const modalConfig = document.getElementById('modal-configuracoes');
+    const btnAbrirConfig = document.getElementById('btn-abrir-config');
+    const btnFecharConfig = document.getElementById('btn-fechar-config');
+    const configBtnLogout = document.getElementById('config-btn-logout');
+    const toggleSomSwitch = document.getElementById('toggle-som-switch');
+    const toggleSomKnob = document.getElementById('toggle-som-knob');
+    const configUserEmail = document.getElementById('config-user-email');
+
+    // Modal Transação
     const btnAbrirModal = document.getElementById('btn-abrir-modal');
     const btnFecharModal = document.getElementById('btn-fechar-modal');
     const btnCancelarModal = document.getElementById('btn-cancelar-modal');
@@ -452,6 +541,7 @@
     const containerParcelas = document.getElementById('container-parcelamento');
     const previaParcelamento = document.getElementById('previa-parcelamento');
 
+    // Modal Nova Conta
     const btnAbrirModalConta = document.getElementById('btn-abrir-modal-conta');
     const btnFecharModalConta = document.getElementById('btn-fechar-modal-conta');
     const btnCancelarModalConta = document.getElementById('btn-cancelar-modal-conta');
@@ -460,16 +550,106 @@
     const contaTipo = document.getElementById('conta-tipo');
     const camposCartao = document.getElementById('campos-especificos-cartao');
 
+    // Modal Nova Categoria
     const btnAbrirModalCategoria = document.getElementById('btn-abrir-modal-categoria');
     const btnFecharModalCategoria = document.getElementById('btn-fechar-modal-categoria');
     const btnCancelarModalCategoria = document.getElementById('btn-cancelar-modal-categoria');
     const modalCategoria = document.getElementById('modal-categoria');
     const formCategoria = document.getElementById('form-categoria');
 
+    // -------------------------------------------------------------
+    // MOTOR DE ÁUDIO & FEEDBACK TÁTIL (Web Audio API + Vibration API)
+    // -------------------------------------------------------------
+    let audioCtx = null;
+
+    function obterAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function reproduzirSomFeedback(tipo = 'clique') {
+      try {
+        const ctx = obterAudioContext();
+        if (!ctx) return;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const agora = ctx.currentTime;
+
+        if (tipo === 'clique') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(580, agora);
+          osc.frequency.exponentialRampToValueAtTime(140, agora + 0.035);
+          gain.gain.setValueAtTime(0.08, agora);
+          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.035);
+          osc.start(agora);
+          osc.stop(agora + 0.035);
+        } else if (tipo === 'sucesso') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(520, agora);
+          osc.frequency.exponentialRampToValueAtTime(880, agora + 0.08);
+          gain.gain.setValueAtTime(0.07, agora);
+          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.09);
+          osc.start(agora);
+          osc.stop(agora + 0.09);
+        }
+      } catch (e) {}
+    }
+
+    function executarFeedback(tipo = 'clique') {
+      if (!configFeedbackAtivo) return;
+
+      if ('vibrate' in navigator) {
+        if (tipo === 'clique') navigator.vibrate(12);
+        else if (tipo === 'sucesso') navigator.vibrate([20, 30, 20]);
+      }
+      reproduzirSomFeedback(tipo);
+    }
+
+    // -------------------------------------------------------------
+    // SISTEMA DE TEMAS
+    // -------------------------------------------------------------
+    const mapaCoresTema = {
+      esmeralda: { bg: 'bg-emerald-500', hover: 'hover:bg-emerald-600', text: 'text-emerald-400', shadow: 'shadow-emerald-500/30' },
+      azul: { bg: 'bg-sky-500', hover: 'hover:bg-sky-600', text: 'text-sky-400', shadow: 'shadow-sky-500/30' },
+      roxo: { bg: 'bg-violet-500', hover: 'hover:bg-violet-600', text: 'text-violet-400', shadow: 'shadow-violet-500/30' },
+      ambar: { bg: 'bg-amber-500', hover: 'hover:bg-amber-600', text: 'text-amber-400', shadow: 'shadow-amber-500/30' }
+    };
+
+    window.definirTema = function(cor) {
+      temaAtivo = cor;
+      localStorage.setItem('fc_tema_app', cor);
+      aplicarTemaNaInterface();
+      executarFeedback('clique');
+    };
+
+    function aplicarTemaNaInterface() {
+      const cfg = mapaCoresTema[temaAtivo] || mapaCoresTema.esmeralda;
+      if (btnFabAdicionar) {
+        btnFabAdicionar.className = `fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full ${cfg.bg} ${cfg.hover} active:scale-95 text-slate-950 flex items-center justify-center shadow-lg ${cfg.shadow} border border-white/10 transition-all duration-200`;
+      }
+      if (btnAbrirModal) {
+        btnAbrirModal.className = `flex-1 sm:flex-none flex items-center justify-center gap-1.5 ${cfg.bg} ${cfg.hover} text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md active:scale-95`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // INICIALIZAÇÃO
+    // -------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       filtroMes.value = mesAtual;
       txData.value = new Date().toISOString().slice(0, 10);
+      aplicarTemaNaInterface();
 
       client.auth.onAuthStateChange((event, session) => {
         if (session) {
@@ -490,6 +670,59 @@
       });
     });
 
+    // -------------------------------------------------------------
+    // CONFIGURAÇÕES MODAL EVENTOS
+    // -------------------------------------------------------------
+    btnAbrirConfig.addEventListener('click', async () => {
+      executarFeedback('clique');
+      modalConfig.classList.remove('hidden');
+
+      const { data: { user } } = await client.auth.getUser();
+      if (user && configUserEmail) {
+        configUserEmail.textContent = user.email;
+      }
+      atualizarSwitchVisual();
+    });
+
+    btnFecharConfig.addEventListener('click', () => {
+      modalConfig.classList.add('hidden');
+    });
+
+    configBtnLogout.addEventListener('click', async () => {
+      modalConfig.classList.add('hidden');
+      await client.auth.signOut();
+    });
+
+    toggleSomSwitch.addEventListener('click', () => {
+      configFeedbackAtivo = !configFeedbackAtivo;
+      localStorage.setItem('fc_feedback_ativo', configFeedbackAtivo);
+      atualizarSwitchVisual();
+      if (configFeedbackAtivo) executarFeedback('clique');
+    });
+
+    function atualizarSwitchVisual() {
+      if (configFeedbackAtivo) {
+        toggleSomSwitch.className = 'w-11 h-6 rounded-full bg-emerald-500 p-0.5 transition-colors duration-200 relative flex items-center cursor-pointer';
+        toggleSomKnob.className = 'w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition-transform duration-200';
+      } else {
+        toggleSomSwitch.className = 'w-11 h-6 rounded-full bg-slate-800 p-0.5 transition-colors duration-200 relative flex items-center cursor-pointer';
+        toggleSomKnob.className = 'w-5 h-5 rounded-full bg-slate-400 shadow-md transform translate-x-0 transition-transform duration-200';
+      }
+    }
+
+    // Botão FAB Mobile
+    if (btnFabAdicionar) {
+      btnFabAdicionar.addEventListener('click', () => {
+        executarFeedback('clique');
+        modalTransacao.classList.remove('hidden');
+        atualizarEstadoTipo();
+        calcularPrevia();
+      });
+    }
+
+    // -------------------------------------------------------------
+    // AUTENTICAÇÃO
+    // -------------------------------------------------------------
     tabLogin.addEventListener('click', () => setModoAuth('login'));
     tabSignup.addEventListener('click', () => setModoAuth('signup'));
 
@@ -538,10 +771,9 @@
       }
     });
 
-    btnLogout.addEventListener('click', async () => {
-      await client.auth.signOut();
-    });
-
+    // -------------------------------------------------------------
+    // NAVEGAÇÃO DE DATAS & FILTROS
+    // -------------------------------------------------------------
     btnMesAnterior.addEventListener('click', () => navegarMes(-1));
     btnMesProximo.addEventListener('click', () => navegarMes(1));
 
@@ -584,6 +816,9 @@
       renderizarTransacoes();
     };
 
+    // -------------------------------------------------------------
+    // CARGA DE DADOS
+    // -------------------------------------------------------------
     async function carregarDadosApp() {
       await Promise.all([
         buscarOuCriarContas(),
@@ -711,6 +946,9 @@
       lucide.createIcons();
     }
 
+    // -------------------------------------------------------------
+    // GRÁFICO DE PROJEÇÃO DE 6 MESES (CHART.JS)
+    // -------------------------------------------------------------
     async function carregarGraficoProjecao() {
       const mesesLabels = [];
       const mesesChaves = [];
@@ -810,7 +1048,9 @@
       await carregarGraficoProjecao();
     }
 
-    // Renderização Dupla: Cards no Mobile e Tabela no Desktop
+    // -------------------------------------------------------------
+    // RENDERIZAÇÃO: FEED MOBILE & TABELA DESKTOP
+    // -------------------------------------------------------------
     function renderizarTransacoes() {
       const containerMobile = document.getElementById('lista-transacoes-mobile');
       const tbodyDesktop = document.getElementById('lista-transacoes-desktop');
@@ -842,7 +1082,7 @@
         return;
       }
 
-      // 1. CARDS PARA CELULAR
+      // 1. Cards Mobile
       containerMobile.innerHTML = filtradas.map(t => {
         const valorFmt = Number(t.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         const isReceita = t.tipo === 'Receita';
@@ -883,7 +1123,6 @@
               </div>
             </div>
 
-            <!-- Botões de Ação Otimizados para Toque -->
             <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
               <button 
                 type="button" 
@@ -905,7 +1144,7 @@
         `;
       }).join('');
 
-      // 2. TABELA PARA COMPUTADOR
+      // 2. Tabela Desktop
       tbodyDesktop.innerHTML = filtradas.map(t => {
         const valorFmt = Number(t.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         const isReceita = t.tipo === 'Receita';
@@ -957,7 +1196,9 @@
       lucide.createIcons();
     }
 
+    // Ações de Registro
     window.alternarStatus = async function(id, statusAtual) {
+      executarFeedback('clique');
       const novoStatus = (statusAtual === 'Pago') ? 'Previsto' : 'Pago';
       const idx = transacoesCarregadas.findIndex(t => t.id === id);
       if (idx !== -1) {
@@ -975,6 +1216,7 @@
 
     window.deletarTransacao = async function(id) {
       if (!confirm('Deseja excluir este lançamento?')) return;
+      executarFeedback('clique');
       const { error } = await client.from('transacoes').delete().eq('id', id);
       if (error) alert('Erro ao excluir: ' + error.message);
       else carregarTransacoes();
@@ -998,8 +1240,14 @@
       document.getElementById('card-saldo').innerText = (receita - (fatura + despesa)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
+    // -------------------------------------------------------------
+    // MODAIS DE SUBMISSÃO
+    // -------------------------------------------------------------
     // Modal Categoria
-    btnAbrirModalCategoria.addEventListener('click', () => modalCategoria.classList.remove('hidden'));
+    btnAbrirModalCategoria.addEventListener('click', () => {
+      executarFeedback('clique');
+      modalCategoria.classList.remove('hidden');
+    });
     function fecharModalCategoria() {
       modalCategoria.classList.add('hidden');
       formCategoria.reset();
@@ -1020,6 +1268,7 @@
       try {
         const { error } = await client.from('categorias').insert([{ nome, teto_mensal: tetoMensal, icone }]);
         if (error) throw error;
+        executarFeedback('sucesso');
         fecharModalCategoria();
         await buscarOuCriarCategorias();
         await carregarTransacoes();
@@ -1032,7 +1281,10 @@
     });
 
     // Modal Conta
-    btnAbrirModalConta.addEventListener('click', () => modalConta.classList.remove('hidden'));
+    btnAbrirModalConta.addEventListener('click', () => {
+      executarFeedback('clique');
+      modalConta.classList.remove('hidden');
+    });
     function fecharModalConta() {
       modalConta.classList.add('hidden');
       formConta.reset();
@@ -1061,6 +1313,7 @@
       try {
         const { error } = await client.from('contas').insert([{ nome, tipo, dia_fechamento: fechamento, dia_vencimento: vencimento, saldo_inicial: saldoInicial }]);
         if (error) throw error;
+        executarFeedback('sucesso');
         fecharModalConta();
         await buscarOuCriarContas();
       } catch (err) {
@@ -1073,6 +1326,7 @@
 
     // Modal Transação
     btnAbrirModal.addEventListener('click', () => {
+      executarFeedback('clique');
       modalTransacao.classList.remove('hidden');
       atualizarEstadoTipo();
       calcularPrevia();
@@ -1191,6 +1445,7 @@
         const { error } = await client.from('transacoes').insert(linhas);
         if (error) throw error;
 
+        executarFeedback('sucesso');
         fecharModal();
         await carregarTransacoes();
       } catch (err) {
