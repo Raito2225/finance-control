@@ -31,42 +31,84 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-12">
 
   <!-- ========================================== -->
-  <!-- 1. TELA DE AUTENTICAÇÃO                    -->
+  <!-- 1. TELA DE AUTENTICAÇÃO & BOAS-VINDAS      -->
   <!-- ========================================== -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-      <div class="flex items-center gap-3 mb-6 justify-center">
-        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-          <i data-lucide="wallet" class="w-6 h-6"></i>
-        </div>
-        <h1 class="text-xl font-bold tracking-tight text-white">FinanceControl</h1>
-      </div>
+    <div class="w-full max-w-md space-y-4">
 
-      <div class="flex bg-slate-950/60 p-1 rounded-xl mb-6 border border-slate-800">
-        <button type="button" id="tab-login" class="flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all">Entrar</button>
-        <button type="button" id="tab-signup" class="flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">Criar Conta</button>
-      </div>
-
-      <div id="auth-msg" class="hidden text-xs p-3 rounded-lg mb-4"></div>
-
-      <form id="auth-form" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">E-mail</label>
-          <input type="email" id="auth-email" required placeholder="seu@email.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
-        </div>
-        <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Senha</label>
-            <button type="button" id="btn-esqueceu-senha" class="text-[11px] text-emerald-400/90 hover:text-emerald-300 transition font-medium">
-              Esqueceu a senha?
-            </button>
+      <!-- Card de Boas-Vindas e Explicação do Projeto -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-2xl backdrop-blur-xl">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i data-lucide="wallet" class="w-5 h-5"></i>
+            </div>
+            <h1 class="text-lg font-bold tracking-tight text-white">FinanceControl</h1>
           </div>
-          <input type="password" id="auth-password" required placeholder="••••••••" minlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Fase Beta
+          </span>
         </div>
-        <button type="submit" id="auth-btn-submit" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] transition text-slate-950 font-bold rounded-xl text-sm shadow-lg shadow-emerald-500/20 mt-2">
-          Acessar Painel
-        </button>
-      </form>
+
+        <div class="space-y-2 text-xs text-slate-300 leading-relaxed border-t border-slate-800/80 pt-3">
+          <p class="font-semibold text-slate-100 flex items-center gap-1.5">
+            👋 Seja muito bem-vindo ao teste antecipado!
+          </p>
+          <p class="text-slate-400">
+            Este é um projeto pessoal em desenvolvimento contínuo, criado para oferecer controle financeiro ágil e inteligente direto do celular.
+          </p>
+          <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-[11px] text-slate-400 space-y-1">
+            <span class="text-emerald-400 font-semibold block">🎯 Missão dos Testadores:</span>
+            <p>Sinta-se à vontade para simular seus lançamentos, cartões e faturas. Seu feedback sobre usabilidade, visual ou eventuais erros é essencial para o aprimoramento do app!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card de Formulário (Login / Cadastro) -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
+        <div class="flex bg-slate-950/60 p-1 rounded-xl mb-5 border border-slate-800">
+          <button type="button" id="tab-login" class="flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all">Entrar</button>
+          <button type="button" id="tab-signup" class="flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">Criar Conta</button>
+        </div>
+
+        <div id="auth-msg" class="hidden text-xs p-3 rounded-lg mb-4"></div>
+
+        <form id="auth-form" class="space-y-3.5">
+          <!-- Campo Nome (Exclusivo Cadastro) -->
+          <div id="campo-cadastro-nome" class="hidden">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Nome Completo</label>
+            <input type="text" id="auth-nome" placeholder="Como quer ser chamado?" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
+          </div>
+
+          <!-- Campo Telefone / WhatsApp (Exclusivo Cadastro) -->
+          <div id="campo-cadastro-telefone" class="hidden">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">WhatsApp / Telefone</label>
+            <input type="tel" id="auth-telefone" maxlength="15" placeholder="(75) 99999-9999" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
+          </div>
+
+          <!-- Campo E-mail -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">E-mail</label>
+            <input type="email" id="auth-email" required placeholder="seu@email.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
+          </div>
+
+          <!-- Campo Senha -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Senha</label>
+              <button type="button" id="btn-esqueceu-senha" class="text-[11px] text-emerald-400/90 hover:text-emerald-300 transition font-medium">
+                Esqueceu a senha?
+              </button>
+            </div>
+            <input type="password" id="auth-password" required placeholder="••••••••" minlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
+          </div>
+
+          <button type="submit" id="auth-btn-submit" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] transition text-slate-950 font-bold rounded-xl text-sm shadow-lg shadow-emerald-500/20 mt-2">
+            Acessar Painel
+          </button>
+        </form>
+      </div>
+
     </div>
   </div>
 
@@ -84,7 +126,10 @@
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <i data-lucide="wallet" class="w-4 h-4"></i>
             </div>
-            <span class="font-bold text-base text-white tracking-tight">FinanceControl</span>
+            <div>
+              <span class="font-bold text-base text-white tracking-tight block leading-tight">FinanceControl</span>
+              <span id="label-saudacao-usuario" class="text-[10px] text-slate-400 hidden sm:block">Olá!</span>
+            </div>
           </div>
 
           <!-- Navegação Mês no mobile à direita -->
@@ -278,13 +323,15 @@
         </button>
       </div>
 
-      <!-- Bloco 1: Conta -->
+      <!-- Bloco 1: Conta & Perfil -->
       <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Sessão Conectada</span>
         <div class="flex items-center justify-between">
           <div class="truncate mr-2">
-            <p id="config-user-email" class="text-xs font-mono font-medium text-slate-200 truncate">carregando...</p>
-            <span class="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5">
+            <p id="config-user-nome" class="text-xs font-bold text-white truncate"></p>
+            <p id="config-user-email" class="text-[11px] font-mono text-slate-300 truncate">carregando...</p>
+            <p id="config-user-telefone" class="text-[10px] text-slate-400 font-mono"></p>
+            <span class="text-[10px] text-emerald-400 flex items-center gap-1 mt-1">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Conectado via Supabase
             </span>
           </div>
@@ -562,7 +609,7 @@
     let configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
     let temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
 
-    // Elementos DOM
+    // Elementos DOM Autenticação & Cadastro
     const authScreen = document.getElementById('auth-screen');
     const dashboardScreen = document.getElementById('dashboard-screen');
     const tabLogin = document.getElementById('tab-login');
@@ -571,6 +618,13 @@
     const authMsg = document.getElementById('auth-msg');
     const authBtnSubmit = document.getElementById('auth-btn-submit');
     const btnEsqueceuSenha = document.getElementById('btn-esqueceu-senha');
+    const campoCadastroNome = document.getElementById('campo-cadastro-nome');
+    const campoCadastroTelefone = document.getElementById('campo-cadastro-telefone');
+    const authNome = document.getElementById('auth-nome');
+    const authTelefone = document.getElementById('auth-telefone');
+    const labelSaudacaoUsuario = document.getElementById('label-saudacao-usuario');
+
+    // Elementos DOM Topo & Extrato
     const filtroMes = document.getElementById('filtro-mes');
     const btnMesAnterior = document.getElementById('btn-mes-anterior');
     const btnMesProximo = document.getElementById('btn-mes-proximo');
@@ -590,6 +644,8 @@
     const toggleSomSwitch = document.getElementById('toggle-som-switch');
     const toggleSomKnob = document.getElementById('toggle-som-knob');
     const configUserEmail = document.getElementById('config-user-email');
+    const configUserNome = document.getElementById('config-user-nome');
+    const configUserTelefone = document.getElementById('config-user-telefone');
 
     // Seção de Alterar Senha
     const btnToggleSenhaSection = document.getElementById('btn-toggle-senha-section');
@@ -690,6 +746,23 @@
     }
 
     // -------------------------------------------------------------
+    // MÁSCARA AUTOMÁTICA DE TELEFONE (DDD + 9 DÍGITOS)
+    // -------------------------------------------------------------
+    authTelefone.addEventListener('input', (e) => {
+      let valor = e.target.value.replace(/\D/g, '');
+      if (valor.length > 11) valor = valor.slice(0, 11);
+
+      if (valor.length > 6) {
+        valor = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
+      } else if (valor.length > 2) {
+        valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
+      } else if (valor.length > 0) {
+        valor = `(${valor}`;
+      }
+      e.target.value = valor;
+    });
+
+    // -------------------------------------------------------------
     // SISTEMA DE TEMAS (Interface Web & Configurações)
     // -------------------------------------------------------------
     const mapaCoresTema = {
@@ -699,7 +772,6 @@
       ambar: { bg: 'bg-amber-500', hover: 'hover:bg-amber-600', text: 'text-amber-400', shadow: 'shadow-amber-500/30' }
     };
 
-    // Mapa de Cores RGB Dinâmico para Relatórios em PDF
     const mapaCoresPDF = {
       esmeralda: {
         cabecalho: [6, 78, 59],      // emerald-900
@@ -822,7 +894,6 @@
 
     function exportarCSV(dados, nomeArquivo) {
       const cabecalhos = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parcela', 'Valor (R$)', 'Status'];
-      
       let csvContent = '\uFEFF' + cabecalhos.join(';') + '\n';
 
       dados.forEach(row => {
@@ -871,14 +942,8 @@
       const ws = XLSX.utils.json_to_sheet(linhasFormatadas);
 
       ws['!cols'] = [
-        { wch: 12 }, // Data
-        { wch: 32 }, // Descrição
-        { wch: 22 }, // Categoria
-        { wch: 22 }, // Conta
-        { wch: 16 }, // Tipo
-        { wch: 10 }, // Parcela
-        { wch: 14 }, // Valor
-        { wch: 14 }  // Status
+        { wch: 12 }, { wch: 32 }, { wch: 22 }, { wch: 22 },
+        { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 14 }
       ];
 
       const wb = XLSX.utils.book_new();
@@ -893,15 +958,11 @@
         return;
       }
 
-      // Obtém as cores do tema ativo
       const temaConfig = mapaCoresPDF[temaAtivo] || mapaCoresPDF.esmeralda;
-
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-      // ---------------------------------------------------------
-      // BADGE VETORIAL NATIVO COM AS CORES DO TEMA
-      // ---------------------------------------------------------
+      // Badge Vetorial Nativo com Cores do Tema
       doc.setFillColor(temaConfig.cabecalho[0], temaConfig.cabecalho[1], temaConfig.cabecalho[2]);
       doc.roundedRect(14, 12, 10, 10, 2.5, 2.5, 'F');
 
@@ -913,24 +974,21 @@
       // Título e Competência
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
-      doc.setTextColor(15, 23, 42); // slate-900
+      doc.setTextColor(15, 23, 42);
       doc.text('FinanceControl', 28, 17);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139); // slate-500
+      doc.setTextColor(100, 116, 139);
       doc.text(`Relatório Financeiro  •  Competência: ${mesAtual}  •  Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 28, 22);
 
-      // Linha sutil separadora
-      doc.setDrawColor(226, 232, 240); // slate-200
+      // Linha divisória
+      doc.setDrawColor(226, 232, 240);
       doc.setLineWidth(0.3);
       doc.line(14, 26, 196, 26);
 
       // Totais calculados
-      let totalReceitas = 0;
-      let totalFaturas = 0;
-      let totalDespesas = 0;
-
+      let totalReceitas = 0, totalFaturas = 0, totalDespesas = 0;
       dados.forEach(r => {
         if (r.Tipo === 'Receita') totalReceitas += r.Valor;
         else if (r.Tipo === 'Despesa Cartão') totalFaturas += r.Valor;
@@ -941,8 +999,8 @@
       const saldoPrevisto = totalReceitas - totalSaidas;
 
       // Caixa de Resumo no Topo
-      doc.setDrawColor(226, 232, 240); // slate-200
-      doc.setFillColor(248, 250, 252); // slate-50
+      doc.setDrawColor(226, 232, 240);
+      doc.setFillColor(248, 250, 252);
       doc.roundedRect(14, 30, 182, 18, 3, 3, 'FD');
 
       doc.setFontSize(8.5);
@@ -950,13 +1008,13 @@
       doc.setTextColor(temaConfig.destaque[0], temaConfig.destaque[1], temaConfig.destaque[2]);
       doc.text(`RECEITAS: ${totalReceitas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 18, 41);
 
-      doc.setTextColor(244, 63, 94); // rose
+      doc.setTextColor(244, 63, 94);
       doc.text(`SAÍDAS: ${totalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 68, 41);
 
-      doc.setTextColor(217, 119, 6); // amber
+      doc.setTextColor(217, 119, 6);
       doc.text(`FATURAS: ${totalFaturas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 116, 41);
 
-      doc.setTextColor(15, 23, 42); // slate-900
+      doc.setTextColor(15, 23, 42);
       doc.text(`SALDO: ${saldoPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 156, 41);
 
       // Tabela de Dados via AutoTable
@@ -987,13 +1045,13 @@
           lineWidth: 0.1
         },
         headStyles: {
-          fillColor: temaConfig.cabecalho, // Dinâmico de acordo com o tema selecionado
+          fillColor: temaConfig.cabecalho,
           textColor: [255, 255, 255],
           fontStyle: 'bold',
           halign: 'left'
         },
         alternateRowStyles: {
-          fillColor: temaConfig.alternada  // Dinâmico de acordo com o tema selecionado
+          fillColor: temaConfig.alternada
         },
         columnStyles: {
           0: { cellWidth: 18, halign: 'center' },
@@ -1042,7 +1100,7 @@
       txData.value = new Date().toISOString().slice(0, 10);
       aplicarTemaNaInterface();
 
-      client.auth.onAuthStateChange((event, session) => {
+      client.auth.onAuthStateChange(async (event, session) => {
         if (event === 'PASSWORD_RECOVERY') {
           authScreen.classList.add('hidden');
           dashboardScreen.classList.remove('hidden');
@@ -1062,6 +1120,14 @@
           authScreen.classList.add('hidden');
           dashboardScreen.classList.remove('hidden');
           lucide.createIcons();
+
+          // Exibe saudação com nome cadastrado
+          const userMeta = session.user?.user_metadata || {};
+          const nomeExibicao = userMeta.nome || session.user.email.split('@')[0];
+          if (labelSaudacaoUsuario) {
+            labelSaudacaoUsuario.textContent = `Olá, ${nomeExibicao}!`;
+          }
+
           carregarDadosApp();
         } else {
           dashboardScreen.classList.add('hidden');
@@ -1084,8 +1150,11 @@
       modalConfig.classList.remove('hidden');
 
       const { data: { user } } = await client.auth.getUser();
-      if (user && configUserEmail) {
-        configUserEmail.textContent = user.email;
+      if (user) {
+        const meta = user.user_metadata || {};
+        if (configUserNome) configUserNome.textContent = meta.nome || 'Usuário Beta';
+        if (configUserEmail) configUserEmail.textContent = user.email;
+        if (configUserTelefone) configUserTelefone.textContent = meta.telefone ? `Tel: ${meta.telefone}` : '';
       }
       atualizarSwitchVisual();
       
@@ -1236,7 +1305,7 @@
     }
 
     // -------------------------------------------------------------
-    // AUTENTICAÇÃO
+    // ALTERNÂNCIA: ENTRAR VS CRIAR CONTA (COM NOME E TELEFONE)
     // -------------------------------------------------------------
     tabLogin.addEventListener('click', () => setModoAuth('login'));
     tabSignup.addEventListener('click', () => setModoAuth('signup'));
@@ -1249,17 +1318,25 @@
         tabSignup.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
         authBtnSubmit.innerText = 'Acessar Painel';
         btnEsqueceuSenha.classList.remove('hidden');
+        campoCadastroNome.classList.add('hidden');
+        campoCadastroTelefone.classList.add('hidden');
+        authNome.required = false;
+        authTelefone.required = false;
       } else {
         tabSignup.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all';
         tabLogin.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
-        authBtnSubmit.innerText = 'Criar Conta';
+        authBtnSubmit.innerText = 'Cadastrar e Começar';
         btnEsqueceuSenha.classList.add('hidden');
+        campoCadastroNome.classList.remove('hidden');
+        campoCadastroTelefone.classList.remove('hidden');
+        authNome.required = true;
+        authTelefone.required = true;
       }
     }
 
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('auth-email').value;
+      const email = document.getElementById('auth-email').value.trim();
       const password = document.getElementById('auth-password').value;
 
       authBtnSubmit.disabled = true;
@@ -1271,9 +1348,22 @@
           const { error } = await client.auth.signInWithPassword({ email, password });
           if (error) throw error;
         } else {
-          const { error } = await client.auth.signUp({ email, password });
+          const nome = authNome.value.trim();
+          const telefone = authTelefone.value.trim();
+
+          const { error } = await client.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                nome: nome,
+                telefone: telefone
+              }
+            }
+          });
           if (error) throw error;
-          authMsg.textContent = 'Conta cadastrada com sucesso! Faça login.';
+
+          authMsg.textContent = 'Conta cadastrada com sucesso! Faça login para começar a testar.';
           authMsg.className = 'text-xs p-3 rounded-lg mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
           authMsg.classList.remove('hidden');
           setModoAuth('login');
@@ -1284,7 +1374,7 @@
         authMsg.classList.remove('hidden');
       } finally {
         authBtnSubmit.disabled = false;
-        authBtnSubmit.innerText = modoAuth === 'login' ? 'Acessar Painel' : 'Criar Conta';
+        authBtnSubmit.innerText = modoAuth === 'login' ? 'Acessar Painel' : 'Cadastrar e Começar';
       }
     });
 
