@@ -22,6 +22,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SheetJS (Excel .xlsx export) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF & AutoTable (PDF export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-12">
 
@@ -105,6 +110,25 @@
           <button type="button" id="btn-abrir-modal-categoria" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Nova Categoria">
             <i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> <span class="hidden md:inline">Categoria</span>
           </button>
+
+          <!-- Dropdown Exportar -->
+          <div class="relative">
+            <button type="button" id="btn-dropdown-exportar" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Exportar dados do mês">
+              <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Exportar</span>
+            </button>
+            <div id="menu-dropdown-exportar" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50">
+              <button type="button" onclick="exportarDados('csv')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i> Exportar CSV (.csv)
+              </button>
+              <button type="button" onclick="exportarDados('xlsx')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition">
+                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> Exportar Excel (.xlsx)
+              </button>
+              <button type="button" onclick="exportarDados('pdf')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition">
+                <i data-lucide="file" class="w-3.5 h-3.5 text-rose-400"></i> Exportar Relatório (.pdf)
+              </button>
+            </div>
+          </div>
+
           <!-- Botão Central de Configurações -->
           <button type="button" id="btn-abrir-config" title="Configurações" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0">
             <i data-lucide="settings" class="w-4 h-4"></i>
@@ -174,7 +198,9 @@
         <div class="flex flex-col gap-2.5">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-semibold text-slate-200">Extrato</h2>
-            <span id="contador-transacoes" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-lg">0 registros</span>
+            <div class="flex items-center gap-2">
+              <span id="contador-transacoes" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-lg">0 registros</span>
+            </div>
           </div>
 
           <div class="relative w-full">
@@ -551,6 +577,10 @@
     const filtroBusca = document.getElementById('filtro-busca');
     const contadorTransacoes = document.getElementById('contador-transacoes');
     const btnFabAdicionar = document.getElementById('btn-fab-adicionar');
+
+    // Dropdown Exportação
+    const btnDropdownExportar = document.getElementById('btn-dropdown-exportar');
+    const menuDropdownExportar = document.getElementById('menu-dropdown-exportar');
     
     // Modal Configurações
     const modalConfig = document.getElementById('modal-configuracoes');
@@ -687,6 +717,268 @@
     }
 
     // -------------------------------------------------------------
+    // DROPDOWN EXPORTAÇÃO
+    // -------------------------------------------------------------
+    if (btnDropdownExportar) {
+      btnDropdownExportar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        executarFeedback('clique');
+        menuDropdownExportar.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', () => {
+        if (!menuDropdownExportar.classList.contains('hidden')) {
+          menuDropdownExportar.classList.add('hidden');
+        }
+      });
+    }
+
+    // -------------------------------------------------------------
+    // FUNÇÕES DE EXPORTAÇÃO (CSV, EXCEL / XLSX, PDF)
+    // -------------------------------------------------------------
+    function obterLinhasFiltradasParaExportacao() {
+      return transacoesCarregadas.filter(t => {
+        if (filtroTipoAtivo === 'pendentes') {
+          if (t.status === 'Pago') return false;
+        } else if (filtroTipoAtivo !== 'todos') {
+          if (t.tipo !== filtroTipoAtivo) return false;
+        }
+
+        if (termoBuscaAtivo) {
+          const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
+          const nomeCategoria = catObj ? catObj.nome.toLowerCase() : '';
+          const descricao = (t.descricao || '').toLowerCase();
+          return descricao.includes(termoBuscaAtivo) || nomeCategoria.includes(termoBuscaAtivo);
+        }
+
+        return true;
+      });
+    }
+
+    window.exportarDados = function(formato) {
+      executarFeedback('clique');
+      if (menuDropdownExportar) menuDropdownExportar.classList.add('hidden');
+
+      const transacoes = obterLinhasFiltradasParaExportacao();
+      if (!transacoes || transacoes.length === 0) {
+        alert('Não há transações para exportar na competência selecionada.');
+        return;
+      }
+
+      const dadosMapeados = transacoes.map(t => {
+        const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
+        const contaObj = contasUsuario.find(c => c.id === t.conta_id);
+        const isReceita = t.tipo === 'Receita';
+        const isLiquidado = t.status === 'Pago';
+        const statusTexto = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
+
+        return {
+          Data: t.data_movimento.split('-').reverse().join('/'),
+          Descricao: t.descricao || '',
+          Categoria: catObj ? catObj.nome : 'Sem Categoria',
+          Conta: contaObj ? contaObj.nome : 'Padrão',
+          Tipo: t.tipo || '',
+          Parcela: t.parcela_total > 1 ? `${t.parcela_atual}/${t.parcela_total}` : '1/1',
+          Valor: Number(t.valor) || 0,
+          Status: statusTexto,
+          Competencia: t.mes_competencia || mesAtual
+        };
+      });
+
+      const nomeBaseArquivo = `FinanceControl_${mesAtual}`;
+
+      if (formato === 'csv') {
+        exportarCSV(dadosMapeados, `${nomeBaseArquivo}.csv`);
+      } else if (formato === 'xlsx') {
+        exportarXLSX(dadosMapeados, `${nomeBaseArquivo}.xlsx`);
+      } else if (formato === 'pdf') {
+        exportarPDF(dadosMapeados, `${nomeBaseArquivo}.pdf`);
+      }
+    };
+
+    function exportarCSV(dados, nomeArquivo) {
+      const colunas = ['Data', 'Descricao', 'Categoria', 'Conta', 'Tipo', 'Parcela', 'Valor', 'Status'];
+      const cabecalhos = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parcela', 'Valor (R$)', 'Status'];
+      
+      let csvContent = '\uFEFF' + cabecalhos.join(';') + '\n';
+
+      dados.forEach(row => {
+        const linha = [
+          row.Data,
+          `"${(row.Descricao || '').replace(/"/g, '""')}"`,
+          `"${(row.Categoria || '').replace(/"/g, '""')}"`,
+          `"${(row.Conta || '').replace(/"/g, '""')}"`,
+          `"${(row.Tipo || '').replace(/"/g, '""')}"`,
+          row.Parcela,
+          row.Valor.toFixed(2).replace('.', ','),
+          row.Status
+        ];
+        csvContent += linha.join(';') + '\n';
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', nomeArquivo);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      executarFeedback('sucesso');
+    }
+
+    function exportarXLSX(dados, nomeArquivo) {
+      if (typeof XLSX === 'undefined') {
+        alert('A biblioteca SheetJS não pôde ser carregada. Verifique sua conexão.');
+        return;
+      }
+
+      const linhasFormatadas = dados.map(row => ({
+        'Data': row.Data,
+        'Descrição': row.Descricao,
+        'Categoria': row.Categoria,
+        'Conta / Cartão': row.Conta,
+        'Tipo': row.Tipo,
+        'Parcela': row.Parcela,
+        'Valor (R$)': row.Valor,
+        'Status': row.Status
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(linhasFormatadas);
+
+      // Larguras personalizadas de colunas
+      ws['!cols'] = [
+        { wch: 12 }, // Data
+        { wch: 32 }, // Descrição
+        { wch: 22 }, // Categoria
+        { wch: 22 }, // Conta
+        { wch: 16 }, // Tipo
+        { wch: 10 }, // Parcela
+        { wch: 14 }, // Valor
+        { wch: 14 }  // Status
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, `Extrato ${mesAtual}`);
+      XLSX.writeFile(wb, nomeArquivo);
+      executarFeedback('sucesso');
+    }
+
+    function exportarPDF(dados, nomeArquivo) {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('Biblioteca jsPDF não carregada. Verifique sua conexão.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      // Cabeçalho do Relatório
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(15, 23, 42); // slate-900
+      doc.text('Relatório Financeiro Mensal', 14, 18);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139); // slate-500
+      doc.text(`Competência: ${mesAtual}  •  Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 14, 25);
+
+      // Totais calculados
+      let totalReceitas = 0;
+      let totalFaturas = 0;
+      let totalDespesas = 0;
+
+      dados.forEach(r => {
+        if (r.Tipo === 'Receita') totalReceitas += r.Valor;
+        else if (r.Tipo === 'Despesa Cartão') totalFaturas += r.Valor;
+        else totalDespesas += r.Valor;
+      });
+
+      const totalSaidas = totalFaturas + totalDespesas;
+      const saldoPrevisto = totalReceitas - totalSaidas;
+
+      // Caixa de Resumo no Topo
+      doc.setDrawColor(226, 232, 240); // slate-200
+      doc.setFillColor(248, 250, 252); // slate-50
+      doc.roundedRect(14, 30, 182, 18, 3, 3, 'FD');
+
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(16, 185, 129); // emerald
+      doc.text(`RECEITAS: ${totalReceitas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 18, 41);
+
+      doc.setTextColor(244, 63, 94); // rose
+      doc.text(`SAÍDAS: ${totalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 68, 41);
+
+      doc.setTextColor(217, 119, 6); // amber
+      doc.text(`FATURAS: ${totalFaturas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 116, 41);
+
+      doc.setTextColor(15, 23, 42); // slate-900
+      doc.text(`SALDO: ${saldoPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 156, 41);
+
+      // Tabela de Dados via AutoTable
+      const tableColumn = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parc.', 'Valor', 'Status'];
+      const tableRows = dados.map(r => [
+        r.Data,
+        r.Descricao,
+        r.Categoria,
+        r.Conta,
+        r.Tipo,
+        r.Parcela,
+        r.Valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        r.Status
+      ]);
+
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 53,
+        theme: 'striped',
+        styles: {
+          font: 'helvetica',
+          fontSize: 8,
+          textColor: [30, 41, 59],
+          cellPadding: 2.5
+        },
+        headStyles: {
+          fillColor: [15, 23, 42],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 42 },
+          2: { cellWidth: 28 },
+          3: { cellWidth: 28 },
+          4: { cellWidth: 20 },
+          5: { cellWidth: 12, halign: 'center' },
+          6: { cellWidth: 20, halign: 'right' },
+          7: { cellWidth: 18, halign: 'center' }
+        },
+        foot: [[
+          'Total Registros',
+          `${dados.length} lançamentos`,
+          '', '', '', '',
+          saldoPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+          ''
+        ]],
+        footStyles: {
+          fillColor: [241, 245, 249],
+          textColor: [15, 23, 42],
+          fontStyle: 'bold'
+        }
+      });
+
+      doc.save(nomeArquivo);
+      executarFeedback('sucesso');
+    }
+
+    // -------------------------------------------------------------
     // INICIALIZAÇÃO & GESTÃO DE SESSÃO / RECUPERAÇÃO
     // -------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
@@ -696,7 +988,6 @@
       aplicarTemaNaInterface();
 
       client.auth.onAuthStateChange((event, session) => {
-        // Intercepta retorno do link de e-mail de redefinição
         if (event === 'PASSWORD_RECOVERY') {
           authScreen.classList.add('hidden');
           dashboardScreen.classList.remove('hidden');
