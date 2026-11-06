@@ -269,6 +269,9 @@
           <button type="button" onclick="aplicarFiltroTipo('Despesa Cartão')" id="btn-filtro-cartao" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Cartão</button>
           <button type="button" onclick="aplicarFiltroTipo('Débito/Pix')" id="btn-filtro-debito" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Débito / Pix</button>
           <button type="button" onclick="aplicarFiltroTipo('Receita')" id="btn-filtro-receita" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Receitas</button>
+          <button type="button" onclick="aplicarFiltroTipo('compartilhadas')" id="btn-filtro-compartilhadas" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-sky-400/80 hover:text-sky-300 flex items-center gap-1">
+            <i data-lucide="users" class="w-3.5 h-3.5"></i> Compartilhadas
+          </button>
           <button type="button" onclick="aplicarFiltroTipo('pendentes')" id="btn-filtro-pendentes" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-amber-400/80 hover:text-amber-300 flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Pendentes
           </button>
@@ -345,7 +348,7 @@
 
         <div class="space-y-2.5">
           <div>
-            <label class="block text-[11px] text-slate-400 mb-1">E-mail (Não editável)</label>
+            <label class="block text-[11px] text-slate-400 mb-1">E-mail (Identificador no App)</label>
             <input type="email" id="config-user-email-input" disabled class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono cursor-not-allowed">
           </div>
 
@@ -561,7 +564,7 @@
     </div>
   </div>
 
-  <!-- Modal Nova Transação -->
+  <!-- Modal Nova Transação (Com Atribuição de Usuário / Compra Compartilhada) -->
   <div id="modal-transacao" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
@@ -589,7 +592,24 @@
 
         <div>
           <label class="block text-xs text-slate-400 mb-1">Descrição</label>
-          <input type="text" id="tx-descricao" required placeholder="Ex: Salário da Empresa, Mercado, Combustível" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
+          <input type="text" id="tx-descricao" required placeholder="Ex: Farmácia, Roupas, Mercado" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
+        </div>
+
+        <!-- Seletor de Atribuição (Quem realizou a compra no cartão) -->
+        <div id="container-atribuicao" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-sky-400"></i> Responsável pelo Gasto
+            </label>
+            <span class="text-[10px] text-slate-500">Aparecerá no painel dela</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <select id="tx-atribuicao-predefinida" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="">Gasto meu (Pessoal)</option>
+              <option value="outro">Compartilhar com outra conta...</option>
+            </select>
+            <input type="email" id="tx-atribuicao-email" placeholder="E-mail da conta (ex: maria@...)" class="hidden bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -655,6 +675,9 @@
     const NUMERO_WHATSAPP_TESTES = '5575988660943';
 
     const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let usuarioLogadoId = null;
+    let usuarioLogadoEmail = null;
 
     let modoAuth = 'login';
     let mesAtual = new Date().toISOString().slice(0, 7);
@@ -733,6 +756,9 @@
     const txParcelas = document.getElementById('tx-parcelas');
     const containerParcelas = document.getElementById('container-parcelamento');
     const previaParcelamento = document.getElementById('previa-parcelamento');
+    const containerAtribuicao = document.getElementById('container-atribuicao');
+    const txAtribuicaoPredefinida = document.getElementById('tx-atribuicao-predefinida');
+    const txAtribuicaoEmail = document.getElementById('tx-atribuicao-email');
 
     // Modal Nova Conta
     const btnAbrirModalConta = document.getElementById('btn-abrir-modal-conta');
@@ -836,6 +862,21 @@
     aplicarMascaraTelefone(configTelefoneInput);
 
     // -------------------------------------------------------------
+    // ATRIBUIÇÃO DE COMPRAS NO CARTÃO
+    // -------------------------------------------------------------
+    if (txAtribuicaoPredefinida) {
+      txAtribuicaoPredefinida.addEventListener('change', () => {
+        if (txAtribuicaoPredefinida.value === 'outro') {
+          txAtribuicaoEmail.classList.remove('hidden');
+          txAtribuicaoEmail.focus();
+        } else {
+          txAtribuicaoEmail.classList.add('hidden');
+          txAtribuicaoEmail.value = '';
+        }
+      });
+    }
+
+    // -------------------------------------------------------------
     // SISTEMA DE TEMAS (Interface Web & Configurações)
     // -------------------------------------------------------------
     const mapaCoresTema = {
@@ -847,24 +888,24 @@
 
     const mapaCoresPDF = {
       esmeralda: {
-        cabecalho: [6, 78, 59],      // emerald-900
-        alternada: [240, 253, 244],  // emerald-50
-        destaque: [16, 185, 129]     // emerald-500
+        cabecalho: [6, 78, 59],
+        alternada: [240, 253, 244],
+        destaque: [16, 185, 129]
       },
       azul: {
-        cabecalho: [12, 74, 110],    // sky-900
-        alternada: [240, 249, 255],  // sky-50
-        destaque: [14, 165, 233]     // sky-500
+        cabecalho: [12, 74, 110],
+        alternada: [240, 249, 255],
+        destaque: [14, 165, 233]
       },
       roxo: {
-        cabecalho: [76, 29, 149],    // violet-900
-        alternada: [245, 243, 255],  // violet-50
-        destaque: [139, 92, 246]     // violet-500
+        cabecalho: [76, 29, 149],
+        alternada: [245, 243, 255],
+        destaque: [139, 92, 246]
       },
       ambar: {
-        cabecalho: [120, 53, 15],    // amber-900
-        alternada: [254, 252, 232],  // amber-50
-        destaque: [245, 158, 11]     // amber-500
+        cabecalho: [120, 53, 15],
+        alternada: [254, 252, 232],
+        destaque: [245, 158, 11]
       }
     };
 
@@ -909,6 +950,8 @@
       return transacoesCarregadas.filter(t => {
         if (filtroTipoAtivo === 'pendentes') {
           if (t.status === 'Pago') return false;
+        } else if (filtroTipoAtivo === 'compartilhadas') {
+          if (!t.atribuido_para_email) return false;
         } else if (filtroTipoAtivo !== 'todos') {
           if (t.tipo !== filtroTipoAtivo) return false;
         }
@@ -917,7 +960,8 @@
           const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
           const nomeCategoria = catObj ? catObj.nome.toLowerCase() : '';
           const descricao = (t.descricao || '').toLowerCase();
-          return descricao.includes(termoBuscaAtivo) || nomeCategoria.includes(termoBuscaAtivo);
+          const atribuido = (t.atribuido_para_email || '').toLowerCase();
+          return descricao.includes(termoBuscaAtivo) || nomeCategoria.includes(termoBuscaAtivo) || atribuido.includes(termoBuscaAtivo);
         }
 
         return true;
@@ -950,6 +994,7 @@
           Parcela: t.parcela_total > 1 ? `${t.parcela_atual}/${t.parcela_total}` : '1/1',
           Valor: Number(t.valor) || 0,
           Status: statusTexto,
+          Atribuido: t.atribuido_para_email || 'Pessoal',
           Competencia: t.mes_competencia || mesAtual
         };
       });
@@ -966,7 +1011,7 @@
     };
 
     function exportarCSV(dados, nomeArquivo) {
-      const cabecalhos = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parcela', 'Valor (R$)', 'Status'];
+      const cabecalhos = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parcela', 'Valor (R$)', 'Status', 'Responsável'];
       let csvContent = '\uFEFF' + cabecalhos.join(';') + '\n';
 
       dados.forEach(row => {
@@ -978,7 +1023,8 @@
           `"${(row.Tipo || '').replace(/"/g, '""')}"`,
           row.Parcela,
           row.Valor.toFixed(2).replace('.', ','),
-          row.Status
+          row.Status,
+          `"${row.Atribuido}"`
         ];
         csvContent += linha.join(';') + '\n';
       });
@@ -1009,14 +1055,15 @@
         'Tipo': row.Tipo,
         'Parcela': row.Parcela,
         'Valor (R$)': row.Valor,
-        'Status': row.Status
+        'Status': row.Status,
+        'Responsável': row.Atribuido
       }));
 
       const ws = XLSX.utils.json_to_sheet(linhasFormatadas);
 
       ws['!cols'] = [
         { wch: 12 }, { wch: 32 }, { wch: 22 }, { wch: 22 },
-        { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 14 }
+        { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 24 }
       ];
 
       const wb = XLSX.utils.book_new();
@@ -1194,6 +1241,9 @@
           dashboardScreen.classList.remove('hidden');
           lucide.createIcons();
 
+          usuarioLogadoId = session.user.id;
+          usuarioLogadoEmail = session.user.email;
+
           // Limpa qualquer injeção indevida de credenciais pelo autofill do navegador
           if (filtroBusca) {
             filtroBusca.value = '';
@@ -1208,6 +1258,8 @@
 
           carregarDadosApp();
         } else {
+          usuarioLogadoId = null;
+          usuarioLogadoEmail = null;
           dashboardScreen.classList.add('hidden');
           authScreen.classList.remove('hidden');
           lucide.createIcons();
@@ -1274,7 +1326,7 @@
         btnSalvarPerfil.innerText = 'Salvando...';
 
         try {
-          const { data, error } = await client.auth.updateUser({
+          const { error } = await client.auth.updateUser({
             data: {
               nome: novoNome,
               telefone: novoTelefone
@@ -1288,7 +1340,6 @@
           msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
           msgPerfil.classList.remove('hidden');
 
-          // Atualiza a saudação na barra superior imediatamente
           if (labelSaudacaoUsuario) {
             labelSaudacaoUsuario.textContent = `Olá, ${novoNome}!`;
           }
@@ -1577,6 +1628,8 @@
         document.getElementById('btn-filtro-debito').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
       } else if (tipo === 'Receita') {
         document.getElementById('btn-filtro-receita').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
+      } else if (tipo === 'compartilhadas') {
+        document.getElementById('btn-filtro-compartilhadas').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-sky-500/20 text-sky-300 flex items-center gap-1';
       } else if (tipo === 'pendentes') {
         document.getElementById('btn-filtro-pendentes').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-amber-500/20 text-amber-300 flex items-center gap-1';
       }
@@ -1601,8 +1654,8 @@
 
       if (!data || data.length === 0) {
         const { data: novas } = await client.from('contas').insert([
-          { nome: 'Conta Corrente', tipo: 'Corrente', saldo_inicial: 0 },
-          { nome: 'Cartão Principal', tipo: 'Cartão de Crédito', dia_fechamento: 30, dia_vencimento: 5 }
+          { nome: 'Conta Corrente', tipo: 'Corrente', saldo_inicial: 0, user_id: usuarioLogadoId },
+          { nome: 'Cartão Principal', tipo: 'Cartão de Crédito', dia_fechamento: 30, dia_vencimento: 5, user_id: usuarioLogadoId }
         ]).select();
         contasUsuario = novas || [];
       } else {
@@ -1761,10 +1814,16 @@
         if (mesBase > 12) { mesBase = 1; anoBase++; }
       }
 
-      const { data } = await client
+      let query = client
         .from('transacoes')
-        .select('valor, tipo, mes_competencia')
+        .select('valor, tipo, mes_competencia, user_id, atribuido_para_email')
         .in('mes_competencia', mesesChaves);
+
+      if (usuarioLogadoId && usuarioLogadoEmail) {
+        query = query.or(`user_id.eq.${usuarioLogadoId},atribuido_para_email.eq.${usuarioLogadoEmail}`);
+      }
+
+      const { data } = await query;
 
       const receitasPorMes = [0, 0, 0, 0, 0, 0];
       const saidasPorMes = [0, 0, 0, 0, 0, 0];
@@ -1831,12 +1890,18 @@
       });
     }
 
+    // Carrega tanto transações próprias quanto atribuídas ao e-mail logado
     async function carregarTransacoes() {
-      const { data } = await client
+      let query = client
         .from('transacoes')
         .select('*')
-        .eq('mes_competencia', mesAtual)
-        .order('data_movimento', { ascending: false });
+        .eq('mes_competencia', mesAtual);
+
+      if (usuarioLogadoId && usuarioLogadoEmail) {
+        query = query.or(`user_id.eq.${usuarioLogadoId},atribuido_para_email.eq.${usuarioLogadoEmail}`);
+      }
+
+      const { data } = await query.order('data_movimento', { ascending: false });
 
       transacoesCarregadas = data || [];
       renderizarTransacoes();
@@ -1847,7 +1912,7 @@
     }
 
     // -------------------------------------------------------------
-    // RENDERIZAÇÃO: FEED MOBILE & TABELA DESKTOP
+    // RENDERIZAÇÃO: FEED MOBILE & TABELA DESKTOP COM TRAVA DE EDIÇÃO
     // -------------------------------------------------------------
     function renderizarTransacoes() {
       const containerMobile = document.getElementById('lista-transacoes-mobile');
@@ -1857,6 +1922,8 @@
       let filtradas = transacoesCarregadas.filter(t => {
         if (filtroTipoAtivo === 'pendentes') {
           if (t.status === 'Pago') return false;
+        } else if (filtroTipoAtivo === 'compartilhadas') {
+          if (!t.atribuido_para_email) return false;
         } else if (filtroTipoAtivo !== 'todos') {
           if (t.tipo !== filtroTipoAtivo) return false;
         }
@@ -1865,7 +1932,8 @@
           const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
           const nomeCategoria = catObj ? catObj.nome.toLowerCase() : '';
           const descricao = (t.descricao || '').toLowerCase();
-          return descricao.includes(termoBuscaAtivo) || nomeCategoria.includes(termoBuscaAtivo);
+          const atribuido = (t.atribuido_para_email || '').toLowerCase();
+          return descricao.includes(termoBuscaAtivo) || nomeCategoria.includes(termoBuscaAtivo) || atribuido.includes(termoBuscaAtivo);
         }
 
         return true;
@@ -1893,6 +1961,17 @@
         const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
         const nomeCategoria = catObj ? catObj.nome : 'Geral';
 
+        // Verificação de Propriedade
+        const souDono = !t.user_id || (t.user_id === usuarioLogadoId);
+        const ehCompartilhadoComigo = t.atribuido_para_email && (t.atribuido_para_email === usuarioLogadoEmail) && !souDono;
+
+        let badgeCompartilhamento = '';
+        if (ehCompartilhadoComigo) {
+          badgeCompartilhamento = `<span class="bg-sky-500/15 border border-sky-500/30 text-sky-300 text-[10px] px-1.5 py-0.5 rounded font-medium flex items-center gap-1"><i data-lucide="lock" class="w-2.5 h-2.5"></i> No Cartão de ${t.criador_nome || 'Administrador'}</span>`;
+        } else if (t.atribuido_para_email) {
+          badgeCompartilhamento = `<span class="bg-slate-800 border border-slate-700 text-slate-300 text-[10px] px-1.5 py-0.5 rounded font-medium flex items-center gap-1"><i data-lucide="user" class="w-2.5 h-2.5"></i> Para: ${t.atribuido_para_email}</span>`;
+        }
+
         const textoStatus = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
         const corStatus = isLiquidado ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : (isReceita ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40');
         const iconeStatus = isLiquidado ? 'check-circle-2' : (isReceita ? 'arrow-down-left' : 'clock');
@@ -1906,6 +1985,7 @@
                 <div class="flex items-center gap-1.5 flex-wrap">
                   <h4 class="text-sm font-bold text-white">${t.descricao}</h4>
                   ${parcelaBadge}
+                  ${badgeCompartilhamento}
                 </div>
                 <div class="flex items-center gap-2 text-[11px] text-slate-400">
                   <span class="font-mono text-slate-500">${t.data_movimento.split('-').reverse().join('/')}</span>
@@ -1924,21 +2004,34 @@
             </div>
 
             <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
-              <button 
-                type="button" 
-                onclick="alternarStatus('${t.id}', '${t.status}')" 
-                class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition active:scale-95 ${corStatus}">
-                <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
-                ${textoStatus}
-              </button>
+              ${souDono ? `
+                <button 
+                  type="button" 
+                  onclick="alternarStatus('${t.id}', '${t.status}')" 
+                  class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition active:scale-95 ${corStatus}">
+                  <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
+                  ${textoStatus}
+                </button>
+              ` : `
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border opacity-80 cursor-default ${corStatus}">
+                  <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
+                  ${textoStatus} (Somente Leitura)
+                </span>
+              `}
               
-              <button 
-                type="button" 
-                onclick="deletarTransacao('${t.id}', ${agrupadorParam})" 
-                class="p-2 text-slate-500 hover:text-rose-400 transition" 
-                title="Excluir">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
+              ${souDono ? `
+                <button 
+                  type="button" 
+                  onclick="deletarTransacao('${t.id}', ${agrupadorParam})" 
+                  class="p-2 text-slate-500 hover:text-rose-400 transition" 
+                  title="Excluir">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              ` : `
+                <span class="p-2 text-slate-600" title="Gerenciado pelo dono do cartão">
+                  <i data-lucide="lock" class="w-4 h-4"></i>
+                </span>
+              `}
             </div>
           </div>
         `;
@@ -1957,6 +2050,17 @@
         const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
         const nomeCategoria = catObj ? catObj.nome : 'Sem Categoria';
 
+        // Verificação de Propriedade
+        const souDono = !t.user_id || (t.user_id === usuarioLogadoId);
+        const ehCompartilhadoComigo = t.atribuido_para_email && (t.atribuido_para_email === usuarioLogadoEmail) && !souDono;
+
+        let badgeCompartilhamento = '';
+        if (ehCompartilhadoComigo) {
+          badgeCompartilhamento = `<span class="ml-1.5 bg-sky-500/15 border border-sky-500/30 text-sky-300 text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1"><i data-lucide="lock" class="w-2.5 h-2.5"></i> ${t.criador_nome || 'Admin'}</span>`;
+        } else if (t.atribuido_para_email) {
+          badgeCompartilhamento = `<span class="ml-1.5 bg-slate-800 border border-slate-700 text-slate-400 text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1"><i data-lucide="user" class="w-2.5 h-2.5"></i> ${t.atribuido_para_email.split('@')[0]}</span>`;
+        }
+
         const textoStatus = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
         const corStatus = isLiquidado ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : (isReceita ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40');
         const iconeStatus = isLiquidado ? 'check-circle-2' : (isReceita ? 'arrow-down-left' : 'clock');
@@ -1966,7 +2070,10 @@
         return `
           <tr class="hover:bg-slate-800/20 transition group">
             <td class="py-2.5 font-mono text-slate-400">${t.data_movimento.split('-').reverse().join('/')}</td>
-            <td class="py-2.5 font-medium text-white">${t.descricao}</td>
+            <td class="py-2.5 font-medium text-white flex items-center">
+              ${t.descricao}
+              ${badgeCompartilhamento}
+            </td>
             <td class="py-2.5 text-slate-300">
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 text-[11px]">
                 <i data-lucide="${catObj ? catObj.icone : 'tag'}" class="w-3 h-3 text-sky-400"></i>
@@ -1978,18 +2085,31 @@
             <td class="py-2.5">${parcelaBadge}</td>
             <td class="py-2.5 text-right font-mono font-medium ${isReceita ? 'text-emerald-400' : 'text-slate-200'}">${isReceita ? '+' : '-'} ${valorFmt}</td>
             <td class="py-2.5 text-center">
-              <button 
-                type="button" 
-                onclick="alternarStatus('${t.id}', '${t.status}')" 
-                class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition active:scale-95 ${corStatus}">
-                <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
-                ${textoStatus}
-              </button>
+              ${souDono ? `
+                <button 
+                  type="button" 
+                  onclick="alternarStatus('${t.id}', '${t.status}')" 
+                  class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition active:scale-95 ${corStatus}">
+                  <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
+                  ${textoStatus}
+                </button>
+              ` : `
+                <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full border opacity-75 cursor-default ${corStatus}">
+                  <i data-lucide="lock" class="w-3 h-3"></i>
+                  ${textoStatus}
+                </span>
+              `}
             </td>
             <td class="py-2.5 text-center">
-              <button type="button" onclick="deletarTransacao('${t.id}', ${agrupadorParam})" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
+              ${souDono ? `
+                <button type="button" onclick="deletarTransacao('${t.id}', ${agrupadorParam})" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              ` : `
+                <span class="p-1 text-slate-600" title="Apenas o titular do cartão pode excluir">
+                  <i data-lucide="lock" class="w-3.5 h-3.5 inline"></i>
+                </span>
+              `}
             </td>
           </tr>
         `;
@@ -1998,8 +2118,14 @@
       lucide.createIcons();
     }
 
-    // Ações de Registro
+    // Ações de Registro (com proteção contra edição indevida)
     window.alternarStatus = async function(id, statusAtual) {
+      const transacao = transacoesCarregadas.find(t => t.id === id);
+      if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
+        alert('Apenas o responsável que lançou esta despesa pode alterar o status.');
+        return;
+      }
+
       executarFeedback('clique');
       const novoStatus = (statusAtual === 'Pago') ? 'Previsto' : 'Pago';
       const idx = transacoesCarregadas.findIndex(t => t.id === id);
@@ -2016,8 +2142,14 @@
       }
     };
 
-    // Exclusão inteligente com suporte a id_agrupador
+    // Exclusão inteligente com suporte a id_agrupador e validação de dono
     window.deletarTransacao = async function(id, idAgrupador) {
+      const transacao = transacoesCarregadas.find(t => t.id === id);
+      if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
+        alert('Apenas o responsável que lançou esta despesa pode excluí-la.');
+        return;
+      }
+
       executarFeedback('clique');
 
       if (idAgrupador && idAgrupador !== 'null' && idAgrupador !== 'undefined') {
@@ -2123,7 +2255,13 @@
       const icone = document.getElementById('categoria-icone').value;
 
       try {
-        const { error } = await client.from('categorias').insert([{ nome, tipo, teto_mensal: tetoMensal, icone }]);
+        const { error } = await client.from('categorias').insert([{ 
+          nome, 
+          tipo, 
+          teto_mensal: tetoMensal, 
+          icone,
+          user_id: usuarioLogadoId 
+        }]);
         if (error) throw error;
         executarFeedback('sucesso');
         fecharModalCategoria();
@@ -2168,7 +2306,14 @@
       const saldoInicial = parseFloat(document.getElementById('conta-saldo-inicial').value) || 0.00;
 
       try {
-        const { error } = await client.from('contas').insert([{ nome, tipo, dia_fechamento: fechamento, dia_vencimento: vencimento, saldo_inicial: saldoInicial }]);
+        const { error } = await client.from('contas').insert([{ 
+          nome, 
+          tipo, 
+          dia_fechamento: fechamento, 
+          dia_vencimento: vencimento, 
+          saldo_inicial: saldoInicial,
+          user_id: usuarioLogadoId 
+        }]);
         if (error) throw error;
         executarFeedback('sucesso');
         fecharModalConta();
@@ -2195,6 +2340,7 @@
       formTransacao.reset();
       txData.value = new Date().toISOString().slice(0, 10);
       previaParcelamento.innerText = '';
+      txAtribuicaoEmail.classList.add('hidden');
     }
 
     btnFecharModal.addEventListener('click', fecharModal);
@@ -2212,8 +2358,13 @@
     txParcelas.addEventListener('change', calcularPrevia);
 
     function atualizarEstadoTipo() {
-      if (txTipo.value === 'Despesa Cartão') containerParcelas.classList.remove('hidden');
-      else containerParcelas.classList.add('hidden');
+      if (txTipo.value === 'Despesa Cartão') {
+        containerParcelas.classList.remove('hidden');
+        containerAtribuicao.classList.remove('hidden');
+      } else {
+        containerParcelas.classList.add('hidden');
+        containerAtribuicao.classList.add('hidden');
+      }
     }
 
     function calcularCompetencia(dataIso, contaId) {
@@ -2272,6 +2423,20 @@
         const contaId = txConta.value;
         const totalParcelas = (tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1;
 
+        // Recupera dados do responsável atribuído
+        let emailAtribuido = null;
+        if (tipo === 'Despesa Cartão') {
+          if (txAtribuicaoPredefinida.value === 'outro') {
+            emailAtribuido = txAtribuicaoEmail.value.trim().toLowerCase() || null;
+          } else if (txAtribuicaoPredefinida.value) {
+            emailAtribuido = txAtribuicaoPredefinida.value.trim().toLowerCase();
+          }
+        }
+
+        // Recupera nome do criador para identificação no painel da outra pessoa
+        const { data: { user } } = await client.auth.getUser();
+        const criadorNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Admin';
+
         const compInicial = calcularCompetencia(dataMovimento, contaId);
         let ano = Number(compInicial.ano);
         let mes = Number(compInicial.mes);
@@ -2294,7 +2459,10 @@
             categoria_id: categoriaId,
             parcela_atual: i,
             parcela_total: totalParcelas,
-            status: 'Previsto'
+            status: 'Previsto',
+            user_id: usuarioLogadoId,
+            atribuido_para_email: emailAtribuido,
+            criador_nome: criadorNome
           });
 
           mes++;
