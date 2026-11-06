@@ -332,20 +332,35 @@
         </button>
       </div>
 
-      <!-- Bloco 1: Conta & Perfil -->
-      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Sessão Conectada</span>
+      <!-- Bloco 1: Conta & Perfil Editável com updateUser -->
+      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
         <div class="flex items-center justify-between">
-          <div class="truncate mr-2">
-            <p id="config-user-nome" class="text-xs font-bold text-white truncate"></p>
-            <p id="config-user-email" class="text-[11px] font-mono text-slate-300 truncate">carregando...</p>
-            <p id="config-user-telefone" class="text-[10px] text-slate-400 font-mono"></p>
-            <span class="text-[10px] text-emerald-400 flex items-center gap-1 mt-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Conectado via Supabase
-            </span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Meu Perfil</span>
+          <button type="button" id="config-btn-logout" class="px-2 py-1 rounded-lg text-[11px] font-medium bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition flex items-center gap-1">
+            <i data-lucide="log-out" class="w-3 h-3"></i> Sair
+          </button>
+        </div>
+
+        <div id="msg-perfil" class="hidden text-[11px] p-2 rounded-lg"></div>
+
+        <div class="space-y-2.5">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">E-mail (Não editável)</label>
+            <input type="email" id="config-user-email-input" disabled class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono cursor-not-allowed">
           </div>
-          <button type="button" id="config-btn-logout" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition flex items-center gap-1">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sair
+
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Nome Completo</label>
+            <input type="text" id="config-nome-input" placeholder="Seu nome" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200 placeholder-slate-600">
+          </div>
+
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">WhatsApp / Telefone</label>
+            <input type="tel" id="config-telefone-input" maxlength="15" placeholder="(75) 99999-9999" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200 placeholder-slate-600">
+          </div>
+
+          <button type="button" id="btn-salvar-perfil" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold rounded-xl text-xs shadow-md shadow-emerald-500/10 flex items-center justify-center gap-1.5">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i> Salvar Dados do Perfil
           </button>
         </div>
       </div>
@@ -681,16 +696,18 @@
     const btnDropdownExportar = document.getElementById('btn-dropdown-exportar');
     const menuDropdownExportar = document.getElementById('menu-dropdown-exportar');
     
-    // Modal Configurações
+    // Modal Configurações & Edição de Perfil
     const modalConfig = document.getElementById('modal-configuracoes');
     const btnAbrirConfig = document.getElementById('btn-abrir-config');
     const btnFecharConfig = document.getElementById('btn-fechar-config');
     const configBtnLogout = document.getElementById('config-btn-logout');
     const toggleSomSwitch = document.getElementById('toggle-som-switch');
     const toggleSomKnob = document.getElementById('toggle-som-knob');
-    const configUserEmail = document.getElementById('config-user-email');
-    const configUserNome = document.getElementById('config-user-nome');
-    const configUserTelefone = document.getElementById('config-user-telefone');
+    const configUserEmailInput = document.getElementById('config-user-email-input');
+    const configNomeInput = document.getElementById('config-nome-input');
+    const configTelefoneInput = document.getElementById('config-telefone-input');
+    const btnSalvarPerfil = document.getElementById('btn-salvar-perfil');
+    const msgPerfil = document.getElementById('msg-perfil');
     const btnFeedbackWpp = document.getElementById('btn-enviar-feedback-wpp');
 
     // Seção de Alterar Senha
@@ -798,19 +815,25 @@
     // -------------------------------------------------------------
     // MÁSCARA AUTOMÁTICA DE TELEFONE (DDD + 9 DÍGITOS)
     // -------------------------------------------------------------
-    authTelefone.addEventListener('input', (e) => {
-      let valor = e.target.value.replace(/\D/g, '');
-      if (valor.length > 11) valor = valor.slice(0, 11);
+    function aplicarMascaraTelefone(inputEl) {
+      if (!inputEl) return;
+      inputEl.addEventListener('input', (e) => {
+        let valor = e.target.value.replace(/\D/g, '');
+        if (valor.length > 11) valor = valor.slice(0, 11);
 
-      if (valor.length > 6) {
-        valor = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
-      } else if (valor.length > 2) {
-        valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-      } else if (valor.length > 0) {
-        valor = `(${valor}`;
-      }
-      e.target.value = valor;
-    });
+        if (valor.length > 6) {
+          valor = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
+        } else if (valor.length > 2) {
+          valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
+        } else if (valor.length > 0) {
+          valor = `(${valor}`;
+        }
+        e.target.value = valor;
+      });
+    }
+
+    aplicarMascaraTelefone(authTelefone);
+    aplicarMascaraTelefone(configTelefoneInput);
 
     // -------------------------------------------------------------
     // SISTEMA DE TEMAS (Interface Web & Configurações)
@@ -1198,21 +1221,23 @@
     });
 
     // -------------------------------------------------------------
-    // CONFIGURAÇÕES MODAL EVENTOS & ALTERAR SENHA
+    // CONFIGURAÇÕES MODAL EVENTOS & EDIÇÃO DE PERFIL COM UPDATEUSER
     // -------------------------------------------------------------
     btnAbrirConfig.addEventListener('click', async () => {
       executarFeedback('clique');
       modalConfig.classList.remove('hidden');
 
+      if (msgPerfil) msgPerfil.classList.add('hidden');
+
       const { data: { user } } = await client.auth.getUser();
       if (user) {
         const meta = user.user_metadata || {};
-        if (configUserNome) configUserNome.textContent = meta.nome || 'Usuário Beta';
-        if (configUserEmail) configUserEmail.textContent = user.email;
-        if (configUserTelefone) configUserTelefone.textContent = meta.telefone ? `Tel: ${meta.telefone}` : '';
+        if (configUserEmailInput) configUserEmailInput.value = user.email || '';
+        if (configNomeInput) configNomeInput.value = meta.nome || '';
+        if (configTelefoneInput) configTelefoneInput.value = meta.telefone || '';
       }
+
       atualizarSwitchVisual();
-      
       containerFormSenha.classList.add('hidden');
       iconeSetaSenha.classList.remove('rotate-180');
       msgSenha.classList.add('hidden');
@@ -1228,6 +1253,60 @@
       modalConfig.classList.add('hidden');
       await client.auth.signOut();
     });
+
+    // Salvamento de Nome e Telefone via client.auth.updateUser
+    if (btnSalvarPerfil) {
+      btnSalvarPerfil.addEventListener('click', async () => {
+        executarFeedback('clique');
+        msgPerfil.classList.add('hidden');
+
+        const novoNome = configNomeInput.value.trim();
+        const novoTelefone = configTelefoneInput.value.trim();
+
+        if (!novoNome) {
+          msgPerfil.textContent = 'Por favor, informe seu nome.';
+          msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300';
+          msgPerfil.classList.remove('hidden');
+          return;
+        }
+
+        btnSalvarPerfil.disabled = true;
+        btnSalvarPerfil.innerText = 'Salvando...';
+
+        try {
+          const { data, error } = await client.auth.updateUser({
+            data: {
+              nome: novoNome,
+              telefone: novoTelefone
+            }
+          });
+
+          if (error) throw error;
+
+          executarFeedback('sucesso');
+          msgPerfil.textContent = 'Perfil atualizado com sucesso!';
+          msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
+          msgPerfil.classList.remove('hidden');
+
+          // Atualiza a saudação na barra superior imediatamente
+          if (labelSaudacaoUsuario) {
+            labelSaudacaoUsuario.textContent = `Olá, ${novoNome}!`;
+          }
+
+          setTimeout(() => {
+            msgPerfil.classList.add('hidden');
+          }, 3000);
+        } catch (err) {
+          msgPerfil.textContent = err.message || 'Erro ao atualizar dados.';
+          msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300';
+          msgPerfil.classList.remove('hidden');
+        } finally {
+          btnSalvarPerfil.disabled = false;
+          btnSalvarPerfil.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> Salvar Dados do Perfil';
+          lucide.createIcons();
+        }
+      });
+    }
 
     toggleSomSwitch.addEventListener('click', () => {
       configFeedbackAtivo = !configFeedbackAtivo;
