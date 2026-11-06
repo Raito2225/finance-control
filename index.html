@@ -229,10 +229,10 @@
         <div id="grid-cartoes-contas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- Teto por Categoria -->
+      <!-- Teto por Categoria (Exibe apenas despesas com teto definido) -->
       <div class="space-y-2.5">
         <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-sky-400"></i> Limite por Categoria
+          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-sky-400"></i> Limite por Categoria (Orçamento)
         </h2>
         <div id="grid-categorias-orcamento" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
@@ -428,7 +428,7 @@
     </div>
   </div>
 
-  <!-- Modal Nova Categoria -->
+  <!-- Modal Nova Categoria (Com separação entre Despesa e Receita) -->
   <div id="modal-categoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
@@ -442,16 +442,24 @@
 
       <form id="form-categoria" class="space-y-3.5">
         <div>
+          <label class="block text-xs text-slate-400 mb-1">Finalidade da Categoria</label>
+          <select id="categoria-tipo-fluxo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
+            <option value="Despesa">Despesa (Gasto com Teto Orçamentário)</option>
+            <option value="Receita">Receita / Ganho (Entrada de Dinheiro)</option>
+          </select>
+        </div>
+
+        <div>
           <label class="block text-xs text-slate-400 mb-1">Nome da Categoria</label>
-          <input type="text" id="categoria-nome" required placeholder="Ex: Mercado, Assinaturas" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
+          <input type="text" id="categoria-nome" required placeholder="Ex: Mercado, Salário, Freelance" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <div>
+          <div id="campo-container-teto">
             <label class="block text-xs text-slate-400 mb-1">Teto Mensal (R$)</label>
             <input type="number" step="0.01" min="0" id="categoria-teto" placeholder="0,00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
           </div>
-          <div>
+          <div id="campo-container-icone" class="col-span-1">
             <label class="block text-xs text-slate-400 mb-1">Ícone</label>
             <select id="categoria-icone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
               <option value="shopping-cart">Mercado</option>
@@ -461,6 +469,9 @@
               <option value="tv">Lazer / Streaming</option>
               <option value="activity">Saúde</option>
               <option value="book-open">Educação</option>
+              <option value="wallet">Salário / Carteira</option>
+              <option value="trending-up">Renda Extra / Vendas</option>
+              <option value="piggy-bank">Investimentos</option>
               <option value="tag">Geral</option>
             </select>
           </div>
@@ -539,7 +550,7 @@
       <form id="form-transacao" class="space-y-3.5">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Tipo</label>
+            <label class="block text-xs text-slate-400 mb-1">Tipo de Lançamento</label>
             <select id="tx-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
               <option value="Despesa Cartão">Cartão de Crédito</option>
               <option value="Débito/Pix">Débito / Pix / Boleto</option>
@@ -554,12 +565,12 @@
 
         <div>
           <label class="block text-xs text-slate-400 mb-1">Descrição</label>
-          <input type="text" id="tx-descricao" required placeholder="Ex: Supermercado, Aluguel" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
+          <input type="text" id="tx-descricao" required placeholder="Ex: Salário da Empresa, Mercado, Combustível" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs text-slate-400 mb-1">Categoria</label>
+            <label class="block text-xs text-slate-400 mb-1" id="label-tx-categoria">Categoria</label>
             <select id="tx-categoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200"></select>
           </div>
           <div>
@@ -712,6 +723,10 @@
     const btnCancelarModalCategoria = document.getElementById('btn-cancelar-modal-categoria');
     const modalCategoria = document.getElementById('modal-categoria');
     const formCategoria = document.getElementById('form-categoria');
+    const categoriaTipoFluxo = document.getElementById('categoria-tipo-fluxo');
+    const campoContainerTeto = document.getElementById('campo-container-teto');
+    const campoContainerIcone = document.getElementById('campo-container-icone');
+    const categoriaTeto = document.getElementById('categoria-teto');
 
     // -------------------------------------------------------------
     // MOTOR DE ÁUDIO & FEEDBACK TÁTIL (Web Audio API + Vibration API)
@@ -1351,6 +1366,7 @@
         executarFeedback('clique');
         modalTransacao.classList.remove('hidden');
         atualizarEstadoTipo();
+        atualizarOpcoesCategoriasNoModal();
         calcularPrevia();
       });
     }
@@ -1509,11 +1525,16 @@
 
       if (!data || data.length === 0) {
         const categoriasPadrao = [
-          { nome: 'Alimentação', icone: 'utensils', teto_mensal: 1200.00 },
-          { nome: 'Moradia & Contas', icone: 'home', teto_mensal: 1500.00 },
-          { nome: 'Transporte', icone: 'car', teto_mensal: 400.00 },
-          { nome: 'Lazer & Assinaturas', icone: 'tv', teto_mensal: 350.00 },
-          { nome: 'Saúde', icone: 'activity', teto_mensal: 300.00 }
+          // Categorias de Despesas (Possuem teto e controlam limite)
+          { nome: 'Alimentação', icone: 'utensils', teto_mensal: 1200.00, tipo: 'Despesa' },
+          { nome: 'Moradia & Contas', icone: 'home', teto_mensal: 1500.00, tipo: 'Despesa' },
+          { nome: 'Transporte', icone: 'car', teto_mensal: 400.00, tipo: 'Despesa' },
+          { nome: 'Lazer & Assinaturas', icone: 'tv', teto_mensal: 350.00, tipo: 'Despesa' },
+          { nome: 'Saúde', icone: 'activity', teto_mensal: 300.00, tipo: 'Despesa' },
+          // Categorias de Receitas (Fontes de ganho sem teto)
+          { nome: 'Salário / Remuneração', icone: 'wallet', teto_mensal: null, tipo: 'Receita' },
+          { nome: 'Renda Extra / Vendas', icone: 'trending-up', teto_mensal: null, tipo: 'Receita' },
+          { nome: 'Rendimentos & Investimentos', icone: 'piggy-bank', teto_mensal: null, tipo: 'Receita' }
         ];
         const { data: novas } = await client.from('categorias').insert(categoriasPadrao).select();
         categoriasUsuario = novas || [];
@@ -1521,8 +1542,27 @@
         categoriasUsuario = data;
       }
 
-      txCategoria.innerHTML = categoriasUsuario.map(cat => `<option value="${cat.id}">${cat.nome}</option>`).join('');
+      atualizarOpcoesCategoriasNoModal();
       renderizarGridCategorias();
+    }
+
+    // Filtra no seletor de categorias conforme o tipo (Receita vs Despesa)
+    function atualizarOpcoesCategoriasNoModal() {
+      const tipoSelecionado = txTipo.value;
+      const isReceita = tipoSelecionado === 'Receita';
+
+      const compativeis = categoriasUsuario.filter(cat => {
+        const nomeLower = (cat.nome || '').toLowerCase();
+        const tipoCat = cat.tipo || (nomeLower.includes('salário') || nomeLower.includes('renda') || nomeLower.includes('investimento') ? 'Receita' : 'Despesa');
+        
+        return isReceita ? (tipoCat === 'Receita') : (tipoCat === 'Despesa');
+      });
+
+      if (compativeis.length === 0) {
+        txCategoria.innerHTML = `<option value="">Nenhuma categoria de ${isReceita ? 'receita' : 'despesa'} encontrada</option>`;
+      } else {
+        txCategoria.innerHTML = compativeis.map(cat => `<option value="${cat.id}">${cat.nome}</option>`).join('');
+      }
     }
 
     function renderizarGridContas() {
@@ -1564,18 +1604,29 @@
       const container = document.getElementById('grid-categorias-orcamento');
       if (!container) return;
 
-      container.innerHTML = categoriasUsuario.map(cat => {
+      // Filtra apenas categorias de despesa que tenham teto configurado
+      const categoriasOrcamento = categoriasUsuario.filter(cat => {
+        const teto = Number(cat.teto_mensal) || 0;
+        const nomeLower = (cat.nome || '').toLowerCase();
+        const isReceita = (cat.tipo === 'Receita') || nomeLower.includes('salário') || nomeLower.includes('renda') || nomeLower.includes('investimento');
+        return !isReceita && teto > 0;
+      });
+
+      if (categoriasOrcamento.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 py-3 col-span-full">Nenhum limite de gastos estipulado para as categorias.</p>`;
+        return;
+      }
+
+      container.innerHTML = categoriasOrcamento.map(cat => {
         let gastoTotal = 0;
         transacoesCarregadas.forEach(t => {
           if (t.categoria_id === cat.id && t.tipo !== 'Receita') gastoTotal += Number(t.valor);
         });
 
         const teto = Number(cat.teto_mensal) || 0;
-        const temTeto = teto > 0;
-        const percentual = temTeto ? Math.min(Math.round((gastoTotal / teto) * 100), 100) : 0;
-        const estourou = temTeto && (gastoTotal > teto);
-
-        let corBarra = estourou ? 'bg-rose-500' : (percentual >= 75 ? 'bg-amber-500' : 'bg-emerald-500');
+        const percentual = Math.min(Math.round((gastoTotal / teto) * 100), 100);
+        const estourou = gastoTotal > teto;
+        const corBarra = estourou ? 'bg-rose-500' : (percentual >= 75 ? 'bg-amber-500' : 'bg-emerald-500');
 
         return `
           <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
@@ -1588,15 +1639,13 @@
                 ${gastoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </span>
             </div>
-            ${temTeto ? `
-              <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
-                <div class="${corBarra} h-full transition-all duration-300" style="width: ${percentual}%"></div>
-              </div>
-              <div class="flex justify-between text-[10px] text-slate-500">
-                <span>Meta: ${teto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                <span class="${estourou ? 'text-rose-400 font-semibold' : ''}">${percentual}%</span>
-              </div>
-            ` : ''}
+            <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+              <div class="${corBarra} h-full transition-all duration-300" style="width: ${percentual}%"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-500">
+              <span>Meta: ${teto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              <span class="${estourou ? 'text-rose-400 font-semibold' : ''}">${percentual}%</span>
+            </div>
           </div>
         `;
       }).join('');
@@ -1901,17 +1950,34 @@
     // -------------------------------------------------------------
     // MODAIS DE SUBMISSÃO
     // -------------------------------------------------------------
-    // Modal Categoria
+    // Modal Categoria (Alternância de Teto para Receita / Despesa)
     btnAbrirModalCategoria.addEventListener('click', () => {
       executarFeedback('clique');
       modalCategoria.classList.remove('hidden');
+      atualizarVisibilidadeTetoCategoria();
     });
+
     function fecharModalCategoria() {
       modalCategoria.classList.add('hidden');
       formCategoria.reset();
+      atualizarVisibilidadeTetoCategoria();
     }
+
     btnFecharModalCategoria.addEventListener('click', fecharModalCategoria);
     btnCancelarModalCategoria.addEventListener('click', fecharModalCategoria);
+
+    categoriaTipoFluxo.addEventListener('change', atualizarVisibilidadeTetoCategoria);
+
+    function atualizarVisibilidadeTetoCategoria() {
+      if (categoriaTipoFluxo.value === 'Receita') {
+        campoContainerTeto.classList.add('hidden');
+        campoContainerIcone.className = 'col-span-2';
+        categoriaTeto.value = '';
+      } else {
+        campoContainerTeto.classList.remove('hidden');
+        campoContainerIcone.className = 'col-span-1';
+      }
+    }
 
     formCategoria.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1919,12 +1985,13 @@
       btn.disabled = true;
       btn.innerText = 'Salvando...';
 
-      const nome = document.getElementById('categoria-nome').value;
-      const tetoMensal = parseFloat(document.getElementById('categoria-teto').value) || null;
+      const nome = document.getElementById('categoria-nome').value.trim();
+      const tipo = categoriaTipoFluxo.value;
+      const tetoMensal = (tipo === 'Despesa') ? (parseFloat(categoriaTeto.value) || null) : null;
       const icone = document.getElementById('categoria-icone').value;
 
       try {
-        const { error } = await client.from('categorias').insert([{ nome, teto_mensal: tetoMensal, icone }]);
+        const { error } = await client.from('categorias').insert([{ nome, tipo, teto_mensal: tetoMensal, icone }]);
         if (error) throw error;
         executarFeedback('sucesso');
         fecharModalCategoria();
@@ -1987,6 +2054,7 @@
       executarFeedback('clique');
       modalTransacao.classList.remove('hidden');
       atualizarEstadoTipo();
+      atualizarOpcoesCategoriasNoModal();
       calcularPrevia();
     });
 
@@ -2002,6 +2070,7 @@
 
     txTipo.addEventListener('change', () => {
       atualizarEstadoTipo();
+      atualizarOpcoesCategoriasNoModal();
       calcularPrevia();
     });
 
