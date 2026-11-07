@@ -186,10 +186,15 @@
     <!-- Conteúdo Principal -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5 pb-24 sm:pb-6">
       
+      <!-- Seletor de Visão / Abas de Painel (Pessoal vs Esposa vs Sogra vs Geral) -->
+      <div id="container-seletor-visao" class="hidden flex items-center gap-2 overflow-x-auto pb-1">
+        <!-- Preenchido dinamicamente pelo JS -->
+      </div>
+
       <!-- Indicadores / Cards de Topo -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <span class="text-[11px] font-medium text-slate-400 block truncate">Saldo do Mês</span>
+          <span class="text-[11px] font-medium text-slate-400 block truncate" id="label-card-saldo">Saldo do Mês</span>
           <div id="card-saldo" class="text-base sm:text-xl font-bold text-white mt-0.5 truncate">R$ 0,00</div>
         </div>
         <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
@@ -693,6 +698,8 @@
     let contasUsuario = [];
     let categoriasUsuario = [];
     let transacoesCarregadas = [];
+    let transacoesVisaoAtual = [];
+    let visaoAtiva = 'pessoal'; // 'pessoal' | 'geral' | '<email>'
     let meuGraficoProjecao = null;
     let filtroTipoAtivo = 'todos';
     let termoBuscaAtivo = '';
@@ -703,9 +710,7 @@
     try {
       configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
       temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
-    } catch (e) {
-      // Segue com os valores padrão caso o navegador bloqueie o armazenamento local
-    }
+    } catch (e) {}
 
     // Elementos DOM Autenticação & Cadastro
     const authScreen = document.getElementById('auth-screen');
@@ -729,6 +734,7 @@
     const filtroBusca = document.getElementById('filtro-busca');
     const contadorTransacoes = document.getElementById('contador-transacoes');
     const btnFabAdicionar = document.getElementById('btn-fab-adicionar');
+    const containerSeletorVisao = document.getElementById('container-seletor-visao');
 
     // Dropdown Exportação
     const btnDropdownExportar = document.getElementById('btn-dropdown-exportar');
@@ -892,6 +898,88 @@
     }
 
     // -------------------------------------------------------------
+    // SEPARAÇÃO DE PAINÉIS (PESSOAL, ESPOSA, SOGRA, GERAL)
+    // -------------------------------------------------------------
+    function aplicarFiltroVisao(lista) {
+      if (visaoAtiva === 'geral') {
+        return lista;
+      }
+      if (visaoAtiva === 'pessoal') {
+        return lista.filter(t => {
+          const souDono = !t.user_id || t.user_id === usuarioLogadoId;
+          // No Meu Painel: mostra meus gastos próprios (sem atribuição) OU o que alguém compartilhou comigo
+          return (souDono && !t.atribuido_para_email) || (!souDono && t.atribuido_para_email === usuarioLogadoEmail);
+        });
+      }
+      // Visão específica de um e-mail (ex: Esposa ou Sogra)
+      return lista.filter(t => t.atribuido_para_email === visaoAtiva);
+    }
+
+    function renderizarSeletorVisao() {
+      if (!containerSeletorVisao) return;
+
+      // Coleta todos os e-mails únicos atribuídos nas transações que eu criei
+      const emailsAtribuidos = [...new Set(
+        transacoesCarregadas
+          .filter(t => t.atribuido_para_email && (!t.user_id || t.user_id === usuarioLogadoId))
+          .map(t => t.atribuido_para_email)
+      )];
+
+      if (emailsAtribuidos.length === 0) {
+        containerSeletorVisao.classList.add('hidden');
+        if (visaoAtiva !== 'pessoal') visaoAtiva = 'pessoal';
+        return;
+      }
+
+      containerSeletorVisao.classList.remove('hidden');
+
+      let html = `
+        <button type="button" onclick="mudarVisaoPainel('pessoal')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 border ${visaoAtiva === 'pessoal' ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20' : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:bg-slate-800'}">
+          <i data-lucide="user" class="w-3.5 h-3.5"></i> Meu Painel
+        </button>
+      `;
+
+      emailsAtribuidos.forEach(email => {
+        const nomeCurto = email.split('@')[0];
+        const ativo = visaoAtiva === email;
+        html += `
+          <button type="button" onclick="mudarVisaoPainel('${email}')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 border ${ativo ? 'bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20' : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:bg-slate-800'}">
+            <i data-lucide="users" class="w-3.5 h-3.5"></i> ${nomeCurto}
+          </button>
+        `;
+      });
+
+      html += `
+        <button type="button" onclick="mudarVisaoPainel('geral')" class="px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 border ${visaoAtiva === 'geral' ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20' : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:bg-slate-800'}">
+          <i data-lucide="layers" class="w-3.5 h-3.5"></i> Visão Geral (Tudo)
+        </button>
+      `;
+
+      containerSeletorVisao.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    window.mudarVisaoPainel = async function(novaVisao) {
+      executarFeedback('clique');
+      visaoAtiva = novaVisao;
+      transacoesVisaoAtual = aplicarFiltroVisao(transacoesCarregadas);
+      
+      const labelSaldo = document.getElementById('label-card-saldo');
+      if (labelSaldo) {
+        if (visaoAtiva === 'pessoal') labelSaldo.innerText = 'Saldo do Mês';
+        else if (visaoAtiva === 'geral') labelSaldo.innerText = 'Saldo Geral';
+        else labelSaldo.innerText = `Saldo (${visaoAtiva.split('@')[0]})`;
+      }
+
+      renderizarSeletorVisao();
+      renderizarTransacoes();
+      atualizarTotais();
+      renderizarGridContas();
+      renderizarGridCategorias();
+      await carregarGraficoProjecao();
+    };
+
+    // -------------------------------------------------------------
     // SISTEMA DE TEMAS (Interface Web & Configurações)
     // -------------------------------------------------------------
     const mapaCoresTema = {
@@ -902,33 +990,15 @@
     };
 
     const mapaCoresPDF = {
-      esmeralda: {
-        cabecalho: [6, 78, 59],
-        alternada: [240, 253, 244],
-        destaque: [16, 185, 129]
-      },
-      azul: {
-        cabecalho: [12, 74, 110],
-        alternada: [240, 249, 255],
-        destaque: [14, 165, 233]
-      },
-      roxo: {
-        cabecalho: [76, 29, 149],
-        alternada: [245, 243, 255],
-        destaque: [139, 92, 246]
-      },
-      ambar: {
-        cabecalho: [120, 53, 15],
-        alternada: [254, 252, 232],
-        destaque: [245, 158, 11]
-      }
+      esmeralda: { cabecalho: [6, 78, 59], alternada: [240, 253, 244], destaque: [16, 185, 129] },
+      azul: { cabecalho: [12, 74, 110], alternada: [240, 249, 255], destaque: [14, 165, 233] },
+      roxo: { cabecalho: [76, 29, 149], alternada: [245, 243, 255], destaque: [139, 92, 246] },
+      ambar: { cabecalho: [120, 53, 15], alternada: [254, 252, 232], destaque: [245, 158, 11] }
     };
 
     window.definirTema = function(cor) {
       temaAtivo = cor;
-      try {
-        localStorage.setItem('fc_tema_app', cor);
-      } catch (e) {}
+      try { localStorage.setItem('fc_tema_app', cor); } catch (e) {}
       aplicarTemaNaInterface();
       executarFeedback('clique');
     };
@@ -964,7 +1034,7 @@
     // FUNÇÕES DE EXPORTAÇÃO (CSV, EXCEL / XLSX, PDF)
     // -------------------------------------------------------------
     function obterLinhasFiltradasParaExportacao() {
-      return transacoesCarregadas.filter(t => {
+      return transacoesVisaoAtual.filter(t => {
         if (filtroTipoAtivo === 'pendentes') {
           if (t.status === 'Pago') return false;
         } else if (filtroTipoAtivo === 'compartilhadas') {
@@ -1016,7 +1086,8 @@
         };
       });
 
-      const nomeBaseArquivo = `FinanceControl_${mesAtual}`;
+      const sufixoVisao = visaoAtiva === 'pessoal' ? '' : `_${visaoAtiva.split('@')[0]}`;
+      const nomeBaseArquivo = `FinanceControl_${mesAtual}${sufixoVisao}`;
 
       if (formato === 'csv') {
         exportarCSV(dadosMapeados, `${nomeBaseArquivo}.csv`);
@@ -1099,7 +1170,6 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-      // Badge Vetorial Nativo com Cores do Tema
       doc.setFillColor(temaConfig.cabecalho[0], temaConfig.cabecalho[1], temaConfig.cabecalho[2]);
       doc.roundedRect(14, 12, 10, 10, 2.5, 2.5, 'F');
 
@@ -1108,7 +1178,6 @@
       doc.setTextColor(255, 255, 255);
       doc.text('$', 19, 19, { align: 'center' });
 
-      // Título e Competência
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
       doc.setTextColor(15, 23, 42);
@@ -1117,14 +1186,12 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(100, 116, 139);
-      doc.text(`Relatório Financeiro  •  Competência: ${mesAtual}  •  Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 28, 22);
+      doc.text(`Relatório Financeiro (${visaoAtiva.toUpperCase()})  •  Competência: ${mesAtual}  •  Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 28, 22);
 
-      // Linha divisória
       doc.setDrawColor(226, 232, 240);
       doc.setLineWidth(0.3);
       doc.line(14, 26, 196, 26);
 
-      // Totais calculados
       let totalReceitas = 0, totalFaturas = 0, totalDespesas = 0;
       dados.forEach(r => {
         if (r.Tipo === 'Receita') totalReceitas += r.Valor;
@@ -1135,7 +1202,6 @@
       const totalSaidas = totalFaturas + totalDespesas;
       const saldoPrevisto = totalReceitas - totalSaidas;
 
-      // Caixa de Resumo no Topo
       doc.setDrawColor(226, 232, 240);
       doc.setFillColor(248, 250, 252);
       doc.roundedRect(14, 30, 182, 18, 3, 3, 'FD');
@@ -1154,7 +1220,6 @@
       doc.setTextColor(15, 23, 42);
       doc.text(`SALDO: ${saldoPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 156, 41);
 
-      // Tabela de Dados via AutoTable
       const tableColumn = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parc.', 'Valor', 'Status'];
       const tableRows = dados.map(r => [
         r.Data,
@@ -1262,7 +1327,6 @@
             usuarioLogadoId = session.user.id;
             usuarioLogadoEmail = session.user.email;
 
-            // Limpa qualquer injeção indevida de credenciais pelo autofill do navegador
             if (filtroBusca) {
               filtroBusca.value = '';
               termoBuscaAtivo = '';
@@ -1327,7 +1391,6 @@
       if (client) await client.auth.signOut();
     });
 
-    // Salvamento de Nome e Telefone via client.auth.updateUser
     if (btnSalvarPerfil) {
       btnSalvarPerfil.addEventListener('click', async () => {
         if (!client) return;
@@ -1383,9 +1446,7 @@
 
     toggleSomSwitch.addEventListener('click', () => {
       configFeedbackAtivo = !configFeedbackAtivo;
-      try {
-        localStorage.setItem('fc_feedback_ativo', configFeedbackAtivo);
-      } catch (e) {}
+      try { localStorage.setItem('fc_feedback_ativo', configFeedbackAtivo); } catch (e) {}
       atualizarSwitchVisual();
       if (configFeedbackAtivo) executarFeedback('clique');
     });
@@ -1400,7 +1461,6 @@
       }
     }
 
-    // Toggle da seção de alterar senha
     btnToggleSenhaSection.addEventListener('click', () => {
       executarFeedback('clique');
       const aberto = !containerFormSenha.classList.contains('hidden');
@@ -1413,7 +1473,6 @@
       }
     });
 
-    // Submissão da nova senha no Supabase
     btnSalvarNovaSenha.addEventListener('click', async () => {
       if (!client) return;
       const novaSenha = novaSenhaInput.value;
@@ -1538,7 +1597,6 @@
       });
     }
 
-    // Botão FAB Mobile
     if (btnFabAdicionar) {
       btnFabAdicionar.addEventListener('click', () => {
         executarFeedback('clique');
@@ -1712,13 +1770,11 @@
 
       if (!data || data.length === 0) {
         const categoriasPadrao = [
-          // Categorias de Despesas
           { nome: 'Alimentação', icone: 'utensils', teto_mensal: 1200.00, tipo: 'Despesa' },
           { nome: 'Moradia & Contas', icone: 'home', teto_mensal: 1500.00, tipo: 'Despesa' },
           { nome: 'Transporte', icone: 'car', teto_mensal: 400.00, tipo: 'Despesa' },
           { nome: 'Lazer & Assinaturas', icone: 'tv', teto_mensal: 350.00, tipo: 'Despesa' },
           { nome: 'Saúde', icone: 'activity', teto_mensal: 300.00, tipo: 'Despesa' },
-          // Categorias de Receitas
           { nome: 'Salário / Remuneração', icone: 'wallet', teto_mensal: null, tipo: 'Receita' },
           { nome: 'Renda Extra / Vendas', icone: 'trending-up', teto_mensal: null, tipo: 'Receita' },
           { nome: 'Rendimentos & Investimentos', icone: 'piggy-bank', teto_mensal: null, tipo: 'Receita' }
@@ -1757,7 +1813,7 @@
       container.innerHTML = contasUsuario.map(c => {
         const isCartao = c.tipo === 'Cartão de Crédito';
         let totalNoMes = 0;
-        transacoesCarregadas.forEach(t => {
+        transacoesVisaoAtual.forEach(t => {
           if (t.conta_id === c.id) totalNoMes += Number(t.valor);
         });
 
@@ -1803,7 +1859,7 @@
 
       container.innerHTML = categoriasOrcamento.map(cat => {
         let gastoTotal = 0;
-        transacoesCarregadas.forEach(t => {
+        transacoesVisaoAtual.forEach(t => {
           if (t.categoria_id === cat.id && t.tipo !== 'Receita') gastoTotal += Number(t.valor);
         });
 
@@ -1865,11 +1921,12 @@
       }
 
       const { data } = await query;
+      const dadosFiltradosVisao = aplicarFiltroVisao(data || []);
 
       const receitasPorMes = [0, 0, 0, 0, 0, 0];
       const saidasPorMes = [0, 0, 0, 0, 0, 0];
 
-      (data || []).forEach(t => {
+      dadosFiltradosVisao.forEach(t => {
         const idx = mesesChaves.indexOf(t.mes_competencia);
         if (idx !== -1) {
           const val = Number(t.valor);
@@ -1933,7 +1990,6 @@
       }
     }
 
-    // Carrega tanto transações próprias quanto atribuídas ao e-mail logado
     async function carregarTransacoes() {
       if (!client) return;
       let query = client
@@ -1948,6 +2004,9 @@
       const { data } = await query.order('data_movimento', { ascending: false });
 
       transacoesCarregadas = data || [];
+      renderizarSeletorVisao();
+      transacoesVisaoAtual = aplicarFiltroVisao(transacoesCarregadas);
+
       renderizarTransacoes();
       atualizarTotais();
       renderizarGridContas();
@@ -1963,7 +2022,7 @@
       const tbodyDesktop = document.getElementById('lista-transacoes-desktop');
       if (!containerMobile || !tbodyDesktop) return;
 
-      let filtradas = transacoesCarregadas.filter(t => {
+      let filtradas = transacoesVisaoAtual.filter(t => {
         if (filtroTipoAtivo === 'pendentes') {
           if (t.status === 'Pago') return false;
         } else if (filtroTipoAtivo === 'compartilhadas') {
@@ -2160,7 +2219,6 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // Ações de Registro (com proteção contra edição indevida)
     window.alternarStatus = async function(id, statusAtual) {
       if (!client) return;
       const transacao = transacoesCarregadas.find(t => t.id === id);
@@ -2174,6 +2232,7 @@
       const idx = transacoesCarregadas.findIndex(t => t.id === id);
       if (idx !== -1) {
         transacoesCarregadas[idx].status = novoStatus;
+        transacoesVisaoAtual = aplicarFiltroVisao(transacoesCarregadas);
         renderizarTransacoes();
         atualizarTotais();
       }
@@ -2184,349 +2243,3 @@
         carregarTransacoes();
       }
     };
-
-    // Exclusão inteligente com suporte a id_agrupador e validação de dono
-    window.deletarTransacao = async function(id, idAgrupador) {
-      if (!client) return;
-      const transacao = transacoesCarregadas.find(t => t.id === id);
-      if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
-        alert('Apenas o responsável que lançou esta despesa pode excluí-la.');
-        return;
-      }
-
-      executarFeedback('clique');
-
-      if (idAgrupador && idAgrupador !== 'null' && idAgrupador !== 'undefined') {
-        const excluirTudo = confirm(
-          'Este lançamento faz parte de uma compra parcelada!\n\n' +
-          '• Clique em [OK] para excluir TODAS as parcelas desta compra.\n' +
-          '• Clique em [Cancelar] para escolher se deseja excluir apenas esta parcela.'
-        );
-
-        if (excluirTudo) {
-          const { error } = await client
-            .from('transacoes')
-            .delete()
-            .eq('id_agrupador', idAgrupador);
-
-          if (error) {
-            alert('Erro ao excluir as parcelas: ' + error.message);
-          } else {
-            executarFeedback('sucesso');
-            carregarTransacoes();
-          }
-          return;
-        }
-
-        const excluirApenasEsta = confirm('Deseja excluir APENAS esta parcela do mês atual?');
-        if (!excluirApenasEsta) return;
-      } else {
-        if (!confirm('Deseja excluir este lançamento?')) return;
-      }
-
-      const { error } = await client
-        .from('transacoes')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert('Erro ao excluir: ' + error.message);
-      } else {
-        executarFeedback('sucesso');
-        carregarTransacoes();
-      }
-    };
-
-    function atualizarTotais() {
-      let fatura = 0;
-      let receita = 0;
-      let despesa = 0;
-
-      transacoesCarregadas.forEach(t => {
-        const v = Number(t.valor);
-        if (t.tipo === 'Receita') receita += v;
-        else if (t.tipo === 'Despesa Cartão') fatura += v;
-        else despesa += v;
-      });
-
-      document.getElementById('card-fatura').innerText = fatura.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('card-receita').innerText = receita.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('card-despesa').innerText = (fatura + despesa).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('card-saldo').innerText = (receita - (fatura + despesa)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
-
-    // -------------------------------------------------------------
-    // MODAIS DE SUBMISSÃO
-    // -------------------------------------------------------------
-    // Modal Categoria (Alternância de Teto para Receita / Despesa)
-    btnAbrirModalCategoria.addEventListener('click', () => {
-      executarFeedback('clique');
-      modalCategoria.classList.remove('hidden');
-      atualizarVisibilidadeTetoCategoria();
-    });
-
-    function fecharModalCategoria() {
-      modalCategoria.classList.add('hidden');
-      formCategoria.reset();
-      atualizarVisibilidadeTetoCategoria();
-    }
-
-    btnFecharModalCategoria.addEventListener('click', fecharModalCategoria);
-    btnCancelarModalCategoria.addEventListener('click', fecharModalCategoria);
-
-    categoriaTipoFluxo.addEventListener('change', atualizarVisibilidadeTetoCategoria);
-
-    function atualizarVisibilidadeTetoCategoria() {
-      if (categoriaTipoFluxo.value === 'Receita') {
-        campoContainerTeto.classList.add('hidden');
-        campoContainerIcone.className = 'col-span-2';
-        categoriaTeto.value = '';
-      } else {
-        campoContainerTeto.classList.remove('hidden');
-        campoContainerIcone.className = 'col-span-1';
-      }
-    }
-
-    formCategoria.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client) return;
-      const btn = document.getElementById('btn-salvar-categoria');
-      btn.disabled = true;
-      btn.innerText = 'Salvando...';
-
-      const nome = document.getElementById('categoria-nome').value.trim();
-      const tipo = categoriaTipoFluxo.value;
-      const tetoMensal = (tipo === 'Despesa') ? (parseFloat(categoriaTeto.value) || null) : null;
-      const icone = document.getElementById('categoria-icone').value;
-
-      try {
-        const { error } = await client.from('categorias').insert([{ 
-          nome, 
-          tipo, 
-          teto_mensal: tetoMensal, 
-          icone,
-          user_id: usuarioLogadoId 
-        }]);
-        if (error) throw error;
-        executarFeedback('sucesso');
-        fecharModalCategoria();
-        await buscarOuCriarCategorias();
-        await carregarTransacoes();
-      } catch (err) {
-        alert('Erro: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Salvar';
-      }
-    });
-
-    // Modal Conta
-    btnAbrirModalConta.addEventListener('click', () => {
-      executarFeedback('clique');
-      modalConta.classList.remove('hidden');
-    });
-    function fecharModalConta() {
-      modalConta.classList.add('hidden');
-      formConta.reset();
-      camposCartao.classList.remove('hidden');
-    }
-    btnFecharModalConta.addEventListener('click', fecharModalConta);
-    btnCancelarModalConta.addEventListener('click', fecharModalConta);
-
-    contaTipo.addEventListener('change', () => {
-      if (contaTipo.value === 'Cartão de Crédito') camposCartao.classList.remove('hidden');
-      else camposCartao.classList.add('hidden');
-    });
-
-    formConta.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client) return;
-      const btn = document.getElementById('btn-salvar-conta');
-      btn.disabled = true;
-      btn.innerText = 'Salvando...';
-
-      const nome = document.getElementById('conta-nome').value;
-      const tipo = contaTipo.value;
-      const fechamento = (tipo === 'Cartão de Crédito') ? parseInt(document.getElementById('conta-fechamento').value) || null : null;
-      const vencimento = (tipo === 'Cartão de Crédito') ? parseInt(document.getElementById('conta-vencimento').value) || null : null;
-      const saldoInicial = parseFloat(document.getElementById('conta-saldo-inicial').value) || 0.00;
-
-      try {
-        const { error } = await client.from('contas').insert([{ 
-          nome, 
-          tipo, 
-          dia_fechamento: fechamento, 
-          dia_vencimento: vencimento, 
-          saldo_inicial: saldoInicial,
-          user_id: usuarioLogadoId 
-        }]);
-        if (error) throw error;
-        executarFeedback('sucesso');
-        fecharModalConta();
-        await buscarOuCriarContas();
-      } catch (err) {
-        alert('Erro: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Salvar';
-      }
-    });
-
-    // Modal Transação
-    btnAbrirModal.addEventListener('click', () => {
-      executarFeedback('clique');
-      modalTransacao.classList.remove('hidden');
-      atualizarEstadoTipo();
-      atualizarOpcoesCategoriasNoModal();
-      calcularPrevia();
-    });
-
-    function fecharModal() {
-      modalTransacao.classList.add('hidden');
-      formTransacao.reset();
-      txData.value = new Date().toISOString().slice(0, 10);
-      previaParcelamento.innerText = '';
-      txAtribuicaoEmail.classList.add('hidden');
-    }
-
-    btnFecharModal.addEventListener('click', fecharModal);
-    btnCancelarModal.addEventListener('click', fecharModal);
-
-    txTipo.addEventListener('change', () => {
-      atualizarEstadoTipo();
-      atualizarOpcoesCategoriasNoModal();
-      calcularPrevia();
-    });
-
-    txValor.addEventListener('input', calcularPrevia);
-    txData.addEventListener('change', calcularPrevia);
-    txConta.addEventListener('change', calcularPrevia);
-    txParcelas.addEventListener('change', calcularPrevia);
-
-    function atualizarEstadoTipo() {
-      if (txTipo.value === 'Despesa Cartão') {
-        containerParcelas.classList.remove('hidden');
-        containerAtribuicao.classList.remove('hidden');
-      } else {
-        containerParcelas.classList.add('hidden');
-        containerAtribuicao.classList.add('hidden');
-      }
-    }
-
-    function calcularCompetencia(dataIso, contaId) {
-      const conta = contasUsuario.find(c => c.id === contaId);
-      const data = new Date(dataIso + 'T00:00:00');
-      let ano = data.getFullYear();
-      let mes = data.getMonth() + 1;
-
-      if (conta && conta.tipo === 'Cartão de Crédito' && conta.dia_fechamento) {
-        if (data.getDate() > conta.dia_fechamento) {
-          mes++;
-          if (mes > 12) { mes = 1; ano++; }
-        }
-      }
-      return { ano, mes, str: `${ano}-${String(mes).padStart(2, '0')}` };
-    }
-
-    function calcularPrevia() {
-      if (txTipo.value !== 'Despesa Cartão') {
-        previaParcelamento.innerText = '';
-        return;
-      }
-
-      const val = parseFloat(txValor.value) || 0;
-      const parcels = parseInt(txParcelas.value) || 1;
-      const dt = txData.value;
-      const cId = txConta.value;
-
-      if (!dt || val <= 0) {
-        previaParcelamento.innerText = '';
-        return;
-      }
-
-      const comp = calcularCompetencia(dt, cId);
-      const valParcela = (val / parcels).toFixed(2);
-      previaParcelamento.innerText = `${parcels}x de R$ ${valParcela} (1ª em ${comp.str})`;
-    }
-
-    let enviandoTransacao = false;
-
-    formTransacao.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client || enviandoTransacao) return;
-      enviandoTransacao = true;
-
-      const btnSalvar = document.getElementById('btn-salvar-tx');
-      btnSalvar.disabled = true;
-      btnSalvar.innerText = 'Gravando...';
-
-      try {
-        const tipo = txTipo.value;
-        const valorTotal = parseFloat(txValor.value);
-        const descricao = document.getElementById('tx-descricao').value;
-        const categoriaId = txCategoria.value;
-        const dataMovimento = txData.value;
-        const contaId = txConta.value;
-        const totalParcelas = (tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1;
-
-        let emailAtribuido = null;
-        if (tipo === 'Despesa Cartão') {
-          if (txAtribuicaoPredefinida.value === 'outro') {
-            emailAtribuido = txAtribuicaoEmail.value.trim().toLowerCase() || null;
-          } else if (txAtribuicaoPredefinida.value) {
-            emailAtribuido = txAtribuicaoPredefinida.value.trim().toLowerCase();
-          }
-        }
-
-        const { data: { user } } = await client.auth.getUser();
-        const criadorNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Admin';
-
-        const compInicial = calcularCompetencia(dataMovimento, contaId);
-        let ano = Number(compInicial.ano);
-        let mes = Number(compInicial.mes);
-
-        const valorParcela = parseFloat((valorTotal / totalParcelas).toFixed(2));
-        const centavos = parseFloat((valorTotal - (valorParcela * totalParcelas)).toFixed(2));
-        const idAgrupador = totalParcelas > 1 ? 'grp_' + Date.now() : null;
-
-        const linhas = [];
-        for (let i = 1; i <= totalParcelas; i++) {
-          const valorFinal = (i === 1) ? valorParcela + centavos : valorParcela;
-          linhas.push({
-            id_agrupador: idAgrupador,
-            data_movimento: dataMovimento,
-            mes_competencia: `${ano}-${String(mes).padStart(2, '0')}`,
-            descricao: totalParcelas > 1 ? `${descricao} (${i}/${totalParcelas})` : descricao,
-            tipo: tipo,
-            valor: valorFinal,
-            conta_id: contaId,
-            categoria_id: categoriaId,
-            parcela_atual: i,
-            parcela_total: totalParcelas,
-            status: 'Previsto',
-            user_id: usuarioLogadoId,
-            atribuido_para_email: emailAtribuido,
-            criador_nome: criadorNome
-          });
-
-          mes++;
-          if (mes > 12) { mes = 1; ano++; }
-        }
-
-        const { error } = await client.from('transacoes').insert(linhas);
-        if (error) throw error;
-
-        executarFeedback('sucesso');
-        fecharModal();
-        await carregarTransacoes();
-      } catch (err) {
-        alert('Erro ao gravar: ' + err.message);
-      } finally {
-        enviandoTransacao = false;
-        btnSalvar.disabled = false;
-        btnSalvar.innerText = 'Salvar';
-      }
-    });
-  </script>
-</body>
-</html>
