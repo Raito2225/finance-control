@@ -73,7 +73,7 @@
 
         <div id="auth-msg" class="hidden text-xs p-3 rounded-lg mb-4"></div>
 
-        <form id="auth-form" class="space-y-3.5">
+        <form id="auth-form" onsubmit="return false;" class="space-y-3.5">
           <!-- Campo Nome (Exclusivo Cadastro) -->
           <div id="campo-cadastro-nome" class="hidden">
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Nome Completo</label>
@@ -674,7 +674,16 @@
     // Número do WhatsApp oficial para relatos de testes
     const NUMERO_WHATSAPP_TESTES = '5575988660943';
 
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Inicialização segura do Supabase (evita travar a tela no Android se a CDN falhar)
+    let client = null;
+    try {
+      if (!window.supabase) {
+        throw new Error('Biblioteca do Supabase não carregou. Verifique sua internet.');
+      }
+      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (err) {
+      alert('Erro ao iniciar o sistema: ' + err.message);
+    }
 
     let usuarioLogadoId = null;
     let usuarioLogadoEmail = null;
@@ -688,9 +697,15 @@
     let filtroTipoAtivo = 'todos';
     let termoBuscaAtivo = '';
 
-    // Preferências de Configuração
-    let configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
-    let temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
+    // Leitura segura de preferências (protegido contra bloqueio de localStorage no Android/Modo Anônimo)
+    let configFeedbackAtivo = true;
+    let temaAtivo = 'esmeralda';
+    try {
+      configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
+      temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
+    } catch (e) {
+      // Segue com os valores padrão caso o navegador bloqueie o armazenamento local
+    }
 
     // Elementos DOM Autenticação & Cadastro
     const authScreen = document.getElementById('auth-screen');
@@ -911,7 +926,9 @@
 
     window.definirTema = function(cor) {
       temaAtivo = cor;
-      localStorage.setItem('fc_tema_app', cor);
+      try {
+        localStorage.setItem('fc_tema_app', cor);
+      } catch (e) {}
       aplicarTemaNaInterface();
       executarFeedback('clique');
     };
@@ -1215,56 +1232,58 @@
     // INICIALIZAÇÃO & GESTÃO DE SESSÃO / RECUPERAÇÃO
     // -------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
       filtroMes.value = mesAtual;
       txData.value = new Date().toISOString().slice(0, 10);
       aplicarTemaNaInterface();
 
-      client.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          authScreen.classList.add('hidden');
-          dashboardScreen.classList.remove('hidden');
-          modalConfig.classList.remove('hidden');
+      if (client) {
+        client.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'PASSWORD_RECOVERY') {
+            authScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+            modalConfig.classList.remove('hidden');
 
-          containerFormSenha.classList.remove('hidden');
-          iconeSetaSenha.classList.add('rotate-180');
-          novaSenhaInput.focus();
+            containerFormSenha.classList.remove('hidden');
+            iconeSetaSenha.classList.add('rotate-180');
+            novaSenhaInput.focus();
 
-          msgSenha.textContent = 'Defina sua nova senha de acesso abaixo.';
-          msgSenha.className = 'text-[11px] p-2 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-300';
-          msgSenha.classList.remove('hidden');
-          return;
-        }
-
-        if (session) {
-          authScreen.classList.add('hidden');
-          dashboardScreen.classList.remove('hidden');
-          lucide.createIcons();
-
-          usuarioLogadoId = session.user.id;
-          usuarioLogadoEmail = session.user.email;
-
-          // Limpa qualquer injeção indevida de credenciais pelo autofill do navegador
-          if (filtroBusca) {
-            filtroBusca.value = '';
-            termoBuscaAtivo = '';
+            msgSenha.textContent = 'Defina sua nova senha de acesso abaixo.';
+            msgSenha.className = 'text-[11px] p-2 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-300';
+            msgSenha.classList.remove('hidden');
+            return;
           }
 
-          const userMeta = session.user?.user_metadata || {};
-          const nomeExibicao = userMeta.nome || session.user.email.split('@')[0];
-          if (labelSaudacaoUsuario) {
-            labelSaudacaoUsuario.textContent = `Olá, ${nomeExibicao}!`;
-          }
+          if (session) {
+            authScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
 
-          carregarDadosApp();
-        } else {
-          usuarioLogadoId = null;
-          usuarioLogadoEmail = null;
-          dashboardScreen.classList.add('hidden');
-          authScreen.classList.remove('hidden');
-          lucide.createIcons();
-        }
-      });
+            usuarioLogadoId = session.user.id;
+            usuarioLogadoEmail = session.user.email;
+
+            // Limpa qualquer injeção indevida de credenciais pelo autofill do navegador
+            if (filtroBusca) {
+              filtroBusca.value = '';
+              termoBuscaAtivo = '';
+            }
+
+            const userMeta = session.user?.user_metadata || {};
+            const nomeExibicao = userMeta.nome || session.user.email.split('@')[0];
+            if (labelSaudacaoUsuario) {
+              labelSaudacaoUsuario.textContent = `Olá, ${nomeExibicao}!`;
+            }
+
+            carregarDadosApp();
+          } else {
+            usuarioLogadoId = null;
+            usuarioLogadoEmail = null;
+            dashboardScreen.classList.add('hidden');
+            authScreen.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+          }
+        });
+      }
 
       filtroBusca.addEventListener('input', (e) => {
         termoBuscaAtivo = e.target.value.toLowerCase().trim();
@@ -1281,12 +1300,14 @@
 
       if (msgPerfil) msgPerfil.classList.add('hidden');
 
-      const { data: { user } } = await client.auth.getUser();
-      if (user) {
-        const meta = user.user_metadata || {};
-        if (configUserEmailInput) configUserEmailInput.value = user.email || '';
-        if (configNomeInput) configNomeInput.value = meta.nome || '';
-        if (configTelefoneInput) configTelefoneInput.value = meta.telefone || '';
+      if (client) {
+        const { data: { user } } = await client.auth.getUser();
+        if (user) {
+          const meta = user.user_metadata || {};
+          if (configUserEmailInput) configUserEmailInput.value = user.email || '';
+          if (configNomeInput) configNomeInput.value = meta.nome || '';
+          if (configTelefoneInput) configTelefoneInput.value = meta.telefone || '';
+        }
       }
 
       atualizarSwitchVisual();
@@ -1303,12 +1324,13 @@
 
     configBtnLogout.addEventListener('click', async () => {
       modalConfig.classList.add('hidden');
-      await client.auth.signOut();
+      if (client) await client.auth.signOut();
     });
 
     // Salvamento de Nome e Telefone via client.auth.updateUser
     if (btnSalvarPerfil) {
       btnSalvarPerfil.addEventListener('click', async () => {
+        if (!client) return;
         executarFeedback('clique');
         msgPerfil.classList.add('hidden');
 
@@ -1354,14 +1376,16 @@
         } finally {
           btnSalvarPerfil.disabled = false;
           btnSalvarPerfil.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> Salvar Dados do Perfil';
-          lucide.createIcons();
+          if (window.lucide) lucide.createIcons();
         }
       });
     }
 
     toggleSomSwitch.addEventListener('click', () => {
       configFeedbackAtivo = !configFeedbackAtivo;
-      localStorage.setItem('fc_feedback_ativo', configFeedbackAtivo);
+      try {
+        localStorage.setItem('fc_feedback_ativo', configFeedbackAtivo);
+      } catch (e) {}
       atualizarSwitchVisual();
       if (configFeedbackAtivo) executarFeedback('clique');
     });
@@ -1391,6 +1415,7 @@
 
     // Submissão da nova senha no Supabase
     btnSalvarNovaSenha.addEventListener('click', async () => {
+      if (!client) return;
       const novaSenha = novaSenhaInput.value;
       const confirmaSenha = confirmaSenhaInput.value;
 
@@ -1447,10 +1472,14 @@
       btnFeedbackWpp.addEventListener('click', async () => {
         executarFeedback('clique');
 
-        const { data: { user } } = await client.auth.getUser();
-        const meta = user?.user_metadata || {};
-        const nomeUsuario = meta.nome || 'Amigo Testador';
-        const emailUsuario = user?.email || 'Não informado';
+        let nomeUsuario = 'Amigo Testador';
+        let emailUsuario = 'Não informado';
+        if (client) {
+          const { data: { user } } = await client.auth.getUser();
+          const meta = user?.user_metadata || {};
+          nomeUsuario = meta.nome || 'Amigo Testador';
+          emailUsuario = user?.email || 'Não informado';
+        }
 
         const mensagemTexto = 
 `Fala Matheus! Estou testando o *FinanceControl* (Fase Beta).
@@ -1471,6 +1500,10 @@
     // -------------------------------------------------------------
     if (btnEsqueceuSenha) {
       btnEsqueceuSenha.addEventListener('click', async () => {
+        if (!client) {
+          alert('Conexão com o servidor indisponível no momento.');
+          return;
+        }
         executarFeedback('clique');
         const email = document.getElementById('auth-email').value.trim();
 
@@ -1548,6 +1581,11 @@
 
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!client) {
+        alert('Erro de conexão com o servidor. Recarregue a página.');
+        return;
+      }
+
       const email = document.getElementById('auth-email').value.trim();
       const password = document.getElementById('auth-password').value;
 
@@ -1649,6 +1687,7 @@
     }
 
     async function buscarOuCriarContas() {
+      if (!client) return;
       const { data, error } = await client.from('contas').select('*').order('nome');
       if (error) return;
 
@@ -1667,6 +1706,7 @@
     }
 
     async function buscarOuCriarCategorias() {
+      if (!client) return;
       const { data, error } = await client.from('categorias').select('*').order('nome');
       if (error) return;
 
@@ -1742,7 +1782,7 @@
         `;
       }).join('');
 
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function renderizarGridCategorias() {
@@ -1794,13 +1834,14 @@
         `;
       }).join('');
 
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     // -------------------------------------------------------------
     // GRÁFICO DE PROJEÇÃO DE 6 MESES (CHART.JS)
     // -------------------------------------------------------------
     async function carregarGraficoProjecao() {
+      if (!client) return;
       const mesesLabels = [];
       const mesesChaves = [];
       let [anoBase, mesBase] = mesAtual.split('-').map(Number);
@@ -1855,43 +1896,46 @@
       const ctx = document.getElementById('grafico-projecao').getContext('2d');
       if (meuGraficoProjecao) meuGraficoProjecao.destroy();
 
-      meuGraficoProjecao = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: mesesLabels,
-          datasets: [
-            {
-              label: 'Entradas',
-              data: receitasPorMes,
-              backgroundColor: 'rgba(16, 185, 129, 0.8)',
-              borderRadius: 4
-            },
-            {
-              label: 'Saídas',
-              data: saidasPorMes,
-              backgroundColor: 'rgba(244, 63, 94, 0.8)',
-              borderRadius: 4
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 }
-            }
+      if (window.Chart) {
+        meuGraficoProjecao = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: mesesLabels,
+            datasets: [
+              {
+                label: 'Entradas',
+                data: receitasPorMes,
+                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                borderRadius: 4
+              },
+              {
+                label: 'Saídas',
+                data: saidasPorMes,
+                backgroundColor: 'rgba(244, 63, 94, 0.8)',
+                borderRadius: 4
+              }
+            ]
           },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-            y: { grid: { color: 'rgba(51, 65, 85, 0.2)' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 }
+              }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+              y: { grid: { color: 'rgba(51, 65, 85, 0.2)' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
+            }
           }
-        }
-      });
+        });
+      }
     }
 
     // Carrega tanto transações próprias quanto atribuídas ao e-mail logado
     async function carregarTransacoes() {
+      if (!client) return;
       let query = client
         .from('transacoes')
         .select('*')
@@ -1961,7 +2005,6 @@
         const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
         const nomeCategoria = catObj ? catObj.nome : 'Geral';
 
-        // Verificação de Propriedade
         const souDono = !t.user_id || (t.user_id === usuarioLogadoId);
         const ehCompartilhadoComigo = t.atribuido_para_email && (t.atribuido_para_email === usuarioLogadoEmail) && !souDono;
 
@@ -2050,7 +2093,6 @@
         const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
         const nomeCategoria = catObj ? catObj.nome : 'Sem Categoria';
 
-        // Verificação de Propriedade
         const souDono = !t.user_id || (t.user_id === usuarioLogadoId);
         const ehCompartilhadoComigo = t.atribuido_para_email && (t.atribuido_para_email === usuarioLogadoEmail) && !souDono;
 
@@ -2115,11 +2157,12 @@
         `;
       }).join('');
 
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     // Ações de Registro (com proteção contra edição indevida)
     window.alternarStatus = async function(id, statusAtual) {
+      if (!client) return;
       const transacao = transacoesCarregadas.find(t => t.id === id);
       if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
         alert('Apenas o responsável que lançou esta despesa pode alterar o status.');
@@ -2144,6 +2187,7 @@
 
     // Exclusão inteligente com suporte a id_agrupador e validação de dono
     window.deletarTransacao = async function(id, idAgrupador) {
+      if (!client) return;
       const transacao = transacoesCarregadas.find(t => t.id === id);
       if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
         alert('Apenas o responsável que lançou esta despesa pode excluí-la.');
@@ -2245,6 +2289,7 @@
 
     formCategoria.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!client) return;
       const btn = document.getElementById('btn-salvar-categoria');
       btn.disabled = true;
       btn.innerText = 'Salvando...';
@@ -2295,6 +2340,7 @@
 
     formConta.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!client) return;
       const btn = document.getElementById('btn-salvar-conta');
       btn.disabled = true;
       btn.innerText = 'Salvando...';
@@ -2407,7 +2453,7 @@
 
     formTransacao.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (enviandoTransacao) return;
+      if (!client || enviandoTransacao) return;
       enviandoTransacao = true;
 
       const btnSalvar = document.getElementById('btn-salvar-tx');
@@ -2423,7 +2469,6 @@
         const contaId = txConta.value;
         const totalParcelas = (tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1;
 
-        // Recupera dados do responsável atribuído
         let emailAtribuido = null;
         if (tipo === 'Despesa Cartão') {
           if (txAtribuicaoPredefinida.value === 'outro') {
@@ -2433,7 +2478,6 @@
           }
         }
 
-        // Recupera nome do criador para identificação no painel da outra pessoa
         const { data: { user } } = await client.auth.getUser();
         const criadorNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Admin';
 
