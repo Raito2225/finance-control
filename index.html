@@ -2005,6 +2005,7 @@ ${linhasTexto}
         });
 
         const valorFmt = totalNoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const nomeEscapado = (c.nome || '').replace(/'/g, "\\'");
 
         return `
           <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
@@ -2012,6 +2013,9 @@ ${linhasTexto}
               <div class="flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full ${isCartao ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
                 <h3 class="text-xs font-bold text-white">${c.nome}</h3>
+                <button type="button" onclick="deletarConta('${c.id}', '${nomeEscapado}')" class="p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir conta/cartão">
+                  <i data-lucide="trash-2" class="w-3 h-3"></i>
+                </button>
               </div>
               <div class="text-[11px] font-mono text-slate-400 mt-1">
                 ${isCartao ? `Fecha dia ${c.dia_fechamento || '--'} • Vence dia ${c.dia_vencimento || '--'}` : 'Conta Corrente'}
@@ -2061,11 +2065,14 @@ ${linhasTexto}
         return `
           <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1.5">
-                <i data-lucide="${cat.icone || 'tag'}" class="w-3.5 h-3.5 text-sky-400"></i>
+              <div class="flex items-center gap-1">
+                <i data-lucide="${cat.icone || 'tag'}" class="w-3.5 h-3.5 text-sky-400 mr-0.5"></i>
                 <h4 class="text-xs font-bold text-white">${cat.nome}</h4>
                 <button type="button" onclick="editarTetoCategoria('${cat.id}', '${nomeEscapado}', ${teto})" class="p-1 text-slate-500 hover:text-sky-400 transition" title="Alterar limite">
                   <i data-lucide="pencil" class="w-3 h-3"></i>
+                </button>
+                <button type="button" onclick="deletarCategoria('${cat.id}', '${nomeEscapado}')" class="p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir categoria">
+                  <i data-lucide="trash-2" class="w-3 h-3"></i>
                 </button>
               </div>
               <span class="text-xs font-mono font-bold ${estourou ? 'text-rose-400' : 'text-slate-200'}">
@@ -2110,6 +2117,38 @@ ${linhasTexto}
         executarFeedback('sucesso');
         await buscarOuCriarCategorias();
         renderizarGridCategorias();
+      }
+    };
+
+    window.deletarConta = async function(id, nome) {
+      if (!client) return;
+      executarFeedback('clique');
+
+      if (!confirm(`Deseja excluir a conta/cartão "${nome}"?`)) return;
+
+      const { error } = await client.from('contas').delete().eq('id', id);
+      if (error) {
+        alert('Não foi possível excluir: existem lançamentos vinculados a esta conta/cartão. Exclua ou edite os lançamentos primeiro.');
+      } else {
+        executarFeedback('sucesso');
+        await buscarOuCriarContas();
+        await carregarTransacoes();
+      }
+    };
+
+    window.deletarCategoria = async function(id, nome) {
+      if (!client) return;
+      executarFeedback('clique');
+
+      if (!confirm(`Deseja excluir a categoria "${nome}"?`)) return;
+
+      const { error } = await client.from('categorias').delete().eq('id', id);
+      if (error) {
+        alert('Não foi possível excluir: existem lançamentos vinculados a esta categoria. Exclua ou edite os lançamentos primeiro.');
+      } else {
+        executarFeedback('sucesso');
+        await buscarOuCriarCategorias();
+        await carregarTransacoes();
       }
     };
 
@@ -2834,7 +2873,6 @@ ${linhasTexto}
           }
 
           if (atualizarGrupo && txOriginal.id_agrupador) {
-            // Atualiza valor, tipo, categoria, conta e responsável em todas as parcelas do grupo
             const dadosGrupo = {
               tipo: tipo,
               valor: valorTotal,
@@ -2843,7 +2881,6 @@ ${linhasTexto}
               atribuido_para_email: emailAtribuido
             };
 
-            // Se for conta fixa (sem sufixo de parcela), atualiza também a descrição em todos os meses
             if (txOriginal.id_agrupador.startsWith('fixo_')) {
               dadosGrupo.descricao = descricao;
             }
@@ -2855,7 +2892,6 @@ ${linhasTexto}
 
             if (errGrupo) throw errGrupo;
 
-            // Atualiza data e descrição específica na parcela que foi aberta
             const { error: errAtual } = await client
               .from('transacoes')
               .update({
@@ -2866,7 +2902,6 @@ ${linhasTexto}
 
             if (errAtual) throw errAtual;
           } else {
-            // Edita apenas o lançamento selecionado
             const { error } = await client
               .from('transacoes')
               .update({
