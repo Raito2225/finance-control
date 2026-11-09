@@ -187,8 +187,22 @@
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5 pb-24 sm:pb-6">
       
       <!-- Seletor de Visão / Painéis Separados (Meu Painel, Convidados, Geral) -->
-      <div id="container-abas-visao" class="hidden flex items-center gap-2 overflow-x-auto pb-1">
-        <!-- Preenchido dinamicamente pelo JS -->
+      <div id="container-abas-visao" class="hidden flex items-center gap-2 overflow-x-auto pb-1"></div>
+
+      <!-- Barra de Ações Rápidas para Abas Compartilhadas -->
+      <div id="barra-acoes-compartilhadas" class="hidden flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20">
+        <div class="text-xs text-sky-300 font-medium flex items-center gap-1.5">
+          <i data-lucide="user-check" class="w-4 h-4"></i>
+          <span>Gerenciando fatura de: <strong id="label-nome-compartilhado" class="text-white"></strong></span>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button type="button" onclick="enviarResumoWhatsApp()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar no WhatsApp
+          </button>
+          <button type="button" onclick="marcarTudoComoPagoVisao()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 active:scale-95 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+            <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Marcar Tudo Pago
+          </button>
+        </div>
       </div>
 
       <!-- Indicadores / Cards de Topo -->
@@ -566,11 +580,11 @@
     </div>
   </div>
 
-  <!-- Modal Nova Transação (Com Atribuição de Usuário / Compra Compartilhada) -->
+  <!-- Modal Nova / Editar Transação -->
   <div id="modal-transacao" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-base font-bold text-white">Novo Lançamento</h3>
+        <h3 id="modal-tx-titulo" class="text-base font-bold text-white">Novo Lançamento</h3>
         <button type="button" id="btn-fechar-modal" class="p-1 text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
@@ -701,6 +715,8 @@
     
     // Controle de Visão (Painel Pessoal vs Convidados vs Geral)
     let visaoAtiva = 'pessoal'; // 'pessoal' | 'geral' | '<email_convidado>'
+    // Controle de Edição
+    let transacaoEditandoId = null;
 
     // Leitura segura de preferências (protegido contra bloqueio de localStorage no Android/Modo Anônimo)
     let configFeedbackAtivo = true;
@@ -903,14 +919,11 @@
           return true;
         }
         if (visaoAtiva === 'pessoal') {
-          // Se fui eu que criei, só entra no meu painel pessoal se NÃO foi atribuído a outra pessoa
           if (t.user_id === usuarioLogadoId) {
             return !t.atribuido_para_email;
           }
-          // Se outra pessoa lançou para mim, entra no meu painel pessoal
           return t.atribuido_para_email === usuarioLogadoEmail;
         }
-        // Aba de um convidado específico (ex: esposa ou sogra)
         return t.atribuido_para_email === visaoAtiva;
       });
     }
@@ -928,9 +941,10 @@
 
     function renderizarAbasVisao() {
       const container = document.getElementById('container-abas-visao');
+      const barraAcoes = document.getElementById('barra-acoes-compartilhadas');
+      const labelNome = document.getElementById('label-nome-compartilhado');
       if (!container) return;
 
-      // Descobre todos os e-mails distintos para os quais o usuário logado atribuiu gastos
       const emailsCompartilhados = new Set();
       transacoesCarregadas.forEach(t => {
         if (t.user_id === usuarioLogadoId && t.atribuido_para_email) {
@@ -938,9 +952,9 @@
         }
       });
 
-      // Se não houver nenhum gasto compartilhado no mês e a visão ativa for pessoal, oculta a barra
       if (emailsCompartilhados.size === 0 && visaoAtiva === 'pessoal') {
         container.classList.add('hidden');
+        if (barraAcoes) barraAcoes.classList.add('hidden');
         return;
       }
 
@@ -973,8 +987,95 @@
       `;
 
       container.innerHTML = html;
+
+      if (barraAcoes) {
+        if (visaoAtiva !== 'pessoal' && visaoAtiva !== 'geral') {
+          const nomeCurto = visaoAtiva.split('@')[0];
+          if (labelNome) labelNome.textContent = nomeCurto.charAt(0).toUpperCase() + nomeCurto.slice(1);
+          barraAcoes.classList.remove('hidden');
+        } else {
+          barraAcoes.classList.add('hidden');
+        }
+      }
+
       if (window.lucide) lucide.createIcons();
     }
+
+    // -------------------------------------------------------------
+    // AÇÕES RÁPIDAS NAS ABAS COMPARTILHADAS (WHATSAPP & LOTE)
+    // -------------------------------------------------------------
+    window.enviarResumoWhatsApp = function() {
+      executarFeedback('clique');
+      const listaVisao = obterTransacoesDaVisao();
+
+      if (listaVisao.length === 0) {
+        alert('Não há lançamentos nesta aba para enviar.');
+        return;
+      }
+
+      let totalGeral = 0;
+      let totalPendente = 0;
+
+      const linhasTexto = listaVisao.map(t => {
+        const val = Number(t.valor);
+        if (t.tipo !== 'Receita') {
+          totalGeral += val;
+          if (t.status !== 'Pago') totalPendente += val;
+        }
+        const statusIcon = t.status === 'Pago' ? '✅' : '⏳';
+        const valorFmt = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        return `${statusIcon} ${t.descricao} — *${valorFmt}*`;
+      }).join('\n');
+
+      const nomePessoa = visaoAtiva.split('@')[0];
+      const nomeFormatado = nomePessoa.charAt(0).toUpperCase() + nomePessoa.slice(1);
+      const totalFmt = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      const pendenteFmt = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+      const mensagem = 
+`Olá, *${nomeFormatado}*! Segue o resumo do cartão referente a *${mesAtual}*:
+
+${linhasTexto}
+
+*Total do mês:* ${totalFmt}
+*Falta pagar:* ${pendenteFmt}`;
+
+      const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+      window.open(url, '_blank');
+    };
+
+    window.marcarTudoComoPagoVisao = async function() {
+      if (!client) return;
+      executarFeedback('clique');
+
+      const listaVisao = obterTransacoesDaVisao();
+      const pendentes = listaVisao.filter(t => t.status !== 'Pago' && t.user_id === usuarioLogadoId);
+
+      if (pendentes.length === 0) {
+        alert('Todos os lançamentos desta aba já estão marcados como pagos!');
+        return;
+      }
+
+      const totalPendente = pendentes.reduce((acc, t) => acc + Number(t.valor), 0);
+      const totalFmt = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+      if (!confirm(`Confirmar o pagamento de ${pendentes.length} lançamento(s), totalizando ${totalFmt}?`)) {
+        return;
+      }
+
+      const ids = pendentes.map(t => t.id);
+      const { error } = await client
+        .from('transacoes')
+        .update({ status: 'Pago' })
+        .in('id', ids);
+
+      if (error) {
+        alert('Erro ao atualizar em lote: ' + error.message);
+      } else {
+        executarFeedback('sucesso');
+        await carregarTransacoes();
+      }
+    };
 
     // -------------------------------------------------------------
     // SISTEMA DE TEMAS (Interface Web & Configurações)
@@ -2040,7 +2141,7 @@
     }
 
     // -------------------------------------------------------------
-    // RENDERIZAÇÃO: FEED MOBILE & TABELA DESKTOP COM TRAVA DE EDIÇÃO
+    // RENDERIZAÇÃO: FEED MOBILE & TABELA DESKTOP COM EDIÇÃO E TRAVA
     // -------------------------------------------------------------
     function renderizarTransacoes() {
       const containerMobile = document.getElementById('lista-transacoes-mobile');
@@ -2147,13 +2248,22 @@
               `}
               
               ${souDono ? `
-                <button 
-                  type="button" 
-                  onclick="deletarTransacao('${t.id}', ${agrupadorParam})" 
-                  class="p-2 text-slate-500 hover:text-rose-400 transition" 
-                  title="Excluir">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
+                <div class="flex items-center gap-1">
+                  <button 
+                    type="button" 
+                    onclick="editarTransacao('${t.id}')" 
+                    class="p-2 text-slate-500 hover:text-sky-400 transition" 
+                    title="Editar">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                  </button>
+                  <button 
+                    type="button" 
+                    onclick="deletarTransacao('${t.id}', ${agrupadorParam})" 
+                    class="p-2 text-slate-500 hover:text-rose-400 transition" 
+                    title="Excluir">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
               ` : `
                 <span class="p-2 text-slate-600" title="Gerenciado pelo dono do cartão">
                   <i data-lucide="lock" class="w-4 h-4"></i>
@@ -2228,9 +2338,14 @@
             </td>
             <td class="py-2.5 text-center">
               ${souDono ? `
-                <button type="button" onclick="deletarTransacao('${t.id}', ${agrupadorParam})" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
+                <div class="flex items-center justify-center gap-1">
+                  <button type="button" onclick="editarTransacao('${t.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-sky-400 transition" title="Editar">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                  </button>
+                  <button type="button" onclick="deletarTransacao('${t.id}', ${agrupadorParam})" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
               ` : `
                 <span class="p-1 text-slate-600" title="Apenas o titular do cartão pode excluir">
                   <i data-lucide="lock" class="w-3.5 h-3.5 inline"></i>
@@ -2243,6 +2358,50 @@
 
       if (window.lucide) lucide.createIcons();
     }
+
+    // -------------------------------------------------------------
+    // FUNÇÃO DE EDIÇÃO DE TRANSAÇÃO
+    // -------------------------------------------------------------
+    window.editarTransacao = function(id) {
+      const t = transacoesCarregadas.find(item => item.id === id);
+      if (!t) return;
+
+      if (t.user_id && t.user_id !== usuarioLogadoId) {
+        alert('Apenas o responsável que lançou esta despesa pode editá-la.');
+        return;
+      }
+
+      executarFeedback('clique');
+      transacaoEditandoId = id;
+
+      document.getElementById('modal-tx-titulo').innerText = 'Editar Lançamento';
+      document.getElementById('btn-salvar-tx').innerText = 'Salvar Alterações';
+
+      txTipo.value = t.tipo;
+      atualizarEstadoTipo();
+      atualizarOpcoesCategoriasNoModal();
+
+      txValor.value = Number(t.valor);
+      document.getElementById('tx-descricao').value = t.descricao;
+      txCategoria.value = t.categoria_id;
+      txConta.value = t.conta_id;
+      txData.value = t.data_movimento;
+
+      if (t.atribuido_para_email) {
+        txAtribuicaoPredefinida.value = 'outro';
+        txAtribuicaoEmail.classList.remove('hidden');
+        txAtribuicaoEmail.value = t.atribuido_para_email;
+      } else {
+        txAtribuicaoPredefinida.value = '';
+        txAtribuicaoEmail.classList.add('hidden');
+        txAtribuicaoEmail.value = '';
+      }
+
+      containerParcelas.classList.add('hidden');
+      previaParcelamento.innerText = '';
+
+      modalTransacao.classList.remove('hidden');
+    };
 
     window.alternarStatus = async function(id, statusAtual) {
       if (!client) return;
@@ -2462,6 +2621,10 @@
     });
 
     function fecharModal() {
+      transacaoEditandoId = null;
+      document.getElementById('modal-tx-titulo').innerText = 'Novo Lançamento';
+      document.getElementById('btn-salvar-tx').innerText = 'Salvar';
+
       modalTransacao.classList.add('hidden');
       formTransacao.reset();
       txData.value = new Date().toISOString().slice(0, 10);
@@ -2485,7 +2648,7 @@
 
     function atualizarEstadoTipo() {
       if (txTipo.value === 'Despesa Cartão') {
-        containerParcelas.classList.remove('hidden');
+        if (!transacaoEditandoId) containerParcelas.classList.remove('hidden');
         containerAtribuicao.classList.remove('hidden');
       } else {
         containerParcelas.classList.add('hidden');
@@ -2509,7 +2672,7 @@
     }
 
     function calcularPrevia() {
-      if (txTipo.value !== 'Despesa Cartão') {
+      if (txTipo.value !== 'Despesa Cartão' || transacaoEditandoId) {
         previaParcelamento.innerText = '';
         return;
       }
@@ -2547,7 +2710,6 @@
         const categoriaId = txCategoria.value;
         const dataMovimento = txData.value;
         const contaId = txConta.value;
-        const totalParcelas = (tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1;
 
         let emailAtribuido = null;
         if (tipo === 'Despesa Cartão') {
@@ -2558,43 +2720,64 @@
           }
         }
 
-        const { data: { user } } = await client.auth.getUser();
-        const criadorNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Admin';
+        if (transacaoEditandoId) {
+          // MODO EDIÇÃO
+          const { error } = await client
+            .from('transacoes')
+            .update({
+              tipo: tipo,
+              valor: valorTotal,
+              descricao: descricao,
+              categoria_id: categoriaId,
+              conta_id: contaId,
+              data_movimento: dataMovimento,
+              atribuido_para_email: emailAtribuido
+            })
+            .eq('id', transacaoEditandoId);
 
-        const compInicial = calcularCompetencia(dataMovimento, contaId);
-        let ano = Number(compInicial.ano);
-        let mes = Number(compInicial.mes);
+          if (error) throw error;
+        } else {
+          // MODO CRIAÇÃO
+          const totalParcelas = (tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1;
 
-        const valorParcela = parseFloat((valorTotal / totalParcelas).toFixed(2));
-        const centavos = parseFloat((valorTotal - (valorParcela * totalParcelas)).toFixed(2));
-        const idAgrupador = totalParcelas > 1 ? 'grp_' + Date.now() : null;
+          const { data: { user } } = await client.auth.getUser();
+          const criadorNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Admin';
 
-        const linhas = [];
-        for (let i = 1; i <= totalParcelas; i++) {
-          const valorFinal = (i === 1) ? valorParcela + centavos : valorParcela;
-          linhas.push({
-            id_agrupador: idAgrupador,
-            data_movimento: dataMovimento,
-            mes_competencia: `${ano}-${String(mes).padStart(2, '0')}`,
-            descricao: totalParcelas > 1 ? `${descricao} (${i}/${totalParcelas})` : descricao,
-            tipo: tipo,
-            valor: valorFinal,
-            conta_id: contaId,
-            categoria_id: categoriaId,
-            parcela_atual: i,
-            parcela_total: totalParcelas,
-            status: 'Previsto',
-            user_id: usuarioLogadoId,
-            atribuido_para_email: emailAtribuido,
-            criador_nome: criadorNome
-          });
+          const compInicial = calcularCompetencia(dataMovimento, contaId);
+          let ano = Number(compInicial.ano);
+          let mes = Number(compInicial.mes);
 
-          mes++;
-          if (mes > 12) { mes = 1; ano++; }
+          const valorParcela = parseFloat((valorTotal / totalParcelas).toFixed(2));
+          const centavos = parseFloat((valorTotal - (valorParcela * totalParcelas)).toFixed(2));
+          const idAgrupador = totalParcelas > 1 ? 'grp_' + Date.now() : null;
+
+          const linhas = [];
+          for (let i = 1; i <= totalParcelas; i++) {
+            const valorFinal = (i === 1) ? valorParcela + centavos : valorParcela;
+            linhas.push({
+              id_agrupador: idAgrupador,
+              data_movimento: dataMovimento,
+              mes_competencia: `${ano}-${String(mes).padStart(2, '0')}`,
+              descricao: totalParcelas > 1 ? `${descricao} (${i}/${totalParcelas})` : descricao,
+              tipo: tipo,
+              valor: valorFinal,
+              conta_id: contaId,
+              categoria_id: categoriaId,
+              parcela_atual: i,
+              parcela_total: totalParcelas,
+              status: 'Previsto',
+              user_id: usuarioLogadoId,
+              atribuido_para_email: emailAtribuido,
+              criador_nome: criadorNome
+            });
+
+            mes++;
+            if (mes > 12) { mes = 1; ano++; }
+          }
+
+          const { error } = await client.from('transacoes').insert(linhas);
+          if (error) throw error;
         }
-
-        const { error } = await client.from('transacoes').insert(linhas);
-        if (error) throw error;
 
         executarFeedback('sucesso');
         fecharModal();
@@ -2604,7 +2787,7 @@
       } finally {
         enviandoTransacao = false;
         btnSalvar.disabled = false;
-        btnSalvar.innerText = 'Salvar';
+        btnSalvar.innerText = transacaoEditandoId ? 'Salvar Alterações' : 'Salvar';
       }
     });
   </script>
