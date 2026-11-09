@@ -582,7 +582,7 @@
 
   <!-- Modal Nova / Editar Transação -->
   <div id="modal-transacao" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl">
+    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
         <h3 id="modal-tx-titulo" class="text-base font-bold text-white">Novo Lançamento</h3>
         <button type="button" id="btn-fechar-modal" class="p-1 text-slate-400 hover:text-white">
@@ -642,6 +642,25 @@
         <div>
           <label class="block text-xs text-slate-400 mb-1">Data do Movimento</label>
           <input type="date" id="tx-data" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
+        </div>
+
+        <!-- Opção de Lançamento Recorrente (Fixo) -->
+        <div id="container-recorrencia" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="repeat" class="w-3.5 h-3.5 text-emerald-400"></i> Conta Fixa (Repetir todo mês)
+            </span>
+            <input type="checkbox" id="tx-recorrente" class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+          </label>
+          
+          <div id="opcoes-recorrencia" class="hidden pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Repetir pelos próximos:</span>
+            <select id="tx-recorrente-meses" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="6">6 meses</option>
+              <option value="12" selected>12 meses (1 ano)</option>
+              <option value="24">24 meses (2 anos)</option>
+            </select>
+          </div>
         </div>
 
         <!-- Parcelamento de 1x a 18x -->
@@ -793,6 +812,10 @@
     const containerAtribuicao = document.getElementById('container-atribuicao');
     const txAtribuicaoPredefinida = document.getElementById('tx-atribuicao-predefinida');
     const txAtribuicaoEmail = document.getElementById('tx-atribuicao-email');
+    const txRecorrente = document.getElementById('tx-recorrente');
+    const opcoesRecorrencia = document.getElementById('opcoes-recorrencia');
+    const txRecorrenteMeses = document.getElementById('tx-recorrente-meses');
+    const containerRecorrencia = document.getElementById('container-recorrencia');
 
     // Modal Nova Conta
     const btnAbrirModalConta = document.getElementById('btn-abrir-modal-conta');
@@ -896,7 +919,7 @@
     aplicarMascaraTelefone(configTelefoneInput);
 
     // -------------------------------------------------------------
-    // ATRIBUIÇÃO DE COMPRAS NO CARTÃO
+    // ATRIBUIÇÃO DE COMPRAS NO CARTÃO E RECORRÊNCIA
     // -------------------------------------------------------------
     if (txAtribuicaoPredefinida) {
       txAtribuicaoPredefinida.addEventListener('change', () => {
@@ -906,6 +929,21 @@
         } else {
           txAtribuicaoEmail.classList.add('hidden');
           txAtribuicaoEmail.value = '';
+        }
+      });
+    }
+
+    if (txRecorrente) {
+      txRecorrente.addEventListener('change', () => {
+        if (txRecorrente.checked) {
+          opcoesRecorrencia.classList.remove('hidden');
+          containerParcelas.classList.add('hidden');
+          txParcelas.value = '1';
+          previaParcelamento.innerText = '';
+        } else {
+          opcoesRecorrencia.classList.add('hidden');
+          atualizarEstadoTipo();
+          calcularPrevia();
         }
       });
     }
@@ -2398,6 +2436,7 @@ ${linhasTexto}
       }
 
       containerParcelas.classList.add('hidden');
+      containerRecorrencia.classList.add('hidden');
       previaParcelamento.innerText = '';
 
       modalTransacao.classList.remove('hidden');
@@ -2439,9 +2478,9 @@ ${linhasTexto}
 
       if (idAgrupador && idAgrupador !== 'null' && idAgrupador !== 'undefined') {
         const excluirTudo = confirm(
-          'Este lançamento faz parte de uma compra parcelada!\n\n' +
-          '• Clique em [OK] para excluir TODAS as parcelas desta compra.\n' +
-          '• Clique em [Cancelar] para escolher se deseja excluir apenas esta parcela.'
+          'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
+          '• Clique em [OK] para excluir TODAS as parcelas/meses vinculados.\n' +
+          '• Clique em [Cancelar] para escolher se deseja excluir apenas este mês.'
         );
 
         if (excluirTudo) {
@@ -2451,7 +2490,7 @@ ${linhasTexto}
             .eq('id_agrupador', idAgrupador);
 
           if (error) {
-            alert('Erro ao excluir as parcelas: ' + error.message);
+            alert('Erro ao excluir os registros: ' + error.message);
           } else {
             executarFeedback('sucesso');
             carregarTransacoes();
@@ -2459,7 +2498,7 @@ ${linhasTexto}
           return;
         }
 
-        const excluirApenasEsta = confirm('Deseja excluir APENAS esta parcela do mês atual?');
+        const excluirApenasEsta = confirm('Deseja excluir APENAS o lançamento deste mês atual?');
         if (!excluirApenasEsta) return;
       } else {
         if (!confirm('Deseja excluir este lançamento?')) return;
@@ -2630,6 +2669,8 @@ ${linhasTexto}
       txData.value = new Date().toISOString().slice(0, 10);
       previaParcelamento.innerText = '';
       txAtribuicaoEmail.classList.add('hidden');
+      if (opcoesRecorrencia) opcoesRecorrencia.classList.add('hidden');
+      if (containerRecorrencia) containerRecorrencia.classList.remove('hidden');
     }
 
     btnFecharModal.addEventListener('click', fecharModal);
@@ -2648,7 +2689,9 @@ ${linhasTexto}
 
     function atualizarEstadoTipo() {
       if (txTipo.value === 'Despesa Cartão') {
-        if (!transacaoEditandoId) containerParcelas.classList.remove('hidden');
+        if (!transacaoEditandoId && (!txRecorrente || !txRecorrente.checked)) {
+          containerParcelas.classList.remove('hidden');
+        }
         containerAtribuicao.classList.remove('hidden');
       } else {
         containerParcelas.classList.add('hidden');
@@ -2672,7 +2715,7 @@ ${linhasTexto}
     }
 
     function calcularPrevia() {
-      if (txTipo.value !== 'Despesa Cartão' || transacaoEditandoId) {
+      if (txTipo.value !== 'Despesa Cartão' || transacaoEditandoId || (txRecorrente && txRecorrente.checked)) {
         previaParcelamento.innerText = '';
         return;
       }
@@ -2737,8 +2780,11 @@ ${linhasTexto}
 
           if (error) throw error;
         } else {
-          // MODO CRIAÇÃO
-          const totalParcelas = (tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1;
+          // MODO CRIAÇÃO (Com suporte a Conta Fixa Recorrente ou Parcelamento)
+          const ehRecorrente = txRecorrente && txRecorrente.checked;
+          const totalRepeticoes = ehRecorrente 
+            ? parseInt(txRecorrenteMeses.value) 
+            : ((tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1);
 
           const { data: { user } } = await client.auth.getUser();
           const criadorNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Admin';
@@ -2747,24 +2793,28 @@ ${linhasTexto}
           let ano = Number(compInicial.ano);
           let mes = Number(compInicial.mes);
 
-          const valorParcela = parseFloat((valorTotal / totalParcelas).toFixed(2));
-          const centavos = parseFloat((valorTotal - (valorParcela * totalParcelas)).toFixed(2));
-          const idAgrupador = totalParcelas > 1 ? 'grp_' + Date.now() : null;
+          const valorParcela = ehRecorrente ? valorTotal : parseFloat((valorTotal / totalRepeticoes).toFixed(2));
+          const centavos = ehRecorrente ? 0 : parseFloat((valorTotal - (valorParcela * totalRepeticoes)).toFixed(2));
+          const idAgrupador = totalRepeticoes > 1 ? (ehRecorrente ? 'fixo_' : 'grp_') + Date.now() : null;
 
           const linhas = [];
-          for (let i = 1; i <= totalParcelas; i++) {
+          for (let i = 1; i <= totalRepeticoes; i++) {
             const valorFinal = (i === 1) ? valorParcela + centavos : valorParcela;
+            const descFinal = (!ehRecorrente && totalRepeticoes > 1) 
+              ? `${descricao} (${i}/${totalRepeticoes})` 
+              : descricao;
+
             linhas.push({
               id_agrupador: idAgrupador,
               data_movimento: dataMovimento,
               mes_competencia: `${ano}-${String(mes).padStart(2, '0')}`,
-              descricao: totalParcelas > 1 ? `${descricao} (${i}/${totalParcelas})` : descricao,
+              descricao: descFinal,
               tipo: tipo,
               valor: valorFinal,
               conta_id: contaId,
               categoria_id: categoriaId,
-              parcela_atual: i,
-              parcela_total: totalParcelas,
+              parcela_atual: ehRecorrente ? 1 : i,
+              parcela_total: ehRecorrente ? 1 : totalRepeticoes,
               status: 'Previsto',
               user_id: usuarioLogadoId,
               atribuido_para_email: emailAtribuido,
