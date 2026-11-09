@@ -471,7 +471,7 @@
     </div>
   </div>
 
-  <!-- Modal Nova Categoria (Com separação entre Despesa e Receita) -->
+  <!-- Modal Nova Categoria (Com Pré-visualização do Ícone) -->
   <div id="modal-categoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
@@ -494,7 +494,7 @@
 
         <div>
           <label class="block text-xs text-slate-400 mb-1">Nome da Categoria</label>
-          <input type="text" id="categoria-nome" required placeholder="Ex: Mercado, Salário, Freelance" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
+          <input type="text" id="categoria-nome" required placeholder="Ex: Mercado, Dízimo, Salário" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -504,19 +504,30 @@
           </div>
           <div id="campo-container-icone" class="col-span-1">
             <label class="block text-xs text-slate-400 mb-1">Ícone</label>
-            <select id="categoria-icone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
-              <option value="shopping-cart">Mercado</option>
-              <option value="utensils">Alimentação</option>
-              <option value="home">Moradia</option>
-              <option value="car">Transporte</option>
-              <option value="tv">Lazer / Streaming</option>
-              <option value="activity">Saúde</option>
-              <option value="book-open">Educação</option>
-              <option value="wallet">Salário / Carteira</option>
-              <option value="trending-up">Renda Extra / Vendas</option>
-              <option value="piggy-bank">Investimentos</option>
-              <option value="tag">Geral</option>
-            </select>
+            <div class="flex items-center gap-2">
+              <div id="preview-icone-categoria" class="w-9 h-9 shrink-0 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-sky-400">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+              </div>
+              <select id="categoria-icone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
+                <option value="shopping-cart">Mercado</option>
+                <option value="utensils">Alimentação</option>
+                <option value="home">Moradia</option>
+                <option value="car">Transporte</option>
+                <option value="tv">Lazer / Streaming</option>
+                <option value="activity">Saúde</option>
+                <option value="book-open">Educação</option>
+                <option value="church">Religião / Igreja</option>
+                <option value="hand-heart">Dízimo / Oferta / Doação</option>
+                <option value="sparkles">Espiritualidade</option>
+                <option value="paw-print">Pets</option>
+                <option value="dumbbell">Academia / Esportes</option>
+                <option value="gift">Presentes</option>
+                <option value="wallet">Salário / Carteira</option>
+                <option value="trending-up">Renda Extra / Vendas</option>
+                <option value="piggy-bank">Investimentos</option>
+                <option value="tag">Geral</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -826,7 +837,7 @@
     const contaTipo = document.getElementById('conta-tipo');
     const camposCartao = document.getElementById('campos-especificos-cartao');
 
-    // Modal Nova Categoria
+    // Modal Nova Categoria & Preview do Ícone
     const btnAbrirModalCategoria = document.getElementById('btn-abrir-modal-categoria');
     const btnFecharModalCategoria = document.getElementById('btn-fechar-modal-categoria');
     const btnCancelarModalCategoria = document.getElementById('btn-cancelar-modal-categoria');
@@ -836,6 +847,19 @@
     const campoContainerTeto = document.getElementById('campo-container-teto');
     const campoContainerIcone = document.getElementById('campo-container-icone');
     const categoriaTeto = document.getElementById('categoria-teto');
+    const selectCategoriaIcone = document.getElementById('categoria-icone');
+    const previewIconeCategoria = document.getElementById('preview-icone-categoria');
+
+    function atualizarPreviewIconeCategoria() {
+      if (!selectCategoriaIcone || !previewIconeCategoria) return;
+      const iconeEscolhido = selectCategoriaIcone.value || 'tag';
+      previewIconeCategoria.innerHTML = `<i data-lucide="${iconeEscolhido}" class="w-4 h-4"></i>`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    if (selectCategoriaIcone) {
+      selectCategoriaIcone.addEventListener('change', atualizarPreviewIconeCategoria);
+    }
 
     // -------------------------------------------------------------
     // MOTOR DE ÁUDIO & FEEDBACK TÁTIL (Web Audio API + Vibration API)
@@ -2543,12 +2567,14 @@ ${linhasTexto}
       executarFeedback('clique');
       modalCategoria.classList.remove('hidden');
       atualizarVisibilidadeTetoCategoria();
+      atualizarPreviewIconeCategoria();
     });
 
     function fecharModalCategoria() {
       modalCategoria.classList.add('hidden');
       formCategoria.reset();
       atualizarVisibilidadeTetoCategoria();
+      atualizarPreviewIconeCategoria();
     }
 
     btnFecharModalCategoria.addEventListener('click', fecharModalCategoria);
