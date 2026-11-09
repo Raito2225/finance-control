@@ -174,8 +174,13 @@
             </div>
           </div>
 
+          <!-- Botão Modo Privacidade (Ocultar Valores) -->
+          <button type="button" id="btn-modo-privacidade" onclick="alternarPrivacidade()" title="Ocultar / Mostrar Valores" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+
           <!-- Botão Central de Configurações -->
-          <button type="button" id="btn-abrir-config" title="Configurações" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0">
+          <button type="button" id="btn-abrir-config" title="Configurações" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95">
             <i data-lucide="settings" class="w-4 h-4"></i>
           </button>
         </div>
@@ -242,9 +247,12 @@
 
       <!-- Meus Cartões & Contas -->
       <div class="space-y-2.5">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> Cartões & Contas
-        </h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> Cartões & Contas
+          </h2>
+          <span class="text-[10px] text-slate-500">Toque para filtrar o extrato</span>
+        </div>
         <div id="grid-cartoes-contas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
@@ -260,8 +268,14 @@
       <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3.5">
         
         <div class="flex flex-col gap-2.5">
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-slate-200">Extrato</h2>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-semibold text-slate-200">Extrato</h2>
+              <button type="button" id="badge-filtro-conta" onclick="alternarFiltroConta(null)" class="hidden text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 hover:bg-emerald-500/30 transition">
+                <span id="texto-filtro-conta"></span>
+                <i data-lucide="x" class="w-3 h-3"></i>
+              </button>
+            </div>
             <div class="flex items-center gap-2">
               <span id="contador-transacoes" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-lg">0 registros</span>
             </div>
@@ -539,11 +553,11 @@
     </div>
   </div>
 
-  <!-- Modal Nova Conta / Cartão -->
+  <!-- Modal Nova / Editar Conta / Cartão -->
   <div id="modal-conta" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+        <h3 id="modal-conta-titulo" class="text-sm font-bold text-white flex items-center gap-2">
           <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Conta ou Cartão
         </h3>
         <button type="button" id="btn-fechar-modal-conta" class="p-1 text-slate-400 hover:text-white">
@@ -741,20 +755,30 @@
     let transacoesCarregadas = [];
     let meuGraficoProjecao = null;
     let filtroTipoAtivo = 'todos';
+    let filtroContaIdAtiva = null;
     let termoBuscaAtivo = '';
     
     // Controle de Visão (Painel Pessoal vs Convidados vs Geral)
     let visaoAtiva = 'pessoal'; // 'pessoal' | 'geral' | '<email_convidado>'
     // Controle de Edição
     let transacaoEditandoId = null;
+    let contaEditandoId = null;
 
     // Leitura segura de preferências (protegido contra bloqueio de localStorage no Android/Modo Anônimo)
     let configFeedbackAtivo = true;
     let temaAtivo = 'esmeralda';
+    let modoPrivacidadeAtivo = false;
     try {
       configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
       temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
+      modoPrivacidadeAtivo = localStorage.getItem('fc_privacidade_ativa') === 'true';
     } catch (e) {}
+
+    // Helper de formatação monetária com suporte ao Modo Privacidade
+    function formatarMoeda(valor) {
+      if (modoPrivacidadeAtivo) return 'R$ •••••';
+      return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
     // Elementos DOM Autenticação & Cadastro
     const authScreen = document.getElementById('auth-screen');
@@ -778,6 +802,7 @@
     const filtroBusca = document.getElementById('filtro-busca');
     const contadorTransacoes = document.getElementById('contador-transacoes');
     const btnFabAdicionar = document.getElementById('btn-fab-adicionar');
+    const btnModoPrivacidade = document.getElementById('btn-modo-privacidade');
 
     // Dropdown Exportação
     const btnDropdownExportar = document.getElementById('btn-dropdown-exportar');
@@ -860,6 +885,55 @@
     if (selectCategoriaIcone) {
       selectCategoriaIcone.addEventListener('change', atualizarPreviewIconeCategoria);
     }
+
+    // -------------------------------------------------------------
+    // MODO PRIVACIDADE (OCULTAR / MOSTRAR VALORES)
+    // -------------------------------------------------------------
+    function atualizarIconePrivacidade() {
+      if (!btnModoPrivacidade) return;
+      btnModoPrivacidade.innerHTML = `<i data-lucide="${modoPrivacidadeAtivo ? 'eye-off' : 'eye'}" class="w-4 h-4 ${modoPrivacidadeAtivo ? 'text-amber-400' : ''}"></i>`;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    window.alternarPrivacidade = function() {
+      executarFeedback('clique');
+      modoPrivacidadeAtivo = !modoPrivacidadeAtivo;
+      try {
+        localStorage.setItem('fc_privacidade_ativa', modoPrivacidadeAtivo);
+      } catch (e) {}
+      atualizarIconePrivacidade();
+      atualizarTotais();
+      renderizarGridContas();
+      renderizarGridCategorias();
+      renderizarTransacoes();
+    };
+
+    // -------------------------------------------------------------
+    // FILTRO POR CARTÃO AO CLICAR NO CARD
+    // -------------------------------------------------------------
+    window.alternarFiltroConta = function(contaId) {
+      executarFeedback('clique');
+      if (contaId === null || filtroContaIdAtiva === contaId) {
+        filtroContaIdAtiva = null;
+      } else {
+        filtroContaIdAtiva = contaId;
+      }
+
+      const badge = document.getElementById('badge-filtro-conta');
+      const textoBadge = document.getElementById('texto-filtro-conta');
+      if (badge && textoBadge) {
+        if (filtroContaIdAtiva) {
+          const contaObj = contasUsuario.find(c => c.id === filtroContaIdAtiva);
+          textoBadge.textContent = contaObj ? contaObj.nome : 'Cartão';
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      renderizarGridContas();
+      renderizarTransacoes();
+    };
 
     // -------------------------------------------------------------
     // MOTOR DE ÁUDIO & FEEDBACK TÁTIL (Web Audio API + Vibration API)
@@ -1214,6 +1288,8 @@ ${linhasTexto}
     function obterLinhasFiltradasParaExportacao() {
       const listaVisao = obterTransacoesDaVisao();
       return listaVisao.filter(t => {
+        if (filtroContaIdAtiva && t.conta_id !== filtroContaIdAtiva) return false;
+
         if (filtroTipoAtivo === 'pendentes') {
           if (t.status === 'Pago') return false;
         } else if (filtroTipoAtivo !== 'todos') {
@@ -1484,6 +1560,7 @@ ${linhasTexto}
       filtroMes.value = mesAtual;
       txData.value = new Date().toISOString().slice(0, 10);
       aplicarTemaNaInterface();
+      atualizarIconePrivacidade();
 
       if (client) {
         client.auth.onAuthStateChange(async (event, session) => {
@@ -2004,16 +2081,23 @@ ${linhasTexto}
           if (t.conta_id === c.id) totalNoMes += Number(t.valor);
         });
 
-        const valorFmt = totalNoMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const valorFmt = formatarMoeda(totalNoMes);
         const nomeEscapado = (c.nome || '').replace(/'/g, "\\'");
+        const isSelecionado = filtroContaIdAtiva === c.id;
+        const classeCard = isSelecionado 
+          ? 'border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/40' 
+          : 'border-slate-800 bg-slate-900/80 hover:border-slate-700';
 
         return `
-          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+          <div onclick="alternarFiltroConta('${c.id}')" class="p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition active:scale-[0.99] ${classeCard}">
             <div>
-              <div class="flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${isCartao ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+              <div class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full mr-0.5 ${isCartao ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
                 <h3 class="text-xs font-bold text-white">${c.nome}</h3>
-                <button type="button" onclick="deletarConta('${c.id}', '${nomeEscapado}')" class="p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir conta/cartão">
+                <button type="button" onclick="event.stopPropagation(); editarConta('${c.id}')" class="p-1 text-slate-500 hover:text-sky-400 transition" title="Editar conta/cartão">
+                  <i data-lucide="pencil" class="w-3 h-3"></i>
+                </button>
+                <button type="button" onclick="event.stopPropagation(); deletarConta('${c.id}', '${nomeEscapado}')" class="p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir conta/cartão">
                   <i data-lucide="trash-2" class="w-3 h-3"></i>
                 </button>
               </div>
@@ -2076,14 +2160,14 @@ ${linhasTexto}
                 </button>
               </div>
               <span class="text-xs font-mono font-bold ${estourou ? 'text-rose-400' : 'text-slate-200'}">
-                ${gastoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                ${formatarMoeda(gastoTotal)}
               </span>
             </div>
             <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
               <div class="${corBarra} h-full transition-all duration-300" style="width: ${percentual}%"></div>
             </div>
             <div class="flex justify-between text-[10px] text-slate-500">
-              <span>Meta: ${teto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              <span>Meta: ${formatarMoeda(teto)}</span>
               <span class="${estourou ? 'text-rose-400 font-semibold' : ''}">${percentual}%</span>
             </div>
           </div>
@@ -2120,6 +2204,32 @@ ${linhasTexto}
       }
     };
 
+    window.editarConta = function(id) {
+      const c = contasUsuario.find(item => item.id === id);
+      if (!c) return;
+
+      executarFeedback('clique');
+      contaEditandoId = id;
+
+      document.getElementById('modal-conta-titulo').innerHTML = '<i data-lucide="credit-card" class="w-4 h-4 text-sky-400"></i> Editar Conta ou Cartão';
+      document.getElementById('btn-salvar-conta').innerText = 'Salvar Alterações';
+
+      document.getElementById('conta-nome').value = c.nome || '';
+      contaTipo.value = c.tipo || 'Cartão de Crédito';
+
+      if (contaTipo.value === 'Cartão de Crédito') {
+        camposCartao.classList.remove('hidden');
+        document.getElementById('conta-fechamento').value = c.dia_fechamento || '';
+        document.getElementById('conta-vencimento').value = c.dia_vencimento || '';
+      } else {
+        camposCartao.classList.add('hidden');
+      }
+
+      document.getElementById('conta-saldo-inicial').value = Number(c.saldo_inicial || 0).toFixed(2);
+      modalConta.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    };
+
     window.deletarConta = async function(id, nome) {
       if (!client) return;
       executarFeedback('clique');
@@ -2131,6 +2241,7 @@ ${linhasTexto}
         alert('Não foi possível excluir: existem lançamentos vinculados a esta conta/cartão. Exclua ou edite os lançamentos primeiro.');
       } else {
         executarFeedback('sucesso');
+        if (filtroContaIdAtiva === id) alternarFiltroConta(null);
         await buscarOuCriarContas();
         await carregarTransacoes();
       }
@@ -2283,6 +2394,8 @@ ${linhasTexto}
       const listaVisao = obterTransacoesDaVisao();
 
       let filtradas = listaVisao.filter(t => {
+        if (filtroContaIdAtiva && t.conta_id !== filtroContaIdAtiva) return false;
+
         if (filtroTipoAtivo === 'pendentes') {
           if (t.status === 'Pago') return false;
         } else if (filtroTipoAtivo !== 'todos') {
@@ -2311,7 +2424,7 @@ ${linhasTexto}
 
       // 1. Cards Mobile
       containerMobile.innerHTML = filtradas.map(t => {
-        const valorFmt = Number(t.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const valorFmt = formatarMoeda(t.valor);
         const isReceita = t.tipo === 'Receita';
         const isLiquidado = t.status === 'Pago';
         const parcelaBadge = t.parcela_total > 1 ? `<span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">${t.parcela_atual}/${t.parcela_total}</span>` : '';
@@ -2408,7 +2521,7 @@ ${linhasTexto}
 
       // 2. Tabela Desktop
       tbodyDesktop.innerHTML = filtradas.map(t => {
-        const valorFmt = Number(t.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const valorFmt = formatarMoeda(t.valor);
         const isReceita = t.tipo === 'Receita';
         const isLiquidado = t.status === 'Pago';
         const parcelaBadge = t.parcela_total > 1 ? `<span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">${t.parcela_atual}/${t.parcela_total}</span>` : '-';
@@ -2624,10 +2737,10 @@ ${linhasTexto}
         else despesa += v;
       });
 
-      document.getElementById('card-fatura').innerText = fatura.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('card-receita').innerText = receita.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('card-despesa').innerText = (fatura + despesa).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      document.getElementById('card-saldo').innerText = (receita - (fatura + despesa)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      document.getElementById('card-fatura').innerText = formatarMoeda(fatura);
+      document.getElementById('card-receita').innerText = formatarMoeda(receita);
+      document.getElementById('card-despesa').innerText = formatarMoeda(fatura + despesa);
+      document.getElementById('card-saldo').innerText = formatarMoeda(receita - (fatura + despesa));
     }
 
     // -------------------------------------------------------------
@@ -2700,11 +2813,18 @@ ${linhasTexto}
       executarFeedback('clique');
       modalConta.classList.remove('hidden');
     });
+
     function fecharModalConta() {
+      contaEditandoId = null;
+      document.getElementById('modal-conta-titulo').innerHTML = '<i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Conta ou Cartão';
+      document.getElementById('btn-salvar-conta').innerText = 'Salvar';
+
       modalConta.classList.add('hidden');
       formConta.reset();
       camposCartao.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
     }
+
     btnFecharModalConta.addEventListener('click', fecharModalConta);
     btnCancelarModalConta.addEventListener('click', fecharModalConta);
 
@@ -2727,23 +2847,39 @@ ${linhasTexto}
       const saldoInicial = parseFloat(document.getElementById('conta-saldo-inicial').value) || 0.00;
 
       try {
-        const { error } = await client.from('contas').insert([{ 
-          nome, 
-          tipo, 
-          dia_fechamento: fechamento, 
-          dia_vencimento: vencimento, 
-          saldo_inicial: saldoInicial,
-          user_id: usuarioLogadoId 
-        }]);
-        if (error) throw error;
+        if (contaEditandoId) {
+          const { error } = await client
+            .from('contas')
+            .update({
+              nome,
+              tipo,
+              dia_fechamento: fechamento,
+              dia_vencimento: vencimento,
+              saldo_inicial: saldoInicial
+            })
+            .eq('id', contaEditandoId);
+          if (error) throw error;
+        } else {
+          const { error } = await client.from('contas').insert([{ 
+            nome, 
+            tipo, 
+            dia_fechamento: fechamento, 
+            dia_vencimento: vencimento, 
+            saldo_inicial: saldoInicial,
+            user_id: usuarioLogadoId 
+          }]);
+          if (error) throw error;
+        }
+
         executarFeedback('sucesso');
         fecharModalConta();
         await buscarOuCriarContas();
+        renderizarTransacoes();
       } catch (err) {
         alert('Erro: ' + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Salvar';
+        btn.innerText = contaEditandoId ? 'Salvar Alterações' : 'Salvar';
       }
     });
 
