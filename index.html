@@ -2056,13 +2056,17 @@ ${linhasTexto}
         const percentual = Math.min(Math.round((gastoTotal / teto) * 100), 100);
         const estourou = gastoTotal > teto;
         const corBarra = estourou ? 'bg-rose-500' : (percentual >= 75 ? 'bg-amber-500' : 'bg-emerald-500');
+        const nomeEscapado = (cat.nome || '').replace(/'/g, "\\'");
 
         return `
           <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5">
                 <i data-lucide="${cat.icone || 'tag'}" class="w-3.5 h-3.5 text-sky-400"></i>
                 <h4 class="text-xs font-bold text-white">${cat.nome}</h4>
+                <button type="button" onclick="editarTetoCategoria('${cat.id}', '${nomeEscapado}', ${teto})" class="p-1 text-slate-500 hover:text-sky-400 transition" title="Alterar limite">
+                  <i data-lucide="pencil" class="w-3 h-3"></i>
+                </button>
               </div>
               <span class="text-xs font-mono font-bold ${estourou ? 'text-rose-400' : 'text-slate-200'}">
                 ${gastoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -2081,6 +2085,33 @@ ${linhasTexto}
 
       if (window.lucide) lucide.createIcons();
     }
+
+    window.editarTetoCategoria = async function(id, nome, tetoAtual) {
+      if (!client) return;
+      executarFeedback('clique');
+
+      const novoValorStr = prompt(`Novo limite mensal para "${nome}" (R$):\n(Digite 0 para remover o limite)`, tetoAtual);
+      if (novoValorStr === null) return;
+
+      const novoTeto = parseFloat(novoValorStr.replace(',', '.'));
+      if (isNaN(novoTeto) || novoTeto < 0) {
+        alert('Informe um valor numérico válido.');
+        return;
+      }
+
+      const { error } = await client
+        .from('categorias')
+        .update({ teto_mensal: novoTeto === 0 ? null : novoTeto })
+        .eq('id', id);
+
+      if (error) {
+        alert('Erro ao atualizar limite: ' + error.message);
+      } else {
+        executarFeedback('sucesso');
+        await buscarOuCriarCategorias();
+        renderizarGridCategorias();
+      }
+    };
 
     // -------------------------------------------------------------
     // GRÁFICO DE PROJEÇÃO DE 6 MESES (CHART.JS)
@@ -2791,20 +2822,66 @@ ${linhasTexto}
 
         if (transacaoEditandoId) {
           // MODO EDIÇÃO
-          const { error } = await client
-            .from('transacoes')
-            .update({
+          const txOriginal = transacoesCarregadas.find(t => t.id === transacaoEditandoId);
+          let atualizarGrupo = false;
+
+          if (txOriginal && txOriginal.id_agrupador) {
+            atualizarGrupo = confirm(
+              'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
+              '• Clique em [OK] para aplicar as alterações em TODAS as parcelas/meses vinculados.\n' +
+              '• Clique em [Cancelar] para editar APENAS este mês.'
+            );
+          }
+
+          if (atualizarGrupo && txOriginal.id_agrupador) {
+            // Atualiza valor, tipo, categoria, conta e responsável em todas as parcelas do grupo
+            const dadosGrupo = {
               tipo: tipo,
               valor: valorTotal,
-              descricao: descricao,
               categoria_id: categoriaId,
               conta_id: contaId,
-              data_movimento: dataMovimento,
               atribuido_para_email: emailAtribuido
-            })
-            .eq('id', transacaoEditandoId);
+            };
 
-          if (error) throw error;
+            // Se for conta fixa (sem sufixo de parcela), atualiza também a descrição em todos os meses
+            if (txOriginal.id_agrupador.startsWith('fixo_')) {
+              dadosGrupo.descricao = descricao;
+            }
+
+            const { error: errGrupo } = await client
+              .from('transacoes')
+              .update(dadosGrupo)
+              .eq('id_agrupador', txOriginal.id_agrupador);
+
+            if (errGrupo) throw errGrupo;
+
+            // Atualiza data e descrição específica na parcela que foi aberta
+            const { error: errAtual } = await client
+              .from('transacoes')
+              .update({
+                descricao: descricao,
+                data_movimento: dataMovimento
+              })
+              .eq('id', transacaoEditandoId);
+
+            if (errAtual) throw errAtual;
+          } else {
+            // Edita apenas o lançamento selecionado
+            const { error } = await client
+              .from('transacoes')
+              .update({
+                tipo: tipo,
+                valor: valorTotal,
+                descricao: descricao,
+                categoria_id: categoriaId,
+                conta_id: contaId,
+                data_movimento: dataMovimento,
+                atribuido_para_email: emailAtribuido
+              })
+              .eq('id', transacaoEditandoId);
+
+            if (error) throw error;
+          }
         } else {
           // MODO CRIAÇÃO (Com suporte a Conta Fixa Recorrente ou Parcelamento)
           const ehRecorrente = txRecorrente && txRecorrente.checked;
