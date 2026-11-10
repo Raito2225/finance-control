@@ -636,8 +636,8 @@
           <input type="text" id="tx-descricao" required placeholder="Ex: Farmácia, Roupas, Mercado" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
         </div>
 
-        <!-- Seletor de Atribuição (Quem realizou a compra no cartão) -->
-        <div id="container-atribuicao" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+        <!-- Seletor de Atribuição (Exclusivo do Administrador) -->
+        <div id="container-atribuicao" class="hidden p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
           <div class="flex items-center justify-between">
             <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
               <i data-lucide="users" class="w-3.5 h-3.5 text-sky-400"></i> Responsável pelo Gasto
@@ -2920,11 +2920,17 @@ ${linhasTexto}
     txParcelas.addEventListener('change', calcularPrevia);
 
     function atualizarEstadoTipo() {
+      const isAdmin = usuarioLogadoEmail && usuarioLogadoEmail.toLowerCase() === 'matheusgomes2225@hotmail.com';
+
       if (txTipo.value === 'Despesa Cartão') {
         if (!transacaoEditandoId && (!txRecorrente || !txRecorrente.checked)) {
           containerParcelas.classList.remove('hidden');
         }
-        containerAtribuicao.classList.remove('hidden');
+        if (isAdmin) {
+          containerAtribuicao.classList.remove('hidden');
+        } else {
+          containerAtribuicao.classList.add('hidden');
+        }
       } else {
         containerParcelas.classList.add('hidden');
         containerAtribuicao.classList.add('hidden');
@@ -2987,7 +2993,9 @@ ${linhasTexto}
         const contaId = txConta.value;
 
         let emailAtribuido = null;
-        if (tipo === 'Despesa Cartão') {
+        const isAdmin = usuarioLogadoEmail && usuarioLogadoEmail.toLowerCase() === 'matheusgomes2225@hotmail.com';
+
+        if (isAdmin && tipo === 'Despesa Cartão') {
           if (txAtribuicaoPredefinida.value === 'outro') {
             emailAtribuido = txAtribuicaoEmail.value.trim().toLowerCase() || null;
           } else if (txAtribuicaoPredefinida.value) {
