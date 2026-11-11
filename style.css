@@ -16,19 +16,24 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #334155; /* Cor slate-700 do Tailwind */
+  background-color: #334155; /* slate-700 */
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #475569; /* Cor slate-600 do Tailwind */
+  background-color: #475569; /* slate-600 */
 }
 
-/* Classe utilitária para ocultar scrollbar em menus horizontais, mas manter o scroll ativo */
+/* Ocultar scrollbar em menus horizontais mantendo o scroll ativo */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Curva suave estilo app nativo para modais e bottom sheets */
+.modal-spring {
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
