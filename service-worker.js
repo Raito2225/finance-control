@@ -30,11 +30,12 @@ self.addEventListener('activate', (event) => {
 });
 
 // Estratégia Network-First para o app e bypass total para o Supabase
+// Estratégia Network-First para o app e bypass total para o Supabase
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
-  // Nunca faz cache das requisições de API/Auth do Supabase
-  if (url.includes('supabase.co')) {
+  // Nunca faz cache das requisições do Supabase ou de extensões do Chrome
+  if (url.includes('supabase.co') || !url.startsWith('http')) {
     return;
   }
 
