@@ -1,7 +1,7 @@
 /* ==========================================================================
    CONFIGURAÇÕES GERAIS E SUPABASE
    ========================================================================== */
-const SUPABASE_URL = 'https://vrivgmpdcgpqhuohzkaf.supabase.co';
+const SUPABASE_URL = '[https://vrivgmpdcgpqhuohzkaf.supabase.co](https://vrivgmpdcgpqhuohzkaf.supabase.co)';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZnbXBkY2dwcWh1b2h6a2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MjAxODQsImV4cCI6MjEwOTM5NjE4NH0.H7qIvpF3rm-k-moF101qC2JLLe1mHOlqQlMWnzhFGo4';
 const NUMERO_WHATSAPP_TESTES = '5575988660943';
 const ADMIN_EMAIL = 'matheusgomes2225@hotmail.com';
@@ -33,6 +33,7 @@ let filtroTipoAtivo = 'todos';
 let filtroContaIdAtiva = null;
 let termoBuscaAtivo = '';
 let visaoAtiva = 'pessoal';
+let periodoGrafico = '6m'; // '6m' | '3m' | 'ano'
 
 let transacaoEditandoId = null;
 let contaEditandoId = null;
@@ -623,7 +624,7 @@ window.enviarResumoWhatsApp = function() {
   }).join('\n');
 
   const msg = `Resumo de ${mesAtual} (${visaoAtiva.split('@')[0]}):\n\n${linhas}\n\n*Total:* ${tGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n*Falta Pagar:* ${tPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`[https://wa.me/?text=$](https://wa.me/?text=$){encodeURIComponent(msg)}`, '_blank');
 };
 
 window.marcarTudoComoPagoVisao = async function() {
@@ -834,26 +835,65 @@ function renderizarGridCategorias() {
 }
 
 /* ==========================================================================
-   GRÁFICOS (PROJEÇÃO E ROSCA POR CATEGORIA)
+   GRÁFICOS (PROJEÇÃO / HISTÓRICO E ROSCA POR CATEGORIA)
    ========================================================================== */
+window.alterarPeriodoGrafico = function(novoPeriodo) {
+  executarFeedback('clique');
+  periodoGrafico = novoPeriodo;
+
+  document.querySelectorAll('.btn-graf-periodo').forEach(btn => {
+    btn.className = 'btn-graf-periodo px-2 py-1 rounded-md text-slate-400 hover:text-white transition';
+  });
+
+  const btnAtivo = document.getElementById(`btn-graf-${novoPeriodo}`);
+  if (btnAtivo) {
+    btnAtivo.className = 'btn-graf-periodo px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 transition';
+  }
+
+  carregarGraficoProjecao();
+};
+
 async function carregarGraficoProjecao() {
   if (!client) return;
   const ml = [], mc = [];
-  let [a, m] = mesAtual.split('-').map(Number);
+  let [anoBase, mesBase] = mesAtual.split('-').map(Number);
 
-  for (let i = 0; i < 6; i++) {
-    mc.push(`${a}-${String(m).padStart(2, '0')}`);
-    ml.push(new Date(a, m - 1, 1).toLocaleDateString('pt-BR', { month: 'short' }).slice(0, 3).toUpperCase());
-    m++;
-    if (m > 12) { m = 1; a++; }
+  const tituloEl = document.getElementById('titulo-grafico-projecao');
+
+  if (periodoGrafico === 'ano') {
+    if (tituloEl) tituloEl.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Histórico ${anoBase}`;
+    for (let m = 1; m <= 12; m++) {
+      mc.push(`${anoBase}-${String(m).padStart(2, '0')}`);
+      ml.push(new Date(anoBase, m - 1, 1).toLocaleDateString('pt-BR', { month: 'short' }).slice(0, 3).toUpperCase());
+    }
+  } else if (periodoGrafico === '3m') {
+    if (tituloEl) tituloEl.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Últimos 3 Meses`;
+    for (let i = 2; i >= 0; i--) {
+      let a = anoBase, m = mesBase - i;
+      while (m < 1) { m += 12; a--; }
+      mc.push(`${a}-${String(m).padStart(2, '0')}`);
+      ml.push(new Date(a, m - 1, 1).toLocaleDateString('pt-BR', { month: 'short' }).slice(0, 3).toUpperCase());
+    }
+  } else {
+    if (tituloEl) tituloEl.innerHTML = `<i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção 6 Meses`;
+    for (let i = 0; i < 6; i++) {
+      mc.push(`${anoBase}-${String(mesBase).padStart(2, '0')}`);
+      ml.push(new Date(anoBase, mesBase - 1, 1).toLocaleDateString('pt-BR', { month: 'short' }).slice(0, 3).toUpperCase());
+      mesBase++;
+      if (mesBase > 12) { mesBase = 1; anoBase++; }
+    }
   }
+
+  if (window.lucide) lucide.createIcons();
 
   let q = client.from('transacoes').select('valor, tipo, mes_competencia, user_id, atribuido_para_email').in('mes_competencia', mc);
   if (usuarioLogadoId) q = q.or(`user_id.eq.${usuarioLogadoId},atribuido_para_email.eq.${usuarioLogadoEmail}`);
   const { data } = await q;
   const d = obterTransacoesDaVisao(data || []);
 
-  const rec = [0, 0, 0, 0, 0, 0], sai = [0, 0, 0, 0, 0, 0];
+  const rec = Array(mc.length).fill(0);
+  const sai = Array(mc.length).fill(0);
+
   d.forEach(t => {
     const idx = mc.indexOf(t.mes_competencia);
     if (idx !== -1) {
@@ -863,7 +903,7 @@ async function carregarGraficoProjecao() {
   });
 
   let soma = 0, cc = 0;
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < mc.length; i++) {
     if (rec[i] > 0) { soma += (sai[i] / rec[i]) * 100; cc++; }
   }
 
@@ -891,8 +931,8 @@ async function carregarGraficoProjecao() {
         maintainAspectRatio: false,
         plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
         scales: {
-          x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
-          y: { grid: { color: 'rgba(51, 65, 85, 0.2)' }, ticks: { color: '#94a3b8' } }
+          x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+          y: { grid: { color: 'rgba(51, 65, 85, 0.2)' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
         }
       }
     });
@@ -1174,7 +1214,7 @@ btnFeedbackWpp?.addEventListener('click', async () => {
     email = user?.email || 'Não informado';
   }
   const msg = `Fala Matheus! Testando o *FinanceControl*.\n\n*Testador:* ${nome}\n*E-mail:* ${email}\n\n*Relato:*\n`;
-  window.open(`https://wa.me/${NUMERO_WHATSAPP_TESTES}?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`[https://wa.me/$](https://wa.me/$){NUMERO_WHATSAPP_TESTES}?text=${encodeURIComponent(msg)}`, '_blank');
 });
 
 // --- Categorias ---
