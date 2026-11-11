@@ -226,6 +226,24 @@ window.fecharModalAnimado = function(modalId, contentId, callback) {
   }, 300);
 };
 
+// Fecha modais ao clicar no fundo escuro (backdrop)
+const mapaModaisBackdrop = [
+  ['modal-configuracoes', 'modal-config-content'],
+  ['modal-categoria', 'modal-categoria-content'],
+  ['modal-conta', 'modal-conta-content'],
+  ['modal-transacao', 'modal-tx-content'],
+  ['modal-editar-teto', 'modal-teto-content']
+];
+
+mapaModaisBackdrop.forEach(([modalId, contentId]) => {
+  const modalEl = document.getElementById(modalId);
+  modalEl?.addEventListener('click', (e) => {
+    if (e.target === modalEl) {
+      fecharModalAnimado(modalId, contentId);
+    }
+  });
+});
+
 const toastContainer = document.getElementById('toast-container');
 window.mostrarToast = function(mensagem, tipo = 'erro') {
   if (!toastContainer) return;
