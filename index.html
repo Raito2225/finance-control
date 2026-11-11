@@ -230,19 +230,40 @@
         </div>
       </div>
 
-      <!-- Gráfico de Projeção -->
-      <div class="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção 6 Meses
-          </h2>
-          <div id="badge-projecao" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300">
-            Comprometimento: <span id="val-media-comp" class="font-bold text-emerald-400">0%</span>
+      <!-- Grid de Gráficos: Projeção (2 cols) + Rosca por Categoria (1 col) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        
+        <!-- Gráfico de Projeção -->
+        <div class="lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção 6 Meses
+            </h2>
+            <div id="badge-projecao" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300">
+              Comprometimento: <span id="val-media-comp" class="font-bold text-emerald-400">0%</span>
+            </div>
+          </div>
+          <div class="h-48 sm:h-64 w-full">
+            <canvas id="grafico-projecao"></canvas>
           </div>
         </div>
-        <div class="h-48 sm:h-64 w-full">
-          <canvas id="grafico-projecao"></canvas>
+
+        <!-- Gráfico de Rosca: Despesas por Categoria -->
+        <div class="lg:col-span-1 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3 flex flex-col">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> Despesas do Mês
+            </h2>
+            <span class="text-[10px] font-mono text-slate-400">Por Categoria</span>
+          </div>
+          <div class="relative flex-1 min-h-[192px] sm:min-h-[256px] w-full flex items-center justify-center">
+            <canvas id="grafico-categorias"></canvas>
+            <div id="msg-grafico-categorias-vazio" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-500 text-center px-4">
+              Nenhuma despesa registrada neste mês.
+            </div>
+          </div>
         </div>
+
       </div>
 
       <!-- Meus Cartões & Contas -->
@@ -810,7 +831,7 @@
       } else if (tipo === 'info' || tipo === 'aviso') {
         cores = 'bg-amber-500/10 border-amber-500/30 text-amber-400';
         icone = 'alert-circle';
-      } else { // erro
+      } else {
         cores = 'bg-rose-500/10 border-rose-500/30 text-rose-400';
         icone = 'x-octagon';
       }
@@ -883,7 +904,7 @@
     btnConfirmCancel.addEventListener('click', () => fecharModalConfirm(false));
     btnConfirmOk.addEventListener('click', () => fecharModalConfirm(true));
 
-    // Inicialização segura do Supabase (evita travar a tela no Android se a CDN falhar)
+    // Inicialização segura do Supabase
     let client = null;
     try {
       if (!window.supabase) {
@@ -903,18 +924,19 @@
     let categoriasUsuario = [];
     let transacoesCarregadas = [];
     let meuGraficoProjecao = null;
+    let meuGraficoCategorias = null;
     let filtroTipoAtivo = 'todos';
     let filtroContaIdAtiva = null;
     let termoBuscaAtivo = '';
     
     // Controle de Visão (Painel Pessoal vs Convidados vs Geral)
-    let visaoAtiva = 'pessoal'; // 'pessoal' | 'geral' | '<email_convidado>'
+    let visaoAtiva = 'pessoal';
     // Controle de Edição
     let transacaoEditandoId = null;
     let contaEditandoId = null;
     let categoriaEditandoTetoId = null;
 
-    // Leitura segura de preferências (protegido contra bloqueio de localStorage no Android/Modo Anônimo)
+    // Leitura segura de preferências
     let configFeedbackAtivo = true;
     let temaAtivo = 'esmeralda';
     let modoPrivacidadeAtivo = false;
@@ -1037,6 +1059,146 @@
     }
 
     // -------------------------------------------------------------
+    // MOTOR DE ÁUDIO & FEEDBACK TÁTIL (Web Audio API + Vibration API)
+    // -------------------------------------------------------------
+    let audioCtx = null;
+
+    function obterAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioClass) audioCtx = new AudioClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function reproduzirSomFeedback(tipo = 'clique') {
+      try {
+        const ctx = obterAudioContext();
+        if (!ctx) return;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        const agora = ctx.currentTime;
+
+        if (tipo === 'clique') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(580, agora);
+          osc.frequency.exponentialRampToValueAtTime(140, agora + 0.035);
+          gain.gain.setValueAtTime(0.08, agora);
+          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.035);
+          osc.start(agora);
+          osc.stop(agora + 0.035);
+        } else if (tipo === 'sucesso') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(520, agora);
+          osc.frequency.exponentialRampToValueAtTime(880, agora + 0.08);
+          gain.gain.setValueAtTime(0.07, agora);
+          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.09);
+          osc.start(agora);
+          osc.stop(agora + 0.09);
+        }
+      } catch (e) {}
+    }
+
+    function executarFeedback(tipo = 'clique') {
+      if (!configFeedbackAtivo) return;
+
+      if ('vibrate' in navigator) {
+        if (tipo === 'clique') navigator.vibrate(12);
+        else if (tipo === 'sucesso') navigator.vibrate([20, 30, 20]);
+      }
+      reproduzirSomFeedback(tipo);
+    }
+
+    // -------------------------------------------------------------
+    // SKELETONS DE CARREGAMENTO
+    // -------------------------------------------------------------
+    function exibirSkeletons() {
+      const idsCards = ['card-saldo', 'card-fatura', 'card-receita', 'card-despesa'];
+      idsCards.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = '<div class="h-6 sm:h-7 w-24 bg-slate-800 rounded-lg animate-pulse mt-1"></div>';
+        }
+      });
+
+      const gridContas = document.getElementById('grid-cartoes-contas');
+      if (gridContas) {
+        gridContas.innerHTML = Array(3).fill(`
+          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between animate-pulse">
+            <div class="space-y-2">
+              <div class="h-3.5 w-24 bg-slate-800 rounded"></div>
+              <div class="h-3 w-32 bg-slate-800/70 rounded"></div>
+            </div>
+            <div class="space-y-1.5 text-right">
+              <div class="h-2.5 w-10 bg-slate-800/70 rounded ml-auto"></div>
+              <div class="h-4 w-16 bg-slate-800 rounded"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const gridCategorias = document.getElementById('grid-categorias-orcamento');
+      if (gridCategorias) {
+        gridCategorias.innerHTML = Array(3).fill(`
+          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2.5 animate-pulse">
+            <div class="flex justify-between">
+              <div class="h-3.5 w-24 bg-slate-800 rounded"></div>
+              <div class="h-3.5 w-14 bg-slate-800 rounded"></div>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-1.5"></div>
+            <div class="flex justify-between">
+              <div class="h-2.5 w-20 bg-slate-800/70 rounded"></div>
+              <div class="h-2.5 w-8 bg-slate-800/70 rounded"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const listaMobile = document.getElementById('lista-transacoes-mobile');
+      if (listaMobile) {
+        listaMobile.innerHTML = Array(3).fill(`
+          <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 animate-pulse">
+            <div class="flex justify-between">
+              <div class="space-y-1.5">
+                <div class="h-4 w-32 bg-slate-800 rounded"></div>
+                <div class="h-3 w-40 bg-slate-800/70 rounded"></div>
+              </div>
+              <div class="h-4 w-16 bg-slate-800 rounded"></div>
+            </div>
+            <div class="flex justify-between pt-2 border-t border-slate-800/80">
+              <div class="h-7 w-20 bg-slate-800 rounded-xl"></div>
+              <div class="h-7 w-14 bg-slate-800 rounded-xl"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const listaDesktop = document.getElementById('lista-transacoes-desktop');
+      if (listaDesktop) {
+        listaDesktop.innerHTML = Array(4).fill(`
+          <tr class="animate-pulse">
+            <td class="py-3"><div class="h-3.5 w-16 bg-slate-800 rounded"></div></td>
+            <td class="py-3"><div class="h-3.5 w-32 bg-slate-800 rounded"></div></td>
+            <td class="py-3"><div class="h-5 w-20 bg-slate-800 rounded-md"></div></td>
+            <td class="py-3"><div class="h-3.5 w-20 bg-slate-800 rounded"></div></td>
+            <td class="py-3"><div class="h-4 w-16 bg-slate-800 rounded"></div></td>
+            <td class="py-3"><div class="h-3.5 w-8 bg-slate-800 rounded"></div></td>
+            <td class="py-3"><div class="h-3.5 w-16 bg-slate-800 rounded ml-auto"></div></td>
+            <td class="py-3"><div class="h-6 w-16 bg-slate-800 rounded-full mx-auto"></div></td>
+            <td class="py-3"><div class="h-4 w-12 bg-slate-800 rounded mx-auto"></div></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // -------------------------------------------------------------
     // MODO PRIVACIDADE (OCULTAR / MOSTRAR VALORES)
     // -------------------------------------------------------------
     function atualizarIconePrivacidade() {
@@ -1055,6 +1217,7 @@
       atualizarTotais();
       renderizarGridContas();
       renderizarGridCategorias();
+      renderizarGraficoCategorias();
       renderizarTransacoes();
     };
 
@@ -1164,6 +1327,7 @@
       atualizarTotais();
       renderizarGridContas();
       renderizarGridCategorias();
+      renderizarGraficoCategorias();
       await carregarGraficoProjecao();
     };
 
@@ -2088,6 +2252,7 @@ ${linhasTexto}
     // CARGA DE DADOS
     // -------------------------------------------------------------
     async function carregarDadosApp() {
+      exibirSkeletons();
       await Promise.all([
         buscarOuCriarContas(),
         buscarOuCriarCategorias()
@@ -2121,13 +2286,11 @@ ${linhasTexto}
 
       if (!data || data.length === 0) {
         const categoriasPadrao = [
-          // Categorias de Despesas
           { nome: 'Alimentação', icone: 'utensils', teto_mensal: 1200.00, tipo: 'Despesa' },
           { nome: 'Moradia & Contas', icone: 'home', teto_mensal: 1500.00, tipo: 'Despesa' },
           { nome: 'Transporte', icone: 'car', teto_mensal: 400.00, tipo: 'Despesa' },
           { nome: 'Lazer & Assinaturas', icone: 'tv', teto_mensal: 350.00, tipo: 'Despesa' },
           { nome: 'Saúde', icone: 'activity', teto_mensal: 300.00, tipo: 'Despesa' },
-          // Categorias de Receitas
           { nome: 'Salário / Remuneração', icone: 'wallet', teto_mensal: null, tipo: 'Receita' },
           { nome: 'Renda Extra / Vendas', icone: 'trending-up', teto_mensal: null, tipo: 'Receita' },
           { nome: 'Rendimentos & Investimentos', icone: 'piggy-bank', teto_mensal: null, tipo: 'Receita' }
@@ -2494,9 +2657,94 @@ ${linhasTexto}
       }
     }
 
+    // -------------------------------------------------------------
+    // GRÁFICO DE ROSCA: DESPESAS POR CATEGORIA
+    // -------------------------------------------------------------
+    function renderizarGraficoCategorias() {
+      const canvas = document.getElementById('grafico-categorias');
+      const msgVazio = document.getElementById('msg-grafico-categorias-vazio');
+      if (!canvas || !window.Chart) return;
+
+      const listaVisao = obterTransacoesDaVisao();
+      const gastosPorCategoria = {};
+
+      listaVisao.forEach(t => {
+        if (t.tipo !== 'Receita') {
+          const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
+          const nomeCat = catObj ? catObj.nome : 'Outros';
+          gastosPorCategoria[nomeCat] = (gastosPorCategoria[nomeCat] || 0) + Number(t.valor);
+        }
+      });
+
+      const entradas = Object.entries(gastosPorCategoria).sort((a, b) => b[1] - a[1]);
+
+      if (meuGraficoCategorias) {
+        meuGraficoCategorias.destroy();
+        meuGraficoCategorias = null;
+      }
+
+      if (entradas.length === 0) {
+        if (msgVazio) msgVazio.classList.remove('hidden');
+        return;
+      }
+
+      if (msgVazio) msgVazio.classList.add('hidden');
+
+      const labels = entradas.map(e => e[0]);
+      const valores = entradas.map(e => e[1]);
+      const cores = [
+        '#10b981', '#0ea5e9', '#f59e0b', '#f43f5e',
+        '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b'
+      ];
+
+      meuGraficoCategorias = new Chart(canvas.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: valores,
+            backgroundColor: labels.map((_, i) => cores[i % cores.length]),
+            borderColor: '#0f172a',
+            borderWidth: 2,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#94a3b8',
+                font: { size: 10 },
+                boxWidth: 10,
+                padding: 10
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                  const valFmt = modoPrivacidadeAtivo
+                    ? 'R$ •••••'
+                    : val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                  return ` ${context.label}: ${valFmt} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
     // Carrega tanto transações próprias quanto atribuídas ao e-mail logado
     async function carregarTransacoes() {
       if (!client) return;
+      exibirSkeletons();
       let query = client
         .from('transacoes')
         .select('*')
@@ -2514,6 +2762,7 @@ ${linhasTexto}
       atualizarTotais();
       renderizarGridContas();
       renderizarGridCategorias();
+      renderizarGraficoCategorias();
       await carregarGraficoProjecao();
     }
 
@@ -3192,7 +3441,7 @@ ${linhasTexto}
             if (error) throw error;
           }
         } else {
-          // MODO CRIAÇÃO (Com suporte a Conta Fixa Recorrente ou Parcelamento)
+          // MODO CRIAÇÃO
           const ehRecorrente = txRecorrente && txRecorrente.checked;
           const totalRepeticoes = ehRecorrente 
             ? parseInt(txRecorrenteMeses.value) 
@@ -3252,6 +3501,13 @@ ${linhasTexto}
         btnSalvar.innerText = transacaoEditandoId ? 'Salvar Alterações' : 'Salvar';
       }
     });
+
+    // Registro do Service Worker (PWA)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+      });
+    }
   </script>
 </body>
 </html>
