@@ -1,7 +1,7 @@
 /* ==========================================================================
    CONFIGURAÇÕES GERAIS E SUPABASE
    ========================================================================== */
-const SUPABASE_URL = '[https://vrivgmpdcgpqhuohzkaf.supabase.co](https://vrivgmpdcgpqhuohzkaf.supabase.co)';
+const SUPABASE_URL = 'https://vrivgmpdcgpqhuohzkaf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZnbXBkY2dwcWh1b2h6a2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MjAxODQsImV4cCI6MjEwOTM5NjE4NH0.H7qIvpF3rm-k-moF101qC2JLLe1mHOlqQlMWnzhFGo4';
 const NUMERO_WHATSAPP_TESTES = '5575988660943';
 const ADMIN_EMAIL = 'matheusgomes2225@hotmail.com';
