@@ -124,7 +124,7 @@
             <button type="button" id="btn-dropdown-exportar" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
               <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Exportar</span>
             </button>
-            <div id="menu-dropdown-exportar" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50 transition-opacity">
+            <div id="menu-dropdown-exportar" class="hidden origin-top-right transition-all duration-200 absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50">
               <button type="button" onclick="exportarDados('csv')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i> Exportar CSV</button>
               <button type="button" onclick="exportarDados('xlsx')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> Exportar Excel</button>
               <button type="button" onclick="exportarDados('pdf')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file" class="w-3.5 h-3.5 text-rose-400"></i> Exportar Relatório PDF</button>
@@ -271,7 +271,7 @@
 
   <!-- Modal Configurações -->
   <div id="modal-configuracoes" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
-    <div id="modal-config-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0 space-y-4">
+    <div id="modal-config-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 modal-spring translate-y-full sm:translate-y-10 sm:scale-95 opacity-0 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
         <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i> Configurações</h3>
         <button type="button" id="btn-fechar-config" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -313,7 +313,7 @@
 
   <!-- Modal Nova Categoria -->
   <div id="modal-categoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
-    <div id="modal-categoria-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
+    <div id="modal-categoria-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl transform transition-all duration-300 modal-spring translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> Cadastrar Categoria</h3>
         <button type="button" id="btn-fechar-modal-categoria" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -344,7 +344,7 @@
 
   <!-- Modal Nova Conta -->
   <div id="modal-conta" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
-    <div id="modal-conta-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
+    <div id="modal-conta-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl transform transition-all duration-300 modal-spring translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
       <div class="flex items-center justify-between mb-4">
         <h3 id="modal-conta-titulo" class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Conta ou Cartão</h3>
         <button type="button" id="btn-fechar-modal-conta" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -367,7 +367,7 @@
 
   <!-- Modal Transação -->
   <div id="modal-transacao" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
-    <div id="modal-tx-content" class="w-full max-w-lg bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
+    <div id="modal-tx-content" class="w-full max-w-lg bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 modal-spring translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
       <div class="flex items-center justify-between mb-4">
         <h3 id="modal-tx-titulo" class="text-base font-bold text-white">Novo Lançamento</h3>
         <button type="button" id="btn-fechar-modal" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -422,7 +422,7 @@
 
   <!-- Modal Confirmação Customizado Centrado -->
   <div id="modal-confirm" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
-    <div id="modal-confirm-content" data-centered="true" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all duration-300 scale-95 opacity-0">
+    <div id="modal-confirm-content" data-centered="true" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all duration-300 modal-spring scale-95 opacity-0">
       <div class="flex items-start gap-3">
         <div id="modal-confirm-icon" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"></div>
         <div class="flex-1 pt-1">
@@ -439,7 +439,7 @@
 
   <!-- Modal Editar Teto Centrado -->
   <div id="modal-editar-teto" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
-    <div id="modal-teto-content" data-centered="true" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all duration-300 scale-95 opacity-0">
+    <div id="modal-teto-content" data-centered="true" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all duration-300 modal-spring scale-95 opacity-0">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="sliders-horizontal" class="w-4 h-4 text-sky-400"></i> Alterar Limite</h3>
         <button type="button" onclick="fecharModalTeto()" class="p-1 text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
