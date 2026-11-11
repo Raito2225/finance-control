@@ -371,6 +371,38 @@
     </div>
   </div>
 
+  <!-- Modal Customizado para Editar Teto de Categoria (Substituto do prompt) -->
+  <div id="modal-editar-teto" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="modal-teto-content" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all scale-95 opacity-0">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-sky-400"></i>
+          Alterar Limite Mensal
+        </h3>
+        <button type="button" onclick="fecharModalTeto()" class="p-1 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-400 mb-3">
+        Categoria: <strong id="teto-categoria-nome" class="text-white"></strong>
+      </p>
+
+      <form id="form-editar-teto" class="space-y-4">
+        <div>
+          <label class="block text-[11px] text-slate-400 mb-1">Novo Limite (R$)</label>
+          <input type="number" step="0.01" min="0" id="teto-novo-valor" required placeholder="0,00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:border-sky-500 text-slate-100">
+          <span class="text-[10px] text-slate-500 mt-1 block">Digite <strong>0</strong> para remover o limite desta categoria.</span>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="fecharModalTeto()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
+          <button type="submit" id="btn-salvar-teto" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-sky-500 hover:bg-sky-600 text-slate-950 transition active:scale-95">Salvar Limite</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Modal de Configurações -->
   <div id="modal-configuracoes" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
@@ -880,6 +912,7 @@
     // Controle de Edição
     let transacaoEditandoId = null;
     let contaEditandoId = null;
+    let categoriaEditandoTetoId = null;
 
     // Leitura segura de preferências (protegido contra bloqueio de localStorage no Android/Modo Anônimo)
     let configFeedbackAtivo = true;
@@ -2235,32 +2268,73 @@ ${linhasTexto}
       if (window.lucide) lucide.createIcons();
     }
 
-    window.editarTetoCategoria = async function(id, nome, tetoAtual) {
+    // -------------------------------------------------------------
+    // MODAL CUSTOMIZADO PARA EDITAR TETO DE CATEGORIA
+    // -------------------------------------------------------------
+    window.editarTetoCategoria = function(id, nome, tetoAtual) {
       if (!client) return;
       executarFeedback('clique');
 
-      const novoValorStr = prompt(`Novo limite mensal para "${nome}" (R$):\n(Digite 0 para remover o limite)`, tetoAtual);
-      if (novoValorStr === null) return;
+      categoriaEditandoTetoId = id;
+      document.getElementById('teto-categoria-nome').textContent = nome;
+      const inputValor = document.getElementById('teto-novo-valor');
+      inputValor.value = Number(tetoAtual || 0).toFixed(2);
 
-      const novoTeto = parseFloat(novoValorStr.replace(',', '.'));
+      const modal = document.getElementById('modal-editar-teto');
+      const content = document.getElementById('modal-teto-content');
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+
+      requestAnimationFrame(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        inputValor.focus();
+        inputValor.select();
+      });
+    };
+
+    window.fecharModalTeto = function() {
+      const modal = document.getElementById('modal-editar-teto');
+      const content = document.getElementById('modal-teto-content');
+      content.classList.add('scale-95', 'opacity-0');
+
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        categoriaEditandoTetoId = null;
+      }, 200);
+    };
+
+    document.getElementById('form-editar-teto').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!client || !categoriaEditandoTetoId) return;
+
+      const btn = document.getElementById('btn-salvar-teto');
+      const novoTeto = parseFloat(document.getElementById('teto-novo-valor').value);
+
       if (isNaN(novoTeto) || novoTeto < 0) {
         mostrarToast('Informe um valor numérico válido.', 'erro');
         return;
       }
 
+      btn.disabled = true;
+      btn.innerText = 'Salvando...';
+
       const { error } = await client
         .from('categorias')
         .update({ teto_mensal: novoTeto === 0 ? null : novoTeto })
-        .eq('id', id);
+        .eq('id', categoriaEditandoTetoId);
+
+      btn.disabled = false;
+      btn.innerText = 'Salvar Limite';
 
       if (error) {
         mostrarToast('Erro ao atualizar limite: ' + error.message, 'erro');
       } else {
-        mostrarToast('Limite atualizado!', 'sucesso');
+        mostrarToast(novoTeto === 0 ? 'Limite removido!' : 'Limite atualizado!', 'sucesso');
+        fecharModalTeto();
         await buscarOuCriarCategorias();
         renderizarGridCategorias();
       }
-    };
+    });
 
     window.editarConta = function(id) {
       const c = contasUsuario.find(item => item.id === id);
@@ -2743,7 +2817,7 @@ ${linhasTexto}
 
       if (idAgrupador && idAgrupador !== 'null' && idAgrupador !== 'undefined') {
         const mensagemParcela = 'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
-                                '• Clique em [Confirmar] para excluir TODAS as parcelas/meses vinculados.\n' +
+                                '• Clique em [Sim, Excluir] para excluir TODAS as parcelas/meses vinculados.\n' +
                                 '• Clique em [Cancelar] para escolher se deseja excluir apenas este mês.';
         
         const excluirTudo = await customConfirm(mensagemParcela, 'perigo', 'Excluir Vínculos');
@@ -3067,7 +3141,7 @@ ${linhasTexto}
 
           if (txOriginal && txOriginal.id_agrupador) {
             const mensagem = 'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
-                             '• Clique em [Confirmar] para aplicar as alterações em TODAS as parcelas/meses vinculados.\n' +
+                             '• Clique em [Sim, Continuar] para aplicar as alterações em TODAS as parcelas/meses vinculados.\n' +
                              '• Clique em [Cancelar] para editar APENAS este mês.';
             atualizarGrupo = await customConfirm(mensagem, 'info', 'Aplicar em Lote');
           }
