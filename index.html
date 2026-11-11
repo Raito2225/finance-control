@@ -28,7 +28,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-12">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-12 overflow-x-hidden">
 
   <!-- ========================================== -->
   <!-- 1. TELA DE AUTENTICAÇÃO & BOAS-VINDAS      -->
@@ -348,8 +348,28 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 3. MODAIS                                  -->
+  <!-- 3. MODAIS & TOASTS                         -->
   <!-- ========================================== -->
+
+  <!-- Sistema de Toasts (Substituto do alert) -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-80"></div>
+
+  <!-- Modal de Confirmação Customizado (Substituto do confirm) -->
+  <div id="modal-confirm" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all scale-95 opacity-0" id="modal-confirm-content">
+      <div class="flex items-start gap-3">
+        <div id="modal-confirm-icon" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"></div>
+        <div class="flex-1 pt-1">
+          <h3 id="modal-confirm-titulo" class="text-sm font-bold text-white mb-1.5">Confirmação</h3>
+          <p id="modal-confirm-mensagem" class="text-xs text-slate-400 leading-relaxed whitespace-pre-wrap"></p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-5">
+        <button type="button" id="btn-confirm-cancel" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
+        <button type="button" id="btn-confirm-ok" class="px-4 py-2.5 rounded-xl text-xs font-semibold transition text-slate-950">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal de Configurações -->
   <div id="modal-configuracoes" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -734,6 +754,103 @@
     // Número do WhatsApp oficial para relatos de testes
     const NUMERO_WHATSAPP_TESTES = '5575988660943';
 
+    // ==========================================
+    // SISTEMA DE TOASTS E MODAL DE CONFIRMAÇÃO
+    // ==========================================
+    const toastContainer = document.getElementById('toast-container');
+    const modalConfirm = document.getElementById('modal-confirm');
+    const modalConfirmContent = document.getElementById('modal-confirm-content');
+    const modalConfirmTitulo = document.getElementById('modal-confirm-titulo');
+    const modalConfirmMensagem = document.getElementById('modal-confirm-mensagem');
+    const modalConfirmIcon = document.getElementById('modal-confirm-icon');
+    const btnConfirmCancel = document.getElementById('btn-confirm-cancel');
+    const btnConfirmOk = document.getElementById('btn-confirm-ok');
+
+    window.mostrarToast = function(mensagem, tipo = 'erro') {
+      executarFeedback(tipo === 'erro' ? 'clique' : 'sucesso');
+      
+      const toast = document.createElement('div');
+      
+      let cores, icone;
+      if (tipo === 'sucesso') {
+        cores = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
+        icone = 'check-circle-2';
+      } else if (tipo === 'info' || tipo === 'aviso') {
+        cores = 'bg-amber-500/10 border-amber-500/30 text-amber-400';
+        icone = 'alert-circle';
+      } else { // erro
+        cores = 'bg-rose-500/10 border-rose-500/30 text-rose-400';
+        icone = 'x-octagon';
+      }
+
+      toast.className = `flex items-center gap-3 p-3.5 rounded-xl border bg-slate-900 shadow-xl pointer-events-auto transform transition-all duration-300 translate-y-10 opacity-0 ${cores}`;
+      
+      toast.innerHTML = `
+        <i data-lucide="${icone}" class="w-5 h-5 shrink-0"></i>
+        <p class="text-xs font-medium leading-relaxed">${mensagem}</p>
+        <button type="button" class="ml-auto text-slate-400 hover:text-white" onclick="this.parentElement.remove()">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      `;
+
+      toastContainer.appendChild(toast);
+      if (window.lucide) lucide.createIcons();
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    };
+
+    let confirmResolve = null;
+
+    window.customConfirm = function(mensagem, tipo = 'perigo', titulo = 'Confirmação') {
+      return new Promise((resolve) => {
+        executarFeedback('clique');
+        confirmResolve = resolve;
+
+        modalConfirmTitulo.textContent = titulo;
+        modalConfirmMensagem.textContent = mensagem;
+
+        if (tipo === 'perigo') {
+          modalConfirmIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-rose-500/20 text-rose-400';
+          modalConfirmIcon.innerHTML = '<i data-lucide="alert-triangle" class="w-5 h-5"></i>';
+          btnConfirmOk.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition text-slate-950 bg-rose-500 hover:bg-rose-600 active:scale-95';
+          btnConfirmOk.textContent = 'Sim, Excluir';
+        } else {
+          modalConfirmIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-sky-500/20 text-sky-400';
+          modalConfirmIcon.innerHTML = '<i data-lucide="help-circle" class="w-5 h-5"></i>';
+          btnConfirmOk.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition text-slate-950 bg-sky-500 hover:bg-sky-600 active:scale-95';
+          btnConfirmOk.textContent = 'Sim, Continuar';
+        }
+
+        modalConfirm.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+
+        requestAnimationFrame(() => {
+          modalConfirmContent.classList.remove('scale-95', 'opacity-0');
+        });
+      });
+    };
+
+    function fecharModalConfirm(resultado) {
+      modalConfirmContent.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modalConfirm.classList.add('hidden');
+        if (confirmResolve) {
+          confirmResolve(resultado);
+          confirmResolve = null;
+        }
+      }, 200);
+    }
+
+    btnConfirmCancel.addEventListener('click', () => fecharModalConfirm(false));
+    btnConfirmOk.addEventListener('click', () => fecharModalConfirm(true));
+
     // Inicialização segura do Supabase (evita travar a tela no Android se a CDN falhar)
     let client = null;
     try {
@@ -742,7 +859,7 @@
       }
       client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (err) {
-      alert('Erro ao iniciar o sistema: ' + err.message);
+      mostrarToast('Erro ao iniciar o sistema: ' + err.message, 'erro');
     }
 
     let usuarioLogadoId = null;
@@ -936,64 +1053,6 @@
     };
 
     // -------------------------------------------------------------
-    // MOTOR DE ÁUDIO & FEEDBACK TÁTIL (Web Audio API + Vibration API)
-    // -------------------------------------------------------------
-    let audioCtx = null;
-
-    function obterAudioContext() {
-      if (!audioCtx) {
-        const AudioClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioClass) audioCtx = new AudioClass();
-      }
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      return audioCtx;
-    }
-
-    function reproduzirSomFeedback(tipo = 'clique') {
-      try {
-        const ctx = obterAudioContext();
-        if (!ctx) return;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        const agora = ctx.currentTime;
-
-        if (tipo === 'clique') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(580, agora);
-          osc.frequency.exponentialRampToValueAtTime(140, agora + 0.035);
-          gain.gain.setValueAtTime(0.08, agora);
-          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.035);
-          osc.start(agora);
-          osc.stop(agora + 0.035);
-        } else if (tipo === 'sucesso') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(520, agora);
-          osc.frequency.exponentialRampToValueAtTime(880, agora + 0.08);
-          gain.gain.setValueAtTime(0.07, agora);
-          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.09);
-          osc.start(agora);
-          osc.stop(agora + 0.09);
-        }
-      } catch (e) {}
-    }
-
-    function executarFeedback(tipo = 'clique') {
-      if (!configFeedbackAtivo) return;
-
-      if ('vibrate' in navigator) {
-        if (tipo === 'clique') navigator.vibrate(12);
-        else if (tipo === 'sucesso') navigator.vibrate([20, 30, 20]);
-      }
-      reproduzirSomFeedback(tipo);
-    }
-
-    // -------------------------------------------------------------
     // MÁSCARA AUTOMÁTICA DE TELEFONE (DDD + 9 DÍGITOS)
     // -------------------------------------------------------------
     function aplicarMascaraTelefone(inputEl) {
@@ -1145,7 +1204,7 @@
       const listaVisao = obterTransacoesDaVisao();
 
       if (listaVisao.length === 0) {
-        alert('Não há lançamentos nesta aba para enviar.');
+        mostrarToast('Não há lançamentos nesta aba para enviar.', 'aviso');
         return;
       }
 
@@ -1182,20 +1241,19 @@ ${linhasTexto}
 
     window.marcarTudoComoPagoVisao = async function() {
       if (!client) return;
-      executarFeedback('clique');
 
       const listaVisao = obterTransacoesDaVisao();
       const pendentes = listaVisao.filter(t => t.status !== 'Pago' && t.user_id === usuarioLogadoId);
 
       if (pendentes.length === 0) {
-        alert('Todos os lançamentos desta aba já estão marcados como pagos!');
+        mostrarToast('Todos os lançamentos desta aba já estão marcados como pagos!', 'aviso');
         return;
       }
 
       const totalPendente = pendentes.reduce((acc, t) => acc + Number(t.valor), 0);
       const totalFmt = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-      if (!confirm(`Confirmar o pagamento de ${pendentes.length} lançamento(s), totalizando ${totalFmt}?`)) {
+      if (!(await customConfirm(`Confirmar o pagamento de ${pendentes.length} lançamento(s), totalizando ${totalFmt}?`, 'info', 'Quitação em Lote'))) {
         return;
       }
 
@@ -1206,9 +1264,9 @@ ${linhasTexto}
         .in('id', ids);
 
       if (error) {
-        alert('Erro ao atualizar em lote: ' + error.message);
+        mostrarToast('Erro ao atualizar em lote: ' + error.message, 'erro');
       } else {
-        executarFeedback('sucesso');
+        mostrarToast('Lançamentos marcados como pagos!', 'sucesso');
         await carregarTransacoes();
       }
     };
@@ -1314,7 +1372,7 @@ ${linhasTexto}
 
       const transacoes = obterLinhasFiltradasParaExportacao();
       if (!transacoes || transacoes.length === 0) {
-        alert('Não há transações para exportar na visão e competência selecionadas.');
+        mostrarToast('Não há transações para exportar na visão e competência selecionadas.', 'aviso');
         return;
       }
 
@@ -1379,12 +1437,12 @@ ${linhasTexto}
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      executarFeedback('sucesso');
+      mostrarToast('CSV exportado com sucesso!', 'sucesso');
     }
 
     function exportarXLSX(dados, nomeArquivo) {
       if (typeof XLSX === 'undefined') {
-        alert('A biblioteca SheetJS não pôde ser carregada. Verifique sua conexão.');
+        mostrarToast('A biblioteca SheetJS não pôde ser carregada. Verifique sua conexão.', 'erro');
         return;
       }
 
@@ -1410,12 +1468,12 @@ ${linhasTexto}
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, `Extrato ${mesAtual}`);
       XLSX.writeFile(wb, nomeArquivo);
-      executarFeedback('sucesso');
+      mostrarToast('Planilha Excel exportada com sucesso!', 'sucesso');
     }
 
     function exportarPDF(dados, nomeArquivo) {
       if (!window.jspdf || !window.jspdf.jsPDF) {
-        alert('Biblioteca jsPDF não carregada. Verifique sua conexão.');
+        mostrarToast('Biblioteca jsPDF não carregada. Verifique sua conexão.', 'erro');
         return;
       }
 
@@ -1549,7 +1607,7 @@ ${linhasTexto}
       });
 
       doc.save(nomeArquivo);
-      executarFeedback('sucesso');
+      mostrarToast('Relatório PDF exportado com sucesso!', 'sucesso');
     }
 
     // -------------------------------------------------------------
@@ -1680,7 +1738,7 @@ ${linhasTexto}
 
           if (error) throw error;
 
-          executarFeedback('sucesso');
+          mostrarToast('Perfil atualizado com sucesso!', 'sucesso');
           msgPerfil.textContent = 'Perfil atualizado com sucesso!';
           msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
           msgPerfil.classList.remove('hidden');
@@ -1763,7 +1821,7 @@ ${linhasTexto}
         const { error } = await client.auth.updateUser({ password: novaSenha });
         if (error) throw error;
 
-        executarFeedback('sucesso');
+        mostrarToast('Senha atualizada com sucesso!', 'sucesso');
         msgSenha.textContent = 'Senha atualizada com sucesso!';
         msgSenha.className = 'text-[11px] p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
         msgSenha.classList.remove('hidden');
@@ -1822,7 +1880,7 @@ ${linhasTexto}
     if (btnEsqueceuSenha) {
       btnEsqueceuSenha.addEventListener('click', async () => {
         if (!client) {
-          alert('Conexão com o servidor indisponível no momento.');
+          mostrarToast('Conexão com o servidor indisponível no momento.', 'erro');
           return;
         }
         executarFeedback('clique');
@@ -1902,7 +1960,7 @@ ${linhasTexto}
     authForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!client) {
-        alert('Erro de conexão com o servidor. Recarregue a página.');
+        mostrarToast('Erro de conexão com o servidor. Recarregue a página.', 'erro');
         return;
       }
 
@@ -2186,7 +2244,7 @@ ${linhasTexto}
 
       const novoTeto = parseFloat(novoValorStr.replace(',', '.'));
       if (isNaN(novoTeto) || novoTeto < 0) {
-        alert('Informe um valor numérico válido.');
+        mostrarToast('Informe um valor numérico válido.', 'erro');
         return;
       }
 
@@ -2196,9 +2254,9 @@ ${linhasTexto}
         .eq('id', id);
 
       if (error) {
-        alert('Erro ao atualizar limite: ' + error.message);
+        mostrarToast('Erro ao atualizar limite: ' + error.message, 'erro');
       } else {
-        executarFeedback('sucesso');
+        mostrarToast('Limite atualizado!', 'sucesso');
         await buscarOuCriarCategorias();
         renderizarGridCategorias();
       }
@@ -2232,15 +2290,16 @@ ${linhasTexto}
 
     window.deletarConta = async function(id, nome) {
       if (!client) return;
-      executarFeedback('clique');
-
-      if (!confirm(`Deseja excluir a conta/cartão "${nome}"?`)) return;
+      
+      if (!await customConfirm(`Deseja realmente excluir a conta/cartão "${nome}"?`, 'perigo')) {
+        return;
+      }
 
       const { error } = await client.from('contas').delete().eq('id', id);
       if (error) {
-        alert('Não foi possível excluir: existem lançamentos vinculados a esta conta/cartão. Exclua ou edite os lançamentos primeiro.');
+        mostrarToast('Existem lançamentos vinculados a esta conta. Exclua ou edite os lançamentos primeiro.', 'erro');
       } else {
-        executarFeedback('sucesso');
+        mostrarToast('Conta excluída com sucesso.', 'sucesso');
         if (filtroContaIdAtiva === id) alternarFiltroConta(null);
         await buscarOuCriarContas();
         await carregarTransacoes();
@@ -2249,15 +2308,16 @@ ${linhasTexto}
 
     window.deletarCategoria = async function(id, nome) {
       if (!client) return;
-      executarFeedback('clique');
 
-      if (!confirm(`Deseja excluir a categoria "${nome}"?`)) return;
+      if (!await customConfirm(`Deseja realmente excluir a categoria "${nome}"?`, 'perigo')) {
+        return;
+      }
 
       const { error } = await client.from('categorias').delete().eq('id', id);
       if (error) {
-        alert('Não foi possível excluir: existem lançamentos vinculados a esta categoria. Exclua ou edite os lançamentos primeiro.');
+        mostrarToast('Existem lançamentos vinculados a esta categoria. Exclua ou edite os lançamentos primeiro.', 'erro');
       } else {
-        executarFeedback('sucesso');
+        mostrarToast('Categoria excluída com sucesso.', 'sucesso');
         await buscarOuCriarCategorias();
         await carregarTransacoes();
       }
@@ -2612,7 +2672,7 @@ ${linhasTexto}
       if (!t) return;
 
       if (t.user_id && t.user_id !== usuarioLogadoId) {
-        alert('Apenas o responsável que lançou esta despesa pode editá-la.');
+        mostrarToast('Apenas o responsável que lançou esta despesa pode editá-la.', 'aviso');
         return;
       }
 
@@ -2653,7 +2713,7 @@ ${linhasTexto}
       if (!client) return;
       const transacao = transacoesCarregadas.find(t => t.id === id);
       if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
-        alert('Apenas o responsável que lançou esta despesa pode alterar o status.');
+        mostrarToast('Apenas o responsável que lançou esta despesa pode alterar o status.', 'aviso');
         return;
       }
 
@@ -2668,7 +2728,7 @@ ${linhasTexto}
 
       const { error } = await client.from('transacoes').update({ status: novoStatus }).eq('id', id);
       if (error) {
-        alert('Erro ao atualizar: ' + error.message);
+        mostrarToast('Erro ao atualizar status: ' + error.message, 'erro');
         carregarTransacoes();
       }
     };
@@ -2677,18 +2737,16 @@ ${linhasTexto}
       if (!client) return;
       const transacao = transacoesCarregadas.find(t => t.id === id);
       if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
-        alert('Apenas o responsável que lançou esta despesa pode excluí-la.');
+        mostrarToast('Apenas o responsável que lançou esta despesa pode excluí-la.', 'aviso');
         return;
       }
 
-      executarFeedback('clique');
-
       if (idAgrupador && idAgrupador !== 'null' && idAgrupador !== 'undefined') {
-        const excluirTudo = confirm(
-          'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
-          '• Clique em [OK] para excluir TODAS as parcelas/meses vinculados.\n' +
-          '• Clique em [Cancelar] para escolher se deseja excluir apenas este mês.'
-        );
+        const mensagemParcela = 'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
+                                '• Clique em [Confirmar] para excluir TODAS as parcelas/meses vinculados.\n' +
+                                '• Clique em [Cancelar] para escolher se deseja excluir apenas este mês.';
+        
+        const excluirTudo = await customConfirm(mensagemParcela, 'perigo', 'Excluir Vínculos');
 
         if (excluirTudo) {
           const { error } = await client
@@ -2697,18 +2755,17 @@ ${linhasTexto}
             .eq('id_agrupador', idAgrupador);
 
           if (error) {
-            alert('Erro ao excluir os registros: ' + error.message);
+            mostrarToast('Erro ao excluir os registros: ' + error.message, 'erro');
           } else {
-            executarFeedback('sucesso');
+            mostrarToast('Registros vinculados excluídos!', 'sucesso');
             carregarTransacoes();
           }
           return;
         }
 
-        const excluirApenasEsta = confirm('Deseja excluir APENAS o lançamento deste mês atual?');
-        if (!excluirApenasEsta) return;
+        if (!await customConfirm('Deseja excluir APENAS o lançamento deste mês atual?', 'perigo', 'Exclusão Individual')) return;
       } else {
-        if (!confirm('Deseja excluir este lançamento?')) return;
+        if (!await customConfirm('Deseja excluir este lançamento definitivamente?', 'perigo', 'Excluir Lançamento')) return;
       }
 
       const { error } = await client
@@ -2717,9 +2774,9 @@ ${linhasTexto}
         .eq('id', id);
 
       if (error) {
-        alert('Erro ao excluir: ' + error.message);
+        mostrarToast('Erro ao excluir: ' + error.message, 'erro');
       } else {
-        executarFeedback('sucesso');
+        mostrarToast('Lançamento excluído com sucesso!', 'sucesso');
         carregarTransacoes();
       }
     };
@@ -2797,12 +2854,12 @@ ${linhasTexto}
           user_id: usuarioLogadoId 
         }]);
         if (error) throw error;
-        executarFeedback('sucesso');
+        mostrarToast('Categoria salva com sucesso!', 'sucesso');
         fecharModalCategoria();
         await buscarOuCriarCategorias();
         await carregarTransacoes();
       } catch (err) {
-        alert('Erro: ' + err.message);
+        mostrarToast('Erro: ' + err.message, 'erro');
       } finally {
         btn.disabled = false;
         btn.innerText = 'Salvar';
@@ -2871,12 +2928,12 @@ ${linhasTexto}
           if (error) throw error;
         }
 
-        executarFeedback('sucesso');
+        mostrarToast(contaEditandoId ? 'Conta atualizada com sucesso!' : 'Conta criada com sucesso!', 'sucesso');
         fecharModalConta();
         await buscarOuCriarContas();
         renderizarTransacoes();
       } catch (err) {
-        alert('Erro: ' + err.message);
+        mostrarToast('Erro: ' + err.message, 'erro');
       } finally {
         btn.disabled = false;
         btn.innerText = contaEditandoId ? 'Salvar Alterações' : 'Salvar';
@@ -3009,11 +3066,10 @@ ${linhasTexto}
           let atualizarGrupo = false;
 
           if (txOriginal && txOriginal.id_agrupador) {
-            atualizarGrupo = confirm(
-              'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
-              '• Clique em [OK] para aplicar as alterações em TODAS as parcelas/meses vinculados.\n' +
-              '• Clique em [Cancelar] para editar APENAS este mês.'
-            );
+            const mensagem = 'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
+                             '• Clique em [Confirmar] para aplicar as alterações em TODAS as parcelas/meses vinculados.\n' +
+                             '• Clique em [Cancelar] para editar APENAS este mês.';
+            atualizarGrupo = await customConfirm(mensagem, 'info', 'Aplicar em Lote');
           }
 
           if (atualizarGrupo && txOriginal.id_agrupador) {
@@ -3111,11 +3167,11 @@ ${linhasTexto}
           if (error) throw error;
         }
 
-        executarFeedback('sucesso');
+        mostrarToast(transacaoEditandoId ? 'Alterações salvas com sucesso!' : 'Lançamento adicionado!', 'sucesso');
         fecharModal();
         await carregarTransacoes();
       } catch (err) {
-        alert('Erro ao gravar: ' + err.message);
+        mostrarToast('Erro ao gravar: ' + err.message, 'erro');
       } finally {
         enviandoTransacao = false;
         btnSalvar.disabled = false;
