@@ -446,19 +446,26 @@ window.marcarTudoComoPagoVisao = async function() {
   }
 };
 
-window.definirTema = function(cor) {
-  temaAtivo = cor; 
-  try { localStorage.setItem('fc_tema_app', cor); } catch (e) {}
+// TEMAS E EXPORT
+function aplicarTemaNaInterface() {
   const cfg = { 
     esmeralda: 'bg-emerald-500 hover:bg-emerald-600', 
     azul: 'bg-sky-500 hover:bg-sky-600', 
     roxo: 'bg-violet-500 hover:bg-violet-600', 
     ambar: 'bg-amber-500 hover:bg-amber-600' 
-  }[cor] || 'bg-emerald-500 hover:bg-emerald-600';
+  }[temaAtivo] || 'bg-emerald-500 hover:bg-emerald-600';
   
-  if(btnFabAdicionar) {
-    btnFabAdicionar.className = `fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full ${cfg} active:scale-95 text-slate-950 flex items-center justify-center shadow-lg border border-white/10 transition`;
-  }
+  const btnFab = document.getElementById('btn-fab-adicionar');
+  if(btnFab) btnFab.className = `fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full ${cfg} active:scale-95 text-slate-950 flex items-center justify-center shadow-lg border border-white/10 transition`;
+  
+  const btnModal = document.getElementById('btn-abrir-modal');
+  if(btnModal) btnModal.className = `flex-1 sm:flex-none flex items-center justify-center gap-1.5 ${cfg} text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md active:scale-95`;
+}
+
+window.definirTema = function(cor) {
+  temaAtivo = cor; 
+  try { localStorage.setItem('fc_tema_app', cor); } catch (e) {}
+  aplicarTemaNaInterface();
   executarFeedback('clique');
 };
 
