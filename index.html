@@ -14,6 +14,9 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
 
+  <!-- Estilos Customizados -->
+  <link rel="stylesheet" href="style.css">
+
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS Client v2 -->
@@ -30,13 +33,9 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-12 overflow-x-hidden">
 
-  <!-- ========================================== -->
-  <!-- 1. TELA DE AUTENTICAÇÃO & BOAS-VINDAS      -->
-  <!-- ========================================== -->
+  <!-- 1. TELA DE AUTENTICAÇÃO -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md space-y-4">
-
-      <!-- Card de Boas-Vindas e Explicação do Projeto -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-2xl backdrop-blur-xl">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2.5">
@@ -49,22 +48,12 @@
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Fase Beta
           </span>
         </div>
-
         <div class="space-y-2 text-xs text-slate-300 leading-relaxed border-t border-slate-800/80 pt-3">
-          <p class="font-semibold text-slate-100 flex items-center gap-1.5">
-            👋 Seja muito bem-vindo ao teste antecipado!
-          </p>
-          <p class="text-slate-400">
-            Este é um projeto pessoal em desenvolvimento contínuo, criado para oferecer controle financeiro ágil e inteligente direto do celular.
-          </p>
-          <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-[11px] text-slate-400 space-y-1">
-            <span class="text-emerald-400 font-semibold block">🎯 Missão dos Testadores:</span>
-            <p>Sinta-se à vontade para simular seus lançamentos, cartões e faturas. Seu feedback sobre usabilidade, visual ou eventuais erros é essencial para o aprimoramento do app!</p>
-          </div>
+          <p class="font-semibold text-slate-100 flex items-center gap-1.5">👋 Seja muito bem-vindo ao teste antecipado!</p>
+          <p class="text-slate-400">Este é um projeto pessoal em desenvolvimento contínuo, criado para oferecer controle financeiro ágil e inteligente direto do celular.</p>
         </div>
       </div>
 
-      <!-- Card de Formulário (Login / Cadastro) -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
         <div class="flex bg-slate-950/60 p-1 rounded-xl mb-5 border border-slate-800">
           <button type="button" id="tab-login" class="flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all">Entrar</button>
@@ -73,54 +62,36 @@
 
         <div id="auth-msg" class="hidden text-xs p-3 rounded-lg mb-4"></div>
 
-        <form id="auth-form" onsubmit="return false;" class="space-y-3.5">
-          <!-- Campo Nome (Exclusivo Cadastro) -->
+        <form id="auth-form" class="space-y-3.5">
           <div id="campo-cadastro-nome" class="hidden">
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Nome Completo</label>
             <input type="text" id="auth-nome" placeholder="Como quer ser chamado?" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
           </div>
-
-          <!-- Campo Telefone / WhatsApp (Exclusivo Cadastro) -->
           <div id="campo-cadastro-telefone" class="hidden">
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">WhatsApp / Telefone</label>
             <input type="tel" id="auth-telefone" maxlength="15" placeholder="(75) 99999-9999" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
           </div>
-
-          <!-- Campo E-mail -->
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">E-mail</label>
             <input type="email" id="auth-email" required placeholder="seu@email.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
           </div>
-
-          <!-- Campo Senha -->
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Senha</label>
-              <button type="button" id="btn-esqueceu-senha" class="text-[11px] text-emerald-400/90 hover:text-emerald-300 transition font-medium">
-                Esqueceu a senha?
-              </button>
+              <button type="button" id="btn-esqueceu-senha" class="text-[11px] text-emerald-400/90 hover:text-emerald-300 transition font-medium">Esqueceu a senha?</button>
             </div>
             <input type="password" id="auth-password" required placeholder="••••••••" minlength="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 text-slate-100 placeholder-slate-600">
           </div>
-
-          <button type="submit" id="auth-btn-submit" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] transition text-slate-950 font-bold rounded-xl text-sm shadow-lg shadow-emerald-500/20 mt-2">
-            Acessar Painel
-          </button>
+          <button type="submit" id="auth-btn-submit" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] transition text-slate-950 font-bold rounded-xl text-sm shadow-lg shadow-emerald-500/20 mt-2">Acessar Painel</button>
         </form>
       </div>
-
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 2. DASHBOARD MOBILE-FIRST                  -->
-  <!-- ========================================== -->
+  <!-- 2. DASHBOARD MOBILE-FIRST -->
   <div id="dashboard-screen" class="hidden min-h-screen flex flex-col">
-    
-    <!-- Topbar Responsiva -->
     <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-30">
       <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        
         <div class="flex items-center justify-between w-full sm:w-auto">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
@@ -131,86 +102,65 @@
               <span id="label-saudacao-usuario" class="text-[10px] text-slate-400 hidden sm:block">Olá!</span>
             </div>
           </div>
-
-          <!-- Navegação Mês no mobile à direita -->
           <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1">
-            <button type="button" id="btn-mes-anterior" title="Mês Anterior" class="p-1 text-slate-400 hover:text-white transition">
-              <i data-lucide="chevron-left" class="w-4 h-4"></i>
-            </button>
+            <button type="button" id="btn-mes-anterior" class="p-1 text-slate-400 hover:text-white transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
             <input type="month" id="filtro-mes" class="bg-transparent border-0 px-1 py-0.5 text-xs text-slate-200 font-semibold focus:outline-none cursor-pointer">
-            <button type="button" id="btn-mes-proximo" title="Próximo Mês" class="p-1 text-slate-400 hover:text-white transition">
-              <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            </button>
+            <button type="button" id="btn-mes-proximo" class="p-1 text-slate-400 hover:text-white transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
           </div>
         </div>
 
-        <!-- Barra de Ações Rápidas -->
         <div class="flex items-center gap-2 w-full sm:w-auto">
           <button type="button" id="btn-abrir-modal" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md shadow-emerald-500/10 active:scale-95">
             <i data-lucide="plus" class="w-4 h-4"></i> Lançamento
           </button>
-          <button type="button" id="btn-abrir-modal-conta" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Novo Cartão / Conta">
+          <button type="button" id="btn-abrir-modal-conta" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
             <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Cartão</span>
           </button>
-          <button type="button" id="btn-abrir-modal-categoria" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Nova Categoria">
+          <button type="button" id="btn-abrir-modal-categoria" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
             <i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> <span class="hidden md:inline">Categoria</span>
           </button>
 
-          <!-- Dropdown Exportar -->
           <div class="relative">
-            <button type="button" id="btn-dropdown-exportar" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Exportar dados do mês">
+            <button type="button" id="btn-dropdown-exportar" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
               <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Exportar</span>
             </button>
-            <div id="menu-dropdown-exportar" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50">
-              <button type="button" onclick="exportarDados('csv')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition">
-                <i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i> Exportar CSV (.csv)
-              </button>
-              <button type="button" onclick="exportarDados('xlsx')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition">
-                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> Exportar Excel (.xlsx)
-              </button>
-              <button type="button" onclick="exportarDados('pdf')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition">
-                <i data-lucide="file" class="w-3.5 h-3.5 text-rose-400"></i> Exportar Relatório (.pdf)
-              </button>
+            <div id="menu-dropdown-exportar" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50 transition-opacity">
+              <button type="button" onclick="exportarDados('csv')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i> Exportar CSV</button>
+              <button type="button" onclick="exportarDados('xlsx')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> Exportar Excel</button>
+              <button type="button" onclick="exportarDados('pdf')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file" class="w-3.5 h-3.5 text-rose-400"></i> Exportar Relatório PDF</button>
             </div>
           </div>
 
-          <!-- Botão Modo Privacidade (Ocultar Valores) -->
-          <button type="button" id="btn-modo-privacidade" onclick="alternarPrivacidade()" title="Ocultar / Mostrar Valores" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0">
+          <button type="button" onclick="alternarPrivacidade()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0" id="btn-modo-privacidade">
             <i data-lucide="eye" class="w-4 h-4"></i>
           </button>
 
-          <!-- Botão Central de Configurações -->
-          <button type="button" id="btn-abrir-config" title="Configurações" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95">
+          <button type="button" id="btn-abrir-config" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95">
             <i data-lucide="settings" class="w-4 h-4"></i>
           </button>
         </div>
-
       </div>
     </header>
 
-    <!-- Conteúdo Principal -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5 pb-24 sm:pb-6">
       
-      <!-- Seletor de Visão / Painéis Separados (Meu Painel, Convidados, Geral) -->
-      <div id="container-abas-visao" class="hidden flex items-center gap-2 overflow-x-auto pb-1"></div>
+      <div id="container-abas-visao" class="hidden flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar"></div>
 
-      <!-- Barra de Ações Rápidas para Abas Compartilhadas -->
       <div id="barra-acoes-compartilhadas" class="hidden flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20">
         <div class="text-xs text-sky-300 font-medium flex items-center gap-1.5">
           <i data-lucide="user-check" class="w-4 h-4"></i>
           <span>Gerenciando fatura de: <strong id="label-nome-compartilhado" class="text-white"></strong></span>
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button type="button" onclick="enviarResumoWhatsApp()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition">
-            <i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar no WhatsApp
+          <button type="button" onclick="enviarResumoWhatsApp()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Resumo WhatsApp
           </button>
-          <button type="button" onclick="marcarTudoComoPagoVisao()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 active:scale-95 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+          <button type="button" onclick="marcarTudoComoPagoVisao()" class="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
             <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Marcar Tudo Pago
           </button>
         </div>
       </div>
 
-      <!-- Indicadores / Cards de Topo -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
           <span class="text-[11px] font-medium text-slate-400 block truncate">Saldo do Mês</span>
@@ -230,108 +180,64 @@
         </div>
       </div>
 
-      <!-- Grid de Gráficos: Projeção (2 cols) + Rosca por Categoria (1 col) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        
-        <!-- Gráfico de Projeção -->
         <div class="lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
           <div class="flex items-center justify-between">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção 6 Meses
-            </h2>
-            <div id="badge-projecao" class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300">
-              Comprometimento: <span id="val-media-comp" class="font-bold text-emerald-400">0%</span>
-            </div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção 6 Meses</h2>
+            <div class="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300">Comprometimento: <span id="val-media-comp" class="font-bold text-emerald-400">0%</span></div>
           </div>
-          <div class="h-48 sm:h-64 w-full">
-            <canvas id="grafico-projecao"></canvas>
-          </div>
+          <div class="h-48 sm:h-64 w-full"><canvas id="grafico-projecao"></canvas></div>
         </div>
-
-        <!-- Gráfico de Rosca: Despesas por Categoria -->
         <div class="lg:col-span-1 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3 flex flex-col">
           <div class="flex items-center justify-between">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> Despesas do Mês
-            </h2>
-            <span class="text-[10px] font-mono text-slate-400">Por Categoria</span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> Despesas do Mês</h2>
           </div>
           <div class="relative flex-1 min-h-[192px] sm:min-h-[256px] w-full flex items-center justify-center">
             <canvas id="grafico-categorias"></canvas>
-            <div id="msg-grafico-categorias-vazio" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-500 text-center px-4">
-              Nenhuma despesa registrada neste mês.
-            </div>
+            <div id="msg-grafico-categorias-vazio" class="hidden absolute inset-0 flex items-center justify-center text-xs text-slate-500 text-center px-4">Nenhuma despesa no mês.</div>
           </div>
         </div>
-
       </div>
 
-      <!-- Meus Cartões & Contas -->
       <div class="space-y-2.5">
         <div class="flex items-center justify-between">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-            <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> Cartões & Contas
-          </h2>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2"><i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> Cartões & Contas</h2>
           <span class="text-[10px] text-slate-500">Toque para filtrar o extrato</span>
         </div>
         <div id="grid-cartoes-contas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- Teto por Categoria (Exibe apenas despesas com teto definido) -->
       <div class="space-y-2.5">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-          <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-sky-400"></i> Limite por Categoria (Orçamento)
-        </h2>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2"><i data-lucide="target" class="w-3.5 h-3.5 text-sky-400"></i> Limite por Categoria (Orçamento)</h2>
         <div id="grid-categorias-orcamento" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </div>
 
-      <!-- Extrato da Competência -->
       <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3.5">
-        
         <div class="flex flex-col gap-2.5">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2">
               <h2 class="text-sm font-semibold text-slate-200">Extrato</h2>
               <button type="button" id="badge-filtro-conta" onclick="alternarFiltroConta(null)" class="hidden text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 hover:bg-emerald-500/30 transition">
-                <span id="texto-filtro-conta"></span>
-                <i data-lucide="x" class="w-3 h-3"></i>
+                <span id="texto-filtro-conta"></span><i data-lucide="x" class="w-3 h-3"></i>
               </button>
             </div>
-            <div class="flex items-center gap-2">
-              <span id="contador-transacoes" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-lg">0 registros</span>
-            </div>
+            <span id="contador-transacoes" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-lg">0 registros</span>
           </div>
-
-          <!-- Barra de Busca protegida contra preenchimento automático indevido -->
           <div class="relative w-full">
             <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-            <input 
-              type="search" 
-              id="filtro-busca" 
-              name="fc_transaction_search" 
-              autocomplete="off" 
-              autocapitalize="off" 
-              spellcheck="false" 
-              placeholder="Buscar lançamentos..." 
-              class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition">
+            <input type="search" id="filtro-busca" autocomplete="off" placeholder="Buscar lançamentos..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition">
           </div>
         </div>
 
-        <!-- Abas de Filtros Rápidos -->
-        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs border-b border-slate-800/80">
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs border-b border-slate-800/80 hide-scrollbar">
           <button type="button" onclick="aplicarFiltroTipo('todos')" id="btn-filtro-todos" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300">Todos</button>
           <button type="button" onclick="aplicarFiltroTipo('Despesa Cartão')" id="btn-filtro-cartao" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Cartão</button>
           <button type="button" onclick="aplicarFiltroTipo('Débito/Pix')" id="btn-filtro-debito" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Débito / Pix</button>
           <button type="button" onclick="aplicarFiltroTipo('Receita')" id="btn-filtro-receita" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white">Receitas</button>
-          <button type="button" onclick="aplicarFiltroTipo('pendentes')" id="btn-filtro-pendentes" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-amber-400/80 hover:text-amber-300 flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Pendentes
-          </button>
+          <button type="button" onclick="aplicarFiltroTipo('pendentes')" id="btn-filtro-pendentes" class="btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-amber-400/80 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Pendentes</button>
         </div>
 
-        <!-- VISUALIZAÇÃO 1: CARDS MOBILE (Até telas sm / 640px) -->
         <div id="lista-transacoes-mobile" class="space-y-2.5 sm:hidden"></div>
-
-        <!-- VISUALIZAÇÃO 2: TABELA DESKTOP (A partir de sm / 640px) -->
         <div class="hidden sm:block overflow-x-auto">
           <table class="w-full text-left text-xs">
             <thead>
@@ -339,45 +245,184 @@
                 <th class="pb-2 font-medium">Data</th>
                 <th class="pb-2 font-medium">Descrição</th>
                 <th class="pb-2 font-medium">Categoria</th>
-                <th class="pb-2 font-medium">Conta / Cartão</th>
+                <th class="pb-2 font-medium">Conta/Cartão</th>
                 <th class="pb-2 font-medium">Tipo</th>
-                <th class="pb-2 font-medium">Parcela</th>
+                <th class="pb-2 font-medium">Parc.</th>
                 <th class="pb-2 font-medium text-right">Valor</th>
                 <th class="pb-2 font-medium text-center">Status</th>
                 <th class="pb-2 font-medium text-center">Ações</th>
               </tr>
             </thead>
             <tbody id="lista-transacoes-desktop" class="divide-y divide-slate-800/60 text-slate-300">
-              <tr>
-                <td colspan="9" class="py-8 text-center text-slate-500">Nenhum registro para este mês.</td>
-              </tr>
+              <tr><td colspan="9" class="py-8 text-center text-slate-500">Nenhum registro.</td></tr>
             </tbody>
           </table>
         </div>
-
       </div>
     </main>
 
-    <!-- Botão Flutuante Rápido (FAB) -->
-    <button 
-      type="button" 
-      id="btn-fab-adicionar" 
-      title="Novo Lançamento Rápido"
-      class="fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 border border-emerald-400/30 transition-all duration-200">
+    <button type="button" id="btn-fab-adicionar" class="fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-all duration-200 active:scale-95">
       <i data-lucide="plus" class="w-7 h-7 stroke-[2.5]"></i>
     </button>
   </div>
 
-  <!-- ========================================== -->
-  <!-- 3. MODAIS & TOASTS                         -->
-  <!-- ========================================== -->
-
-  <!-- Sistema de Toasts (Substituto do alert) -->
+  <!-- 3. MODAIS & TOASTS -->
   <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-80"></div>
 
-  <!-- Modal de Confirmação Customizado (Substituto do confirm) -->
-  <div id="modal-confirm" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all scale-95 opacity-0" id="modal-confirm-content">
+  <!-- Modal Configurações -->
+  <div id="modal-configuracoes" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
+    <div id="modal-config-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i> Configurações</h3>
+        <button type="button" id="btn-fechar-config" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
+        <div class="flex items-center justify-between"><span class="text-[10px] font-bold uppercase text-slate-400">Meu Perfil</span><button type="button" id="config-btn-logout" class="px-2 py-1 rounded-lg text-[11px] font-medium bg-rose-500/10 text-rose-400 transition flex items-center gap-1"><i data-lucide="log-out" class="w-3 h-3"></i> Sair</button></div>
+        <div class="space-y-2.5">
+          <input type="email" id="config-user-email-input" disabled class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono">
+          <input type="text" id="config-nome-input" placeholder="Seu nome" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200">
+          <input type="tel" id="config-telefone-input" placeholder="(75) 99999-9999" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200">
+          <button type="button" id="btn-salvar-perfil" class="w-full py-2 bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs transition active:scale-95">Salvar Perfil</button>
+        </div>
+      </div>
+      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2.5">
+        <div class="flex items-center justify-between"><span class="text-xs font-semibold text-white">Canal Beta</span><span class="text-[10px] text-emerald-400">WhatsApp</span></div>
+        <p class="text-[11px] text-slate-400">Relate erros direto no zap.</p>
+        <button type="button" id="btn-enviar-feedback-wpp" class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/15 text-emerald-300 font-bold text-xs transition active:scale-95"><i data-lucide="send" class="w-3.5 h-3.5 inline mr-1"></i> Feedback</button>
+      </div>
+      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
+        <div class="flex items-center justify-between cursor-pointer" id="btn-toggle-senha-section"><span class="text-xs font-semibold text-white">Segurança & Senha</span><i data-lucide="chevron-down" id="icone-seta-senha" class="w-4 h-4 text-slate-400 transition-transform"></i></div>
+        <div id="container-form-senha" class="hidden pt-2 border-t border-slate-800/80 space-y-3">
+          <input type="password" id="nova-senha-input" placeholder="Nova Senha" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+          <input type="password" id="confirma-senha-input" placeholder="Repita a Senha" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+          <button type="button" id="btn-salvar-nova-senha" class="w-full py-2 bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs transition active:scale-95">Atualizar Senha</button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/40 border border-slate-800/80">
+        <div><p class="text-xs font-semibold text-white">Som e Vibração</p></div>
+        <button type="button" id="toggle-som-switch" class="w-11 h-6 rounded-full bg-emerald-500 p-0.5 transition-colors relative flex items-center"><div id="toggle-som-knob" class="w-5 h-5 rounded-full bg-white shadow transform translate-x-5 transition-transform"></div></button>
+      </div>
+      <div class="grid grid-cols-4 gap-2 pt-2">
+        <button type="button" onclick="definirTema('esmeralda')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-emerald-500"></span>Esmeralda</button>
+        <button type="button" onclick="definirTema('azul')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-sky-500"></span>Azul</button>
+        <button type="button" onclick="definirTema('roxo')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-violet-500"></span>Violeta</button>
+        <button type="button" onclick="definirTema('ambar')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-amber-500"></span>Ouro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Nova Categoria -->
+  <div id="modal-categoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
+    <div id="modal-categoria-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> Cadastrar Categoria</h3>
+        <button type="button" id="btn-fechar-modal-categoria" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-categoria" class="space-y-3.5">
+        <select id="categoria-tipo-fluxo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200"><option value="Despesa">Despesa</option><option value="Receita">Receita</option></select>
+        <input type="text" id="categoria-nome" required placeholder="Nome Ex: Mercado" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+        <div class="grid grid-cols-2 gap-3">
+          <div id="campo-container-teto"><input type="number" step="0.01" min="0" id="categoria-teto" placeholder="Teto Mensal (R$)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200"></div>
+          <div id="campo-container-icone" class="col-span-1">
+            <div class="flex items-center gap-2">
+              <div id="preview-icone-categoria" class="w-9 h-9 shrink-0 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-sky-400"><i data-lucide="shopping-cart" class="w-4 h-4"></i></div>
+              <select id="categoria-icone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+                <option value="shopping-cart">Mercado</option><option value="utensils">Comida</option><option value="home">Casa</option>
+                <option value="car">Carro</option><option value="activity">Saúde</option><option value="church">Religião</option>
+                <option value="hand-heart">Doação</option><option value="paw-print">Pets</option><option value="tag">Geral</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="btn-cancelar-modal-categoria" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" id="btn-salvar-categoria" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-sky-500 text-slate-950">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Nova Conta -->
+  <div id="modal-conta" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
+    <div id="modal-conta-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modal-conta-titulo" class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Conta ou Cartão</h3>
+        <button type="button" id="btn-fechar-modal-conta" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-conta" class="space-y-3.5">
+        <input type="text" id="conta-nome" required placeholder="Nome (Ex: Nubank)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+        <select id="conta-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200"><option value="Cartão de Crédito">Cartão de Crédito</option><option value="Corrente">Conta Corrente</option></select>
+        <div id="campos-especificos-cartao" class="grid grid-cols-2 gap-3 p-3 bg-slate-950/60 border border-slate-800 rounded-xl">
+          <input type="number" id="conta-fechamento" min="1" max="31" placeholder="Dia Fechamento" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+          <input type="number" id="conta-vencimento" min="1" max="31" placeholder="Dia Vencimento" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+        </div>
+        <input type="number" step="0.01" id="conta-saldo-inicial" placeholder="Saldo Inicial (R$)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="btn-cancelar-modal-conta" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" id="btn-salvar-conta" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-slate-950">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Transação -->
+  <div id="modal-transacao" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
+    <div id="modal-tx-content" class="w-full max-w-lg bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modal-tx-titulo" class="text-base font-bold text-white">Novo Lançamento</h3>
+        <button type="button" id="btn-fechar-modal" class="p-1 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-transacao" class="space-y-3.5">
+        <div class="grid grid-cols-2 gap-3">
+          <select id="tx-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200"><option value="Despesa Cartão">Cartão</option><option value="Débito/Pix">Pix/Débito</option><option value="Receita">Receita</option></select>
+          <input type="number" step="0.01" min="0.01" id="tx-valor" required placeholder="Valor Total R$" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+        </div>
+        <input type="text" id="tx-descricao" required placeholder="Descrição" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+        
+        <div id="container-atribuicao" class="hidden p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+          <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-sky-400"></i> Responsável</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <select id="tx-atribuicao-predefinida" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"><option value="">Meu Gasto</option><option value="outro">Compartilhar...</option></select>
+            <input type="email" id="tx-atribuicao-email" placeholder="E-mail" class="hidden bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <select id="tx-categoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200"></select>
+          <select id="tx-conta" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200"></select>
+        </div>
+        <input type="date" id="tx-data" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+        
+        <div id="container-recorrencia" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-xs font-medium text-slate-300 flex items-center gap-1.5"><i data-lucide="repeat" class="w-3.5 h-3.5 text-emerald-400"></i> Conta Fixa Mensal</span>
+            <input type="checkbox" id="tx-recorrente" class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+          </label>
+          <div id="opcoes-recorrencia" class="hidden pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-400">Gerar para:</span>
+            <select id="tx-recorrente-meses" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200"><option value="6">6 meses</option><option value="12" selected>12 meses</option></select>
+          </div>
+        </div>
+
+        <div id="container-parcelamento" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-medium text-slate-300">Parcelamento</label>
+            <select id="tx-parcelas" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="12">12x</option></select>
+          </div>
+          <div id="previa-parcelamento" class="text-[11px] font-mono text-emerald-400"></div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="btn-cancelar-modal" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" id="btn-salvar-tx" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-slate-950">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Confirmação Customizado Centrado -->
+  <div id="modal-confirm" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+    <div id="modal-confirm-content" data-centered="true" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all duration-300 scale-95 opacity-0">
       <div class="flex items-start gap-3">
         <div id="modal-confirm-icon" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"></div>
         <div class="flex-1 pt-1">
@@ -392,3122 +437,28 @@
     </div>
   </div>
 
-  <!-- Modal Customizado para Editar Teto de Categoria (Substituto do prompt) -->
-  <div id="modal-editar-teto" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div id="modal-teto-content" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all scale-95 opacity-0">
+  <!-- Modal Editar Teto Centrado -->
+  <div id="modal-editar-teto" class="hidden fixed inset-0 z-[10000] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+    <div id="modal-teto-content" data-centered="true" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl transform transition-all duration-300 scale-95 opacity-0">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-sky-400"></i>
-          Alterar Limite Mensal
-        </h3>
-        <button type="button" onclick="fecharModalTeto()" class="p-1 text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="sliders-horizontal" class="w-4 h-4 text-sky-400"></i> Alterar Limite</h3>
+        <button type="button" onclick="fecharModalTeto()" class="p-1 text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
-
-      <p class="text-xs text-slate-400 mb-3">
-        Categoria: <strong id="teto-categoria-nome" class="text-white"></strong>
-      </p>
-
+      <p class="text-xs text-slate-400 mb-3">Categoria: <strong id="teto-categoria-nome" class="text-white"></strong></p>
       <form id="form-editar-teto" class="space-y-4">
         <div>
-          <label class="block text-[11px] text-slate-400 mb-1">Novo Limite (R$)</label>
-          <input type="number" step="0.01" min="0" id="teto-novo-valor" required placeholder="0,00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-mono focus:outline-none focus:border-sky-500 text-slate-100">
-          <span class="text-[10px] text-slate-500 mt-1 block">Digite <strong>0</strong> para remover o limite desta categoria.</span>
+          <input type="number" step="0.01" min="0" id="teto-novo-valor" required placeholder="0,00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm font-mono text-slate-100">
+          <span class="text-[10px] text-slate-500 mt-1 block">Digite <strong>0</strong> para remover o limite.</span>
         </div>
-
         <div class="flex justify-end gap-2">
-          <button type="button" onclick="fecharModalTeto()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
-          <button type="submit" id="btn-salvar-teto" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-sky-500 hover:bg-sky-600 text-slate-950 transition active:scale-95">Salvar Limite</button>
+          <button type="button" onclick="fecharModalTeto()" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
+          <button type="submit" id="btn-salvar-teto" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-sky-500 text-slate-950">Salvar Limite</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal de Configurações -->
-  <div id="modal-configuracoes" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-      
-      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
-        <div class="flex items-center gap-2">
-          <i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i>
-          <h3 class="text-sm font-bold text-white">Configurações do Sistema</h3>
-        </div>
-        <button type="button" id="btn-fechar-config" class="p-1 text-slate-400 hover:text-white rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Bloco 1: Conta & Perfil Editável com updateUser -->
-      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Meu Perfil</span>
-          <button type="button" id="config-btn-logout" class="px-2 py-1 rounded-lg text-[11px] font-medium bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition flex items-center gap-1">
-            <i data-lucide="log-out" class="w-3 h-3"></i> Sair
-          </button>
-        </div>
-
-        <div id="msg-perfil" class="hidden text-[11px] p-2 rounded-lg"></div>
-
-        <div class="space-y-2.5">
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1">E-mail (Identificador no App)</label>
-            <input type="email" id="config-user-email-input" disabled class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono cursor-not-allowed">
-          </div>
-
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1">Nome Completo</label>
-            <input type="text" id="config-nome-input" placeholder="Seu nome" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200 placeholder-slate-600">
-          </div>
-
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1">WhatsApp / Telefone</label>
-            <input type="tel" id="config-telefone-input" maxlength="15" placeholder="(75) 99999-9999" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200 placeholder-slate-600">
-          </div>
-
-          <button type="button" id="btn-salvar-perfil" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold rounded-xl text-xs shadow-md shadow-emerald-500/10 flex items-center justify-center gap-1.5">
-            <i data-lucide="check" class="w-3.5 h-3.5"></i> Salvar Dados do Perfil
-          </button>
-        </div>
-      </div>
-
-      <!-- Bloco 2: Canal de Feedback do WhatsApp (Fase Beta) -->
-      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2.5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i>
-            <span class="text-xs font-semibold text-white">Canal do Testador (Beta)</span>
-          </div>
-          <span class="text-[10px] text-emerald-400 font-mono font-medium">WhatsApp</span>
-        </div>
-
-        <p class="text-[11px] text-slate-400 leading-relaxed">
-          Encontrou algum bug, erro em cálculo ou tem uma ideia de melhoria? Envie direto pelo WhatsApp.
-        </p>
-
-        <button 
-          type="button" 
-          id="btn-enviar-feedback-wpp" 
-          class="w-full py-2.5 px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-95 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition">
-          <i data-lucide="send" class="w-3.5 h-3.5"></i> Relatar Erro / Dar Feedback
-        </button>
-      </div>
-
-      <!-- Bloco 3: Segurança & Alteração de Senha -->
-      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
-        <div class="flex items-center justify-between cursor-pointer" id="btn-toggle-senha-section">
-          <div class="flex items-center gap-2">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-            <span class="text-xs font-semibold text-white">Segurança & Senha</span>
-          </div>
-          <i data-lucide="chevron-down" id="icone-seta-senha" class="w-4 h-4 text-slate-400 transition-transform"></i>
-        </div>
-
-        <div id="container-form-senha" class="hidden pt-2 border-t border-slate-800/80 space-y-3">
-          <div id="msg-senha" class="hidden text-[11px] p-2 rounded-lg"></div>
-
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1">Nova Senha</label>
-            <input type="password" id="nova-senha-input" placeholder="Mínimo 6 caracteres" minlength="6" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200 placeholder-slate-600">
-          </div>
-
-          <div>
-            <label class="block text-[11px] text-slate-400 mb-1">Confirmar Nova Senha</label>
-            <input type="password" id="confirma-senha-input" placeholder="Repita a nova senha" minlength="6" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200 placeholder-slate-600">
-          </div>
-
-          <button type="button" id="btn-salvar-nova-senha" class="w-full py-2 bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition text-slate-950 font-bold rounded-xl text-xs shadow-md shadow-emerald-500/10">
-            Atualizar Senha
-          </button>
-        </div>
-      </div>
-
-      <!-- Bloco 4: Feedback Tátil e Sonoro -->
-      <div class="space-y-2">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Interação & Feedback</span>
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-950/40 border border-slate-800/80">
-          <div>
-            <p class="text-xs font-semibold text-white">Som e Vibração</p>
-            <p class="text-[10px] text-slate-500">Cliques táteis e sons sutis ao salvar ações</p>
-          </div>
-          <button type="button" id="toggle-som-switch" class="w-11 h-6 rounded-full bg-emerald-500 p-0.5 transition-colors duration-200 ease-in-out relative flex items-center cursor-pointer">
-            <div id="toggle-som-knob" class="w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition-transform duration-200 ease-in-out"></div>
-          </button>
-        </div>
-      </div>
-
-      <!-- Bloco 5: Tema de Destaque -->
-      <div class="space-y-2">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Cor de Destaque do App</span>
-        <div class="grid grid-cols-4 gap-2">
-          <button type="button" onclick="definirTema('esmeralda')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
-            <span class="w-4 h-4 rounded-full bg-emerald-500"></span> Esmeralda
-          </button>
-          <button type="button" onclick="definirTema('azul')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
-            <span class="w-4 h-4 rounded-full bg-sky-500"></span> Azul Céu
-          </button>
-          <button type="button" onclick="definirTema('roxo')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
-            <span class="w-4 h-4 rounded-full bg-violet-500"></span> Violeta
-          </button>
-          <button type="button" onclick="definirTema('ambar')" class="theme-btn p-2 rounded-xl border border-slate-800 flex flex-col items-center gap-1.5 bg-slate-950/60 hover:bg-slate-800 transition text-[10px] text-slate-300">
-            <span class="w-4 h-4 rounded-full bg-amber-500"></span> Dourado
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- Modal Nova Categoria (Com Pré-visualização do Ícone) -->
-  <div id="modal-categoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="tag" class="w-4 h-4 text-sky-400"></i> Cadastrar Categoria
-        </h3>
-        <button type="button" id="btn-fechar-modal-categoria" class="p-1 text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-categoria" class="space-y-3.5">
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Finalidade da Categoria</label>
-          <select id="categoria-tipo-fluxo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
-            <option value="Despesa">Despesa (Gasto com Teto Orçamentário)</option>
-            <option value="Receita">Receita / Ganho (Entrada de Dinheiro)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Nome da Categoria</label>
-          <input type="text" id="categoria-nome" required placeholder="Ex: Mercado, Dízimo, Salário" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div id="campo-container-teto">
-            <label class="block text-xs text-slate-400 mb-1">Teto Mensal (R$)</label>
-            <input type="number" step="0.01" min="0" id="categoria-teto" placeholder="0,00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
-          </div>
-          <div id="campo-container-icone" class="col-span-1">
-            <label class="block text-xs text-slate-400 mb-1">Ícone</label>
-            <div class="flex items-center gap-2">
-              <div id="preview-icone-categoria" class="w-9 h-9 shrink-0 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-sky-400">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-              </div>
-              <select id="categoria-icone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-sky-500 text-slate-200">
-                <option value="shopping-cart">Mercado</option>
-                <option value="utensils">Alimentação</option>
-                <option value="home">Moradia</option>
-                <option value="car">Transporte</option>
-                <option value="tv">Lazer / Streaming</option>
-                <option value="activity">Saúde</option>
-                <option value="book-open">Educação</option>
-                <option value="church">Religião / Igreja</option>
-                <option value="hand-heart">Dízimo / Oferta / Doação</option>
-                <option value="sparkles">Espiritualidade</option>
-                <option value="paw-print">Pets</option>
-                <option value="dumbbell">Academia / Esportes</option>
-                <option value="gift">Presentes</option>
-                <option value="wallet">Salário / Carteira</option>
-                <option value="trending-up">Renda Extra / Vendas</option>
-                <option value="piggy-bank">Investimentos</option>
-                <option value="tag">Geral</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btn-cancelar-modal-categoria" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
-          <button type="submit" id="btn-salvar-categoria" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-sky-500 text-slate-950">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Nova / Editar Conta / Cartão -->
-  <div id="modal-conta" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="modal-conta-titulo" class="text-sm font-bold text-white flex items-center gap-2">
-          <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Conta ou Cartão
-        </h3>
-        <button type="button" id="btn-fechar-modal-conta" class="p-1 text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-conta" class="space-y-3.5">
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Nome de Identificação</label>
-          <input type="text" id="conta-nome" required placeholder="Ex: Nubank, Inter, Carteira" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
-        </div>
-
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Tipo</label>
-          <select id="conta-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
-            <option value="Cartão de Crédito">Cartão de Crédito</option>
-            <option value="Corrente">Conta Corrente / Carteira</option>
-            <option value="Poupança">Poupança / Reserva</option>
-            <option value="Investimento">Investimentos</option>
-          </select>
-        </div>
-
-        <div id="campos-especificos-cartao" class="grid grid-cols-2 gap-3 p-3 bg-slate-950/60 border border-slate-800 rounded-xl">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Dia Fechamento</label>
-            <input type="number" id="conta-fechamento" min="1" max="31" placeholder="Ex: 30" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Dia Vencimento</label>
-            <input type="number" id="conta-vencimento" min="1" max="31" placeholder="Ex: 5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Saldo Inicial (R$)</label>
-          <input type="number" step="0.01" id="conta-saldo-inicial" value="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btn-cancelar-modal-conta" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
-          <button type="submit" id="btn-salvar-conta" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-slate-950">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Nova / Editar Transação -->
-  <div id="modal-transacao" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 id="modal-tx-titulo" class="text-base font-bold text-white">Novo Lançamento</h3>
-        <button type="button" id="btn-fechar-modal" class="p-1 text-slate-400 hover:text-white">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-transacao" class="space-y-3.5">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Tipo de Lançamento</label>
-            <select id="tx-tipo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
-              <option value="Despesa Cartão">Cartão de Crédito</option>
-              <option value="Débito/Pix">Débito / Pix / Boleto</option>
-              <option value="Receita">Receita / Ganho</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Valor Total (R$)</label>
-            <input type="number" step="0.01" min="0.01" id="tx-valor" required placeholder="0,00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Descrição</label>
-          <input type="text" id="tx-descricao" required placeholder="Ex: Farmácia, Roupas, Mercado" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
-        </div>
-
-        <!-- Seletor de Atribuição (Exclusivo do Administrador) -->
-        <div id="container-atribuicao" class="hidden p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <i data-lucide="users" class="w-3.5 h-3.5 text-sky-400"></i> Responsável pelo Gasto
-            </label>
-            <span class="text-[10px] text-slate-500">Aparecerá no painel dela</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <select id="tx-atribuicao-predefinida" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-              <option value="">Gasto meu (Pessoal)</option>
-              <option value="outro">Compartilhar com outra conta...</option>
-            </select>
-            <input type="email" id="tx-atribuicao-email" placeholder="E-mail da conta (ex: maria@...)" class="hidden bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1" id="label-tx-categoria">Categoria</label>
-            <select id="tx-categoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200"></select>
-          </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Conta ou Cartão</label>
-            <select id="tx-conta" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200"></select>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Data do Movimento</label>
-          <input type="date" id="tx-data" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-slate-200">
-        </div>
-
-        <!-- Opção de Lançamento Recorrente (Fixo) -->
-        <div id="container-recorrencia" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
-          <label class="flex items-center justify-between cursor-pointer">
-            <span class="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-              <i data-lucide="repeat" class="w-3.5 h-3.5 text-emerald-400"></i> Conta Fixa (Repetir todo mês)
-            </span>
-            <input type="checkbox" id="tx-recorrente" class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
-          </label>
-          
-          <div id="opcoes-recorrencia" class="hidden pt-2 border-t border-slate-800/80 flex items-center justify-between">
-            <span class="text-[11px] text-slate-400">Repetir pelos próximos:</span>
-            <select id="tx-recorrente-meses" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-              <option value="6">6 meses</option>
-              <option value="12" selected>12 meses (1 ano)</option>
-              <option value="24">24 meses (2 anos)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Parcelamento de 1x a 18x -->
-        <div id="container-parcelamento" class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-medium text-slate-300">Parcelamento</label>
-            <select id="tx-parcelas" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
-              <option value="1">1x (À vista na fatura)</option>
-              <option value="2">2x</option>
-              <option value="3">3x</option>
-              <option value="4">4x</option>
-              <option value="5">5x</option>
-              <option value="6">6x</option>
-              <option value="7">7x</option>
-              <option value="8">8x</option>
-              <option value="9">9x</option>
-              <option value="10">10x</option>
-              <option value="11">11x</option>
-              <option value="12">12x</option>
-              <option value="13">13x</option>
-              <option value="14">14x</option>
-              <option value="15">15x</option>
-              <option value="16">16x</option>
-              <option value="17">17x</option>
-              <option value="18">18x</option>
-            </select>
-          </div>
-          <div id="previa-parcelamento" class="text-[11px] font-mono text-emerald-400"></div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" id="btn-cancelar-modal" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300">Cancelar</button>
-          <button type="submit" id="btn-salvar-tx" class="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500 text-slate-950">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ========================================== -->
-  <!-- 4. SCRIPT PRINCIPAL                        -->
-  <!-- ========================================== -->
-  <script>
-    const SUPABASE_URL = 'https://vrivgmpdcgpqhuohzkaf.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZnbXBkY2dwcWh1b2h6a2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MjAxODQsImV4cCI6MjEwOTM5NjE4NH0.H7qIvpF3rm-k-moF101qC2JLLe1mHOlqQlMWnzhFGo4';
-
-    // Número do WhatsApp oficial para relatos de testes
-    const NUMERO_WHATSAPP_TESTES = '5575988660943';
-
-    // ==========================================
-    // SISTEMA DE TOASTS E MODAL DE CONFIRMAÇÃO
-    // ==========================================
-    const toastContainer = document.getElementById('toast-container');
-    const modalConfirm = document.getElementById('modal-confirm');
-    const modalConfirmContent = document.getElementById('modal-confirm-content');
-    const modalConfirmTitulo = document.getElementById('modal-confirm-titulo');
-    const modalConfirmMensagem = document.getElementById('modal-confirm-mensagem');
-    const modalConfirmIcon = document.getElementById('modal-confirm-icon');
-    const btnConfirmCancel = document.getElementById('btn-confirm-cancel');
-    const btnConfirmOk = document.getElementById('btn-confirm-ok');
-
-    window.mostrarToast = function(mensagem, tipo = 'erro') {
-      executarFeedback(tipo === 'erro' ? 'clique' : 'sucesso');
-      
-      const toast = document.createElement('div');
-      
-      let cores, icone;
-      if (tipo === 'sucesso') {
-        cores = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
-        icone = 'check-circle-2';
-      } else if (tipo === 'info' || tipo === 'aviso') {
-        cores = 'bg-amber-500/10 border-amber-500/30 text-amber-400';
-        icone = 'alert-circle';
-      } else {
-        cores = 'bg-rose-500/10 border-rose-500/30 text-rose-400';
-        icone = 'x-octagon';
-      }
-
-      toast.className = `flex items-center gap-3 p-3.5 rounded-xl border bg-slate-900 shadow-xl pointer-events-auto transform transition-all duration-300 translate-y-10 opacity-0 ${cores}`;
-      
-      toast.innerHTML = `
-        <i data-lucide="${icone}" class="w-5 h-5 shrink-0"></i>
-        <p class="text-xs font-medium leading-relaxed">${mensagem}</p>
-        <button type="button" class="ml-auto text-slate-400 hover:text-white" onclick="this.parentElement.remove()">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      `;
-
-      toastContainer.appendChild(toast);
-      if (window.lucide) lucide.createIcons();
-
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-10', 'opacity-0');
-      });
-
-      setTimeout(() => {
-        toast.classList.add('translate-y-10', 'opacity-0');
-        setTimeout(() => toast.remove(), 300);
-      }, 4000);
-    };
-
-    let confirmResolve = null;
-
-    window.customConfirm = function(mensagem, tipo = 'perigo', titulo = 'Confirmação') {
-      return new Promise((resolve) => {
-        executarFeedback('clique');
-        confirmResolve = resolve;
-
-        modalConfirmTitulo.textContent = titulo;
-        modalConfirmMensagem.textContent = mensagem;
-
-        if (tipo === 'perigo') {
-          modalConfirmIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-rose-500/20 text-rose-400';
-          modalConfirmIcon.innerHTML = '<i data-lucide="alert-triangle" class="w-5 h-5"></i>';
-          btnConfirmOk.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition text-slate-950 bg-rose-500 hover:bg-rose-600 active:scale-95';
-          btnConfirmOk.textContent = 'Sim, Excluir';
-        } else {
-          modalConfirmIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-sky-500/20 text-sky-400';
-          modalConfirmIcon.innerHTML = '<i data-lucide="help-circle" class="w-5 h-5"></i>';
-          btnConfirmOk.className = 'px-4 py-2.5 rounded-xl text-xs font-bold transition text-slate-950 bg-sky-500 hover:bg-sky-600 active:scale-95';
-          btnConfirmOk.textContent = 'Sim, Continuar';
-        }
-
-        modalConfirm.classList.remove('hidden');
-        if (window.lucide) lucide.createIcons();
-
-        requestAnimationFrame(() => {
-          modalConfirmContent.classList.remove('scale-95', 'opacity-0');
-        });
-      });
-    };
-
-    function fecharModalConfirm(resultado) {
-      modalConfirmContent.classList.add('scale-95', 'opacity-0');
-      setTimeout(() => {
-        modalConfirm.classList.add('hidden');
-        if (confirmResolve) {
-          confirmResolve(resultado);
-          confirmResolve = null;
-        }
-      }, 200);
-    }
-
-    btnConfirmCancel.addEventListener('click', () => fecharModalConfirm(false));
-    btnConfirmOk.addEventListener('click', () => fecharModalConfirm(true));
-
-    // Inicialização segura do Supabase
-    let client = null;
-    try {
-      if (!window.supabase) {
-        throw new Error('Biblioteca do Supabase não carregou. Verifique sua internet.');
-      }
-      client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } catch (err) {
-      mostrarToast('Erro ao iniciar o sistema: ' + err.message, 'erro');
-    }
-
-    let usuarioLogadoId = null;
-    let usuarioLogadoEmail = null;
-
-    let modoAuth = 'login';
-    let mesAtual = new Date().toISOString().slice(0, 7);
-    let contasUsuario = [];
-    let categoriasUsuario = [];
-    let transacoesCarregadas = [];
-    let meuGraficoProjecao = null;
-    let meuGraficoCategorias = null;
-    let filtroTipoAtivo = 'todos';
-    let filtroContaIdAtiva = null;
-    let termoBuscaAtivo = '';
-    
-    // Controle de Visão (Painel Pessoal vs Convidados vs Geral)
-    let visaoAtiva = 'pessoal';
-    // Controle de Edição
-    let transacaoEditandoId = null;
-    let contaEditandoId = null;
-    let categoriaEditandoTetoId = null;
-
-    // Leitura segura de preferências
-    let configFeedbackAtivo = true;
-    let temaAtivo = 'esmeralda';
-    let modoPrivacidadeAtivo = false;
-    try {
-      configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
-      temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
-      modoPrivacidadeAtivo = localStorage.getItem('fc_privacidade_ativa') === 'true';
-    } catch (e) {}
-
-    // Helper de formatação monetária com suporte ao Modo Privacidade
-    function formatarMoeda(valor) {
-      if (modoPrivacidadeAtivo) return 'R$ •••••';
-      return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
-
-    // Elementos DOM Autenticação & Cadastro
-    const authScreen = document.getElementById('auth-screen');
-    const dashboardScreen = document.getElementById('dashboard-screen');
-    const tabLogin = document.getElementById('tab-login');
-    const tabSignup = document.getElementById('tab-signup');
-    const authForm = document.getElementById('auth-form');
-    const authMsg = document.getElementById('auth-msg');
-    const authBtnSubmit = document.getElementById('auth-btn-submit');
-    const btnEsqueceuSenha = document.getElementById('btn-esqueceu-senha');
-    const campoCadastroNome = document.getElementById('campo-cadastro-nome');
-    const campoCadastroTelefone = document.getElementById('campo-cadastro-telefone');
-    const authNome = document.getElementById('auth-nome');
-    const authTelefone = document.getElementById('auth-telefone');
-    const labelSaudacaoUsuario = document.getElementById('label-saudacao-usuario');
-
-    // Elementos DOM Topo & Extrato
-    const filtroMes = document.getElementById('filtro-mes');
-    const btnMesAnterior = document.getElementById('btn-mes-anterior');
-    const btnMesProximo = document.getElementById('btn-mes-proximo');
-    const filtroBusca = document.getElementById('filtro-busca');
-    const contadorTransacoes = document.getElementById('contador-transacoes');
-    const btnFabAdicionar = document.getElementById('btn-fab-adicionar');
-    const btnModoPrivacidade = document.getElementById('btn-modo-privacidade');
-
-    // Dropdown Exportação
-    const btnDropdownExportar = document.getElementById('btn-dropdown-exportar');
-    const menuDropdownExportar = document.getElementById('menu-dropdown-exportar');
-    
-    // Modal Configurações & Edição de Perfil
-    const modalConfig = document.getElementById('modal-configuracoes');
-    const btnAbrirConfig = document.getElementById('btn-abrir-config');
-    const btnFecharConfig = document.getElementById('btn-fechar-config');
-    const configBtnLogout = document.getElementById('config-btn-logout');
-    const toggleSomSwitch = document.getElementById('toggle-som-switch');
-    const toggleSomKnob = document.getElementById('toggle-som-knob');
-    const configUserEmailInput = document.getElementById('config-user-email-input');
-    const configNomeInput = document.getElementById('config-nome-input');
-    const configTelefoneInput = document.getElementById('config-telefone-input');
-    const btnSalvarPerfil = document.getElementById('btn-salvar-perfil');
-    const msgPerfil = document.getElementById('msg-perfil');
-    const btnFeedbackWpp = document.getElementById('btn-enviar-feedback-wpp');
-
-    // Seção de Alterar Senha
-    const btnToggleSenhaSection = document.getElementById('btn-toggle-senha-section');
-    const containerFormSenha = document.getElementById('container-form-senha');
-    const iconeSetaSenha = document.getElementById('icone-seta-senha');
-    const novaSenhaInput = document.getElementById('nova-senha-input');
-    const confirmaSenhaInput = document.getElementById('confirma-senha-input');
-    const btnSalvarNovaSenha = document.getElementById('btn-salvar-nova-senha');
-    const msgSenha = document.getElementById('msg-senha');
-
-    // Modal Transação
-    const btnAbrirModal = document.getElementById('btn-abrir-modal');
-    const btnFecharModal = document.getElementById('btn-fechar-modal');
-    const btnCancelarModal = document.getElementById('btn-cancelar-modal');
-    const modalTransacao = document.getElementById('modal-transacao');
-    const formTransacao = document.getElementById('form-transacao');
-    const txTipo = document.getElementById('tx-tipo');
-    const txValor = document.getElementById('tx-valor');
-    const txData = document.getElementById('tx-data');
-    const txConta = document.getElementById('tx-conta');
-    const txCategoria = document.getElementById('tx-categoria');
-    const txParcelas = document.getElementById('tx-parcelas');
-    const containerParcelas = document.getElementById('container-parcelamento');
-    const previaParcelamento = document.getElementById('previa-parcelamento');
-    const containerAtribuicao = document.getElementById('container-atribuicao');
-    const txAtribuicaoPredefinida = document.getElementById('tx-atribuicao-predefinida');
-    const txAtribuicaoEmail = document.getElementById('tx-atribuicao-email');
-    const txRecorrente = document.getElementById('tx-recorrente');
-    const opcoesRecorrencia = document.getElementById('opcoes-recorrencia');
-    const txRecorrenteMeses = document.getElementById('tx-recorrente-meses');
-    const containerRecorrencia = document.getElementById('container-recorrencia');
-
-    // Modal Nova Conta
-    const btnAbrirModalConta = document.getElementById('btn-abrir-modal-conta');
-    const btnFecharModalConta = document.getElementById('btn-fechar-modal-conta');
-    const btnCancelarModalConta = document.getElementById('btn-cancelar-modal-conta');
-    const modalConta = document.getElementById('modal-conta');
-    const formConta = document.getElementById('form-conta');
-    const contaTipo = document.getElementById('conta-tipo');
-    const camposCartao = document.getElementById('campos-especificos-cartao');
-
-    // Modal Nova Categoria & Preview do Ícone
-    const btnAbrirModalCategoria = document.getElementById('btn-abrir-modal-categoria');
-    const btnFecharModalCategoria = document.getElementById('btn-fechar-modal-categoria');
-    const btnCancelarModalCategoria = document.getElementById('btn-cancelar-modal-categoria');
-    const modalCategoria = document.getElementById('modal-categoria');
-    const formCategoria = document.getElementById('form-categoria');
-    const categoriaTipoFluxo = document.getElementById('categoria-tipo-fluxo');
-    const campoContainerTeto = document.getElementById('campo-container-teto');
-    const campoContainerIcone = document.getElementById('campo-container-icone');
-    const categoriaTeto = document.getElementById('categoria-teto');
-    const selectCategoriaIcone = document.getElementById('categoria-icone');
-    const previewIconeCategoria = document.getElementById('preview-icone-categoria');
-
-    function atualizarPreviewIconeCategoria() {
-      if (!selectCategoriaIcone || !previewIconeCategoria) return;
-      const iconeEscolhido = selectCategoriaIcone.value || 'tag';
-      previewIconeCategoria.innerHTML = `<i data-lucide="${iconeEscolhido}" class="w-4 h-4"></i>`;
-      if (window.lucide) lucide.createIcons();
-    }
-
-    if (selectCategoriaIcone) {
-      selectCategoriaIcone.addEventListener('change', atualizarPreviewIconeCategoria);
-    }
-
-    // -------------------------------------------------------------
-    // MOTOR DE ÁUDIO & FEEDBACK TÁTIL (Web Audio API + Vibration API)
-    // -------------------------------------------------------------
-    let audioCtx = null;
-
-    function obterAudioContext() {
-      if (!audioCtx) {
-        const AudioClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioClass) audioCtx = new AudioClass();
-      }
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      return audioCtx;
-    }
-
-    function reproduzirSomFeedback(tipo = 'clique') {
-      try {
-        const ctx = obterAudioContext();
-        if (!ctx) return;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        const agora = ctx.currentTime;
-
-        if (tipo === 'clique') {
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(580, agora);
-          osc.frequency.exponentialRampToValueAtTime(140, agora + 0.035);
-          gain.gain.setValueAtTime(0.08, agora);
-          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.035);
-          osc.start(agora);
-          osc.stop(agora + 0.035);
-        } else if (tipo === 'sucesso') {
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(520, agora);
-          osc.frequency.exponentialRampToValueAtTime(880, agora + 0.08);
-          gain.gain.setValueAtTime(0.07, agora);
-          gain.gain.exponentialRampToValueAtTime(0.001, agora + 0.09);
-          osc.start(agora);
-          osc.stop(agora + 0.09);
-        }
-      } catch (e) {}
-    }
-
-    function executarFeedback(tipo = 'clique') {
-      if (!configFeedbackAtivo) return;
-
-      if ('vibrate' in navigator) {
-        if (tipo === 'clique') navigator.vibrate(12);
-        else if (tipo === 'sucesso') navigator.vibrate([20, 30, 20]);
-      }
-      reproduzirSomFeedback(tipo);
-    }
-
-    // -------------------------------------------------------------
-    // SKELETONS DE CARREGAMENTO
-    // -------------------------------------------------------------
-    function exibirSkeletons() {
-      const idsCards = ['card-saldo', 'card-fatura', 'card-receita', 'card-despesa'];
-      idsCards.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.innerHTML = '<div class="h-6 sm:h-7 w-24 bg-slate-800 rounded-lg animate-pulse mt-1"></div>';
-        }
-      });
-
-      const gridContas = document.getElementById('grid-cartoes-contas');
-      if (gridContas) {
-        gridContas.innerHTML = Array(3).fill(`
-          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between animate-pulse">
-            <div class="space-y-2">
-              <div class="h-3.5 w-24 bg-slate-800 rounded"></div>
-              <div class="h-3 w-32 bg-slate-800/70 rounded"></div>
-            </div>
-            <div class="space-y-1.5 text-right">
-              <div class="h-2.5 w-10 bg-slate-800/70 rounded ml-auto"></div>
-              <div class="h-4 w-16 bg-slate-800 rounded"></div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      const gridCategorias = document.getElementById('grid-categorias-orcamento');
-      if (gridCategorias) {
-        gridCategorias.innerHTML = Array(3).fill(`
-          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2.5 animate-pulse">
-            <div class="flex justify-between">
-              <div class="h-3.5 w-24 bg-slate-800 rounded"></div>
-              <div class="h-3.5 w-14 bg-slate-800 rounded"></div>
-            </div>
-            <div class="w-full bg-slate-800 rounded-full h-1.5"></div>
-            <div class="flex justify-between">
-              <div class="h-2.5 w-20 bg-slate-800/70 rounded"></div>
-              <div class="h-2.5 w-8 bg-slate-800/70 rounded"></div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      const listaMobile = document.getElementById('lista-transacoes-mobile');
-      if (listaMobile) {
-        listaMobile.innerHTML = Array(3).fill(`
-          <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3 animate-pulse">
-            <div class="flex justify-between">
-              <div class="space-y-1.5">
-                <div class="h-4 w-32 bg-slate-800 rounded"></div>
-                <div class="h-3 w-40 bg-slate-800/70 rounded"></div>
-              </div>
-              <div class="h-4 w-16 bg-slate-800 rounded"></div>
-            </div>
-            <div class="flex justify-between pt-2 border-t border-slate-800/80">
-              <div class="h-7 w-20 bg-slate-800 rounded-xl"></div>
-              <div class="h-7 w-14 bg-slate-800 rounded-xl"></div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      const listaDesktop = document.getElementById('lista-transacoes-desktop');
-      if (listaDesktop) {
-        listaDesktop.innerHTML = Array(4).fill(`
-          <tr class="animate-pulse">
-            <td class="py-3"><div class="h-3.5 w-16 bg-slate-800 rounded"></div></td>
-            <td class="py-3"><div class="h-3.5 w-32 bg-slate-800 rounded"></div></td>
-            <td class="py-3"><div class="h-5 w-20 bg-slate-800 rounded-md"></div></td>
-            <td class="py-3"><div class="h-3.5 w-20 bg-slate-800 rounded"></div></td>
-            <td class="py-3"><div class="h-4 w-16 bg-slate-800 rounded"></div></td>
-            <td class="py-3"><div class="h-3.5 w-8 bg-slate-800 rounded"></div></td>
-            <td class="py-3"><div class="h-3.5 w-16 bg-slate-800 rounded ml-auto"></div></td>
-            <td class="py-3"><div class="h-6 w-16 bg-slate-800 rounded-full mx-auto"></div></td>
-            <td class="py-3"><div class="h-4 w-12 bg-slate-800 rounded mx-auto"></div></td>
-          </tr>
-        `).join('');
-      }
-    }
-
-    // -------------------------------------------------------------
-    // MODO PRIVACIDADE (OCULTAR / MOSTRAR VALORES)
-    // -------------------------------------------------------------
-    function atualizarIconePrivacidade() {
-      if (!btnModoPrivacidade) return;
-      btnModoPrivacidade.innerHTML = `<i data-lucide="${modoPrivacidadeAtivo ? 'eye-off' : 'eye'}" class="w-4 h-4 ${modoPrivacidadeAtivo ? 'text-amber-400' : ''}"></i>`;
-      if (window.lucide) lucide.createIcons();
-    }
-
-    window.alternarPrivacidade = function() {
-      executarFeedback('clique');
-      modoPrivacidadeAtivo = !modoPrivacidadeAtivo;
-      try {
-        localStorage.setItem('fc_privacidade_ativa', modoPrivacidadeAtivo);
-      } catch (e) {}
-      atualizarIconePrivacidade();
-      atualizarTotais();
-      renderizarGridContas();
-      renderizarGridCategorias();
-      renderizarGraficoCategorias();
-      renderizarTransacoes();
-    };
-
-    // -------------------------------------------------------------
-    // FILTRO POR CARTÃO AO CLICAR NO CARD
-    // -------------------------------------------------------------
-    window.alternarFiltroConta = function(contaId) {
-      executarFeedback('clique');
-      if (contaId === null || filtroContaIdAtiva === contaId) {
-        filtroContaIdAtiva = null;
-      } else {
-        filtroContaIdAtiva = contaId;
-      }
-
-      const badge = document.getElementById('badge-filtro-conta');
-      const textoBadge = document.getElementById('texto-filtro-conta');
-      if (badge && textoBadge) {
-        if (filtroContaIdAtiva) {
-          const contaObj = contasUsuario.find(c => c.id === filtroContaIdAtiva);
-          textoBadge.textContent = contaObj ? contaObj.nome : 'Cartão';
-          badge.classList.remove('hidden');
-        } else {
-          badge.classList.add('hidden');
-        }
-      }
-
-      renderizarGridContas();
-      renderizarTransacoes();
-    };
-
-    // -------------------------------------------------------------
-    // MÁSCARA AUTOMÁTICA DE TELEFONE (DDD + 9 DÍGITOS)
-    // -------------------------------------------------------------
-    function aplicarMascaraTelefone(inputEl) {
-      if (!inputEl) return;
-      inputEl.addEventListener('input', (e) => {
-        let valor = e.target.value.replace(/\D/g, '');
-        if (valor.length > 11) valor = valor.slice(0, 11);
-
-        if (valor.length > 6) {
-          valor = `(${valor.slice(0, 2)}) ${valor.slice(2, 7)}-${valor.slice(7)}`;
-        } else if (valor.length > 2) {
-          valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-        } else if (valor.length > 0) {
-          valor = `(${valor}`;
-        }
-        e.target.value = valor;
-      });
-    }
-
-    aplicarMascaraTelefone(authTelefone);
-    aplicarMascaraTelefone(configTelefoneInput);
-
-    // -------------------------------------------------------------
-    // ATRIBUIÇÃO DE COMPRAS NO CARTÃO E RECORRÊNCIA
-    // -------------------------------------------------------------
-    if (txAtribuicaoPredefinida) {
-      txAtribuicaoPredefinida.addEventListener('change', () => {
-        if (txAtribuicaoPredefinida.value === 'outro') {
-          txAtribuicaoEmail.classList.remove('hidden');
-          txAtribuicaoEmail.focus();
-        } else {
-          txAtribuicaoEmail.classList.add('hidden');
-          txAtribuicaoEmail.value = '';
-        }
-      });
-    }
-
-    if (txRecorrente) {
-      txRecorrente.addEventListener('change', () => {
-        if (txRecorrente.checked) {
-          opcoesRecorrencia.classList.remove('hidden');
-          containerParcelas.classList.add('hidden');
-          txParcelas.value = '1';
-          previaParcelamento.innerText = '';
-        } else {
-          opcoesRecorrencia.classList.add('hidden');
-          atualizarEstadoTipo();
-          calcularPrevia();
-        }
-      });
-    }
-
-    // -------------------------------------------------------------
-    // SEPARAÇÃO DE PAINÉIS (VISÃO PESSOAL VS CONVIDADOS VS GERAL)
-    // -------------------------------------------------------------
-    function obterTransacoesDaVisao(lista = transacoesCarregadas) {
-      return lista.filter(t => {
-        if (visaoAtiva === 'geral') {
-          return true;
-        }
-        if (visaoAtiva === 'pessoal') {
-          if (t.user_id === usuarioLogadoId) {
-            return !t.atribuido_para_email;
-          }
-          return t.atribuido_para_email === usuarioLogadoEmail;
-        }
-        return t.atribuido_para_email === visaoAtiva;
-      });
-    }
-
-    window.selecionarVisao = async function(novaVisao) {
-      executarFeedback('clique');
-      visaoAtiva = novaVisao;
-      renderizarAbasVisao();
-      renderizarTransacoes();
-      atualizarTotais();
-      renderizarGridContas();
-      renderizarGridCategorias();
-      renderizarGraficoCategorias();
-      await carregarGraficoProjecao();
-    };
-
-    function renderizarAbasVisao() {
-      const container = document.getElementById('container-abas-visao');
-      const barraAcoes = document.getElementById('barra-acoes-compartilhadas');
-      const labelNome = document.getElementById('label-nome-compartilhado');
-      if (!container) return;
-
-      const emailsCompartilhados = new Set();
-      transacoesCarregadas.forEach(t => {
-        if (t.user_id === usuarioLogadoId && t.atribuido_para_email) {
-          emailsCompartilhados.add(t.atribuido_para_email);
-        }
-      });
-
-      if (emailsCompartilhados.size === 0 && visaoAtiva === 'pessoal') {
-        container.classList.add('hidden');
-        if (barraAcoes) barraAcoes.classList.add('hidden');
-        return;
-      }
-
-      container.classList.remove('hidden');
-
-      const estiloAtivo = 'bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20';
-      const estiloInativo = 'bg-slate-900/80 text-slate-300 hover:bg-slate-800 border border-slate-800 font-medium';
-
-      let html = `
-        <button type="button" onclick="selecionarVisao('pessoal')" class="px-3.5 py-2 rounded-xl text-xs whitespace-nowrap transition flex items-center gap-1.5 ${visaoAtiva === 'pessoal' ? estiloAtivo : estiloInativo}">
-          <i data-lucide="user" class="w-3.5 h-3.5"></i> Meu Painel
-        </button>
-      `;
-
-      emailsCompartilhados.forEach(email => {
-        const nomeCurto = email.split('@')[0];
-        const label = nomeCurto.charAt(0).toUpperCase() + nomeCurto.slice(1);
-        const isAtivo = visaoAtiva === email;
-        html += `
-          <button type="button" onclick="selecionarVisao('${email}')" class="px-3.5 py-2 rounded-xl text-xs whitespace-nowrap transition flex items-center gap-1.5 ${isAtivo ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/20' : estiloInativo}">
-            <i data-lucide="users" class="w-3.5 h-3.5"></i> ${label}
-          </button>
-        `;
-      });
-
-      html += `
-        <button type="button" onclick="selecionarVisao('geral')" class="px-3.5 py-2 rounded-xl text-xs whitespace-nowrap transition flex items-center gap-1.5 ${visaoAtiva === 'geral' ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20' : estiloInativo}">
-          <i data-lucide="layers" class="w-3.5 h-3.5"></i> Visão Geral (Tudo)
-        </button>
-      `;
-
-      container.innerHTML = html;
-
-      if (barraAcoes) {
-        if (visaoAtiva !== 'pessoal' && visaoAtiva !== 'geral') {
-          const nomeCurto = visaoAtiva.split('@')[0];
-          if (labelNome) labelNome.textContent = nomeCurto.charAt(0).toUpperCase() + nomeCurto.slice(1);
-          barraAcoes.classList.remove('hidden');
-        } else {
-          barraAcoes.classList.add('hidden');
-        }
-      }
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    // -------------------------------------------------------------
-    // AÇÕES RÁPIDAS NAS ABAS COMPARTILHADAS (WHATSAPP & LOTE)
-    // -------------------------------------------------------------
-    window.enviarResumoWhatsApp = function() {
-      executarFeedback('clique');
-      const listaVisao = obterTransacoesDaVisao();
-
-      if (listaVisao.length === 0) {
-        mostrarToast('Não há lançamentos nesta aba para enviar.', 'aviso');
-        return;
-      }
-
-      let totalGeral = 0;
-      let totalPendente = 0;
-
-      const linhasTexto = listaVisao.map(t => {
-        const val = Number(t.valor);
-        if (t.tipo !== 'Receita') {
-          totalGeral += val;
-          if (t.status !== 'Pago') totalPendente += val;
-        }
-        const statusIcon = t.status === 'Pago' ? '✅' : '⏳';
-        const valorFmt = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        return `${statusIcon} ${t.descricao} — *${valorFmt}*`;
-      }).join('\n');
-
-      const nomePessoa = visaoAtiva.split('@')[0];
-      const nomeFormatado = nomePessoa.charAt(0).toUpperCase() + nomePessoa.slice(1);
-      const totalFmt = totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      const pendenteFmt = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-      const mensagem = 
-`Olá, *${nomeFormatado}*! Segue o resumo do cartão referente a *${mesAtual}*:
-
-${linhasTexto}
-
-*Total do mês:* ${totalFmt}
-*Falta pagar:* ${pendenteFmt}`;
-
-      const url = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
-      window.open(url, '_blank');
-    };
-
-    window.marcarTudoComoPagoVisao = async function() {
-      if (!client) return;
-
-      const listaVisao = obterTransacoesDaVisao();
-      const pendentes = listaVisao.filter(t => t.status !== 'Pago' && t.user_id === usuarioLogadoId);
-
-      if (pendentes.length === 0) {
-        mostrarToast('Todos os lançamentos desta aba já estão marcados como pagos!', 'aviso');
-        return;
-      }
-
-      const totalPendente = pendentes.reduce((acc, t) => acc + Number(t.valor), 0);
-      const totalFmt = totalPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-      if (!(await customConfirm(`Confirmar o pagamento de ${pendentes.length} lançamento(s), totalizando ${totalFmt}?`, 'info', 'Quitação em Lote'))) {
-        return;
-      }
-
-      const ids = pendentes.map(t => t.id);
-      const { error } = await client
-        .from('transacoes')
-        .update({ status: 'Pago' })
-        .in('id', ids);
-
-      if (error) {
-        mostrarToast('Erro ao atualizar em lote: ' + error.message, 'erro');
-      } else {
-        mostrarToast('Lançamentos marcados como pagos!', 'sucesso');
-        await carregarTransacoes();
-      }
-    };
-
-    // -------------------------------------------------------------
-    // SISTEMA DE TEMAS (Interface Web & Configurações)
-    // -------------------------------------------------------------
-    const mapaCoresTema = {
-      esmeralda: { bg: 'bg-emerald-500', hover: 'hover:bg-emerald-600', text: 'text-emerald-400', shadow: 'shadow-emerald-500/30' },
-      azul: { bg: 'bg-sky-500', hover: 'hover:bg-sky-600', text: 'text-sky-400', shadow: 'shadow-sky-500/30' },
-      roxo: { bg: 'bg-violet-500', hover: 'hover:bg-violet-600', text: 'text-violet-400', shadow: 'shadow-violet-500/30' },
-      ambar: { bg: 'bg-amber-500', hover: 'hover:bg-amber-600', text: 'text-amber-400', shadow: 'shadow-amber-500/30' }
-    };
-
-    const mapaCoresPDF = {
-      esmeralda: {
-        cabecalho: [6, 78, 59],
-        alternada: [240, 253, 244],
-        destaque: [16, 185, 129]
-      },
-      azul: {
-        cabecalho: [12, 74, 110],
-        alternada: [240, 249, 255],
-        destaque: [14, 165, 233]
-      },
-      roxo: {
-        cabecalho: [76, 29, 149],
-        alternada: [245, 243, 255],
-        destaque: [139, 92, 246]
-      },
-      ambar: {
-        cabecalho: [120, 53, 15],
-        alternada: [254, 252, 232],
-        destaque: [245, 158, 11]
-      }
-    };
-
-    window.definirTema = function(cor) {
-      temaAtivo = cor;
-      try {
-        localStorage.setItem('fc_tema_app', cor);
-      } catch (e) {}
-      aplicarTemaNaInterface();
-      executarFeedback('clique');
-    };
-
-    function aplicarTemaNaInterface() {
-      const cfg = mapaCoresTema[temaAtivo] || mapaCoresTema.esmeralda;
-      if (btnFabAdicionar) {
-        btnFabAdicionar.className = `fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full ${cfg.bg} ${cfg.hover} active:scale-95 text-slate-950 flex items-center justify-center shadow-lg ${cfg.shadow} border border-white/10 transition-all duration-200`;
-      }
-      if (btnAbrirModal) {
-        btnAbrirModal.className = `flex-1 sm:flex-none flex items-center justify-center gap-1.5 ${cfg.bg} ${cfg.hover} text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md active:scale-95`;
-      }
-    }
-
-    // -------------------------------------------------------------
-    // DROPDOWN EXPORTAÇÃO
-    // -------------------------------------------------------------
-    if (btnDropdownExportar) {
-      btnDropdownExportar.addEventListener('click', (e) => {
-        e.stopPropagation();
-        executarFeedback('clique');
-        menuDropdownExportar.classList.toggle('hidden');
-      });
-
-      document.addEventListener('click', () => {
-        if (!menuDropdownExportar.classList.contains('hidden')) {
-          menuDropdownExportar.classList.add('hidden');
-        }
-      });
-    }
-
-    // -------------------------------------------------------------
-    // FUNÇÕES DE EXPORTAÇÃO (CSV, EXCEL / XLSX, PDF)
-    // -------------------------------------------------------------
-    function obterLinhasFiltradasParaExportacao() {
-      const listaVisao = obterTransacoesDaVisao();
-      return listaVisao.filter(t => {
-        if (filtroContaIdAtiva && t.conta_id !== filtroContaIdAtiva) return false;
-
-        if (filtroTipoAtivo === 'pendentes') {
-          if (t.status === 'Pago') return false;
-        } else if (filtroTipoAtivo !== 'todos') {
-          if (t.tipo !== filtroTipoAtivo) return false;
-        }
-
-        if (termoBuscaAtivo) {
-          const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
-          const nomeCategoria = catObj ? catObj.nome.toLowerCase() : '';
-          const descricao = (t.descricao || '').toLowerCase();
-          const atribuido = (t.atribuido_para_email || '').toLowerCase();
-          return descricao.includes(termoBuscaAtivo) || nomeCategoria.includes(termoBuscaAtivo) || atribuido.includes(termoBuscaAtivo);
-        }
-
-        return true;
-      });
-    }
-
-    window.exportarDados = function(formato) {
-      executarFeedback('clique');
-      if (menuDropdownExportar) menuDropdownExportar.classList.add('hidden');
-
-      const transacoes = obterLinhasFiltradasParaExportacao();
-      if (!transacoes || transacoes.length === 0) {
-        mostrarToast('Não há transações para exportar na visão e competência selecionadas.', 'aviso');
-        return;
-      }
-
-      const dadosMapeados = transacoes.map(t => {
-        const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
-        const contaObj = contasUsuario.find(c => c.id === t.conta_id);
-        const isReceita = t.tipo === 'Receita';
-        const isLiquidado = t.status === 'Pago';
-        const statusTexto = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
-
-        return {
-          Data: t.data_movimento.split('-').reverse().join('/'),
-          Descricao: t.descricao || '',
-          Categoria: catObj ? catObj.nome : 'Sem Categoria',
-          Conta: contaObj ? contaObj.nome : 'Padrão',
-          Tipo: t.tipo || '',
-          Parcela: t.parcela_total > 1 ? `${t.parcela_atual}/${t.parcela_total}` : '1/1',
-          Valor: Number(t.valor) || 0,
-          Status: statusTexto,
-          Atribuido: t.atribuido_para_email || 'Pessoal',
-          Competencia: t.mes_competencia || mesAtual
-        };
-      });
-
-      const sufixoVisao = visaoAtiva === 'pessoal' ? 'Pessoal' : (visaoAtiva === 'geral' ? 'Geral' : visaoAtiva.split('@')[0]);
-      const nomeBaseArquivo = `FinanceControl_${mesAtual}_${sufixoVisao}`;
-
-      if (formato === 'csv') {
-        exportarCSV(dadosMapeados, `${nomeBaseArquivo}.csv`);
-      } else if (formato === 'xlsx') {
-        exportarXLSX(dadosMapeados, `${nomeBaseArquivo}.xlsx`);
-      } else if (formato === 'pdf') {
-        exportarPDF(dadosMapeados, `${nomeBaseArquivo}.pdf`);
-      }
-    };
-
-    function exportarCSV(dados, nomeArquivo) {
-      const cabecalhos = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parcela', 'Valor (R$)', 'Status', 'Responsável'];
-      let csvContent = '\uFEFF' + cabecalhos.join(';') + '\n';
-
-      dados.forEach(row => {
-        const linha = [
-          row.Data,
-          `"${(row.Descricao || '').replace(/"/g, '""')}"`,
-          `"${(row.Categoria || '').replace(/"/g, '""')}"`,
-          `"${(row.Conta || '').replace(/"/g, '""')}"`,
-          `"${(row.Tipo || '').replace(/"/g, '""')}"`,
-          row.Parcela,
-          row.Valor.toFixed(2).replace('.', ','),
-          row.Status,
-          `"${row.Atribuido}"`
-        ];
-        csvContent += linha.join(';') + '\n';
-      });
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', nomeArquivo);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      mostrarToast('CSV exportado com sucesso!', 'sucesso');
-    }
-
-    function exportarXLSX(dados, nomeArquivo) {
-      if (typeof XLSX === 'undefined') {
-        mostrarToast('A biblioteca SheetJS não pôde ser carregada. Verifique sua conexão.', 'erro');
-        return;
-      }
-
-      const linhasFormatadas = dados.map(row => ({
-        'Data': row.Data,
-        'Descrição': row.Descricao,
-        'Categoria': row.Categoria,
-        'Conta / Cartão': row.Conta,
-        'Tipo': row.Tipo,
-        'Parcela': row.Parcela,
-        'Valor (R$)': row.Valor,
-        'Status': row.Status,
-        'Responsável': row.Atribuido
-      }));
-
-      const ws = XLSX.utils.json_to_sheet(linhasFormatadas);
-
-      ws['!cols'] = [
-        { wch: 12 }, { wch: 32 }, { wch: 22 }, { wch: 22 },
-        { wch: 16 }, { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 24 }
-      ];
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, `Extrato ${mesAtual}`);
-      XLSX.writeFile(wb, nomeArquivo);
-      mostrarToast('Planilha Excel exportada com sucesso!', 'sucesso');
-    }
-
-    function exportarPDF(dados, nomeArquivo) {
-      if (!window.jspdf || !window.jspdf.jsPDF) {
-        mostrarToast('Biblioteca jsPDF não carregada. Verifique sua conexão.', 'erro');
-        return;
-      }
-
-      const temaConfig = mapaCoresPDF[temaAtivo] || mapaCoresPDF.esmeralda;
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-      // Badge Vetorial Nativo com Cores do Tema
-      doc.setFillColor(temaConfig.cabecalho[0], temaConfig.cabecalho[1], temaConfig.cabecalho[2]);
-      doc.roundedRect(14, 12, 10, 10, 2.5, 2.5, 'F');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(255, 255, 255);
-      doc.text('$', 19, 19, { align: 'center' });
-
-      // Título e Competência
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(15);
-      doc.setTextColor(15, 23, 42);
-      doc.text('FinanceControl', 28, 17);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Relatório Financeiro  •  Competência: ${mesAtual}  •  Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 28, 22);
-
-      // Linha divisória
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(0.3);
-      doc.line(14, 26, 196, 26);
-
-      // Totais calculados
-      let totalReceitas = 0, totalFaturas = 0, totalDespesas = 0;
-      dados.forEach(r => {
-        if (r.Tipo === 'Receita') totalReceitas += r.Valor;
-        else if (r.Tipo === 'Despesa Cartão') totalFaturas += r.Valor;
-        else totalDespesas += r.Valor;
-      });
-
-      const totalSaidas = totalFaturas + totalDespesas;
-      const saldoPrevisto = totalReceitas - totalSaidas;
-
-      // Caixa de Resumo no Topo
-      doc.setDrawColor(226, 232, 240);
-      doc.setFillColor(248, 250, 252);
-      doc.roundedRect(14, 30, 182, 18, 3, 3, 'FD');
-
-      doc.setFontSize(8.5);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(temaConfig.destaque[0], temaConfig.destaque[1], temaConfig.destaque[2]);
-      doc.text(`RECEITAS: ${totalReceitas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 18, 41);
-
-      doc.setTextColor(244, 63, 94);
-      doc.text(`SAÍDAS: ${totalSaidas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 68, 41);
-
-      doc.setTextColor(217, 119, 6);
-      doc.text(`FATURAS: ${totalFaturas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 116, 41);
-
-      doc.setTextColor(15, 23, 42);
-      doc.text(`SALDO: ${saldoPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 156, 41);
-
-      // Tabela de Dados via AutoTable
-      const tableColumn = ['Data', 'Descrição', 'Categoria', 'Conta / Cartão', 'Tipo', 'Parc.', 'Valor', 'Status'];
-      const tableRows = dados.map(r => [
-        r.Data,
-        r.Descricao,
-        r.Categoria,
-        r.Conta,
-        r.Tipo,
-        r.Parcela,
-        r.Valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-        r.Status
-      ]);
-
-      doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 53,
-        theme: 'striped',
-        margin: { left: 14, right: 14 },
-        styles: {
-          font: 'helvetica',
-          fontSize: 8,
-          textColor: [30, 41, 59],
-          cellPadding: { top: 2.5, right: 2, bottom: 2.5, left: 2 },
-          lineColor: [226, 232, 240],
-          lineWidth: 0.1
-        },
-        headStyles: {
-          fillColor: temaConfig.cabecalho,
-          textColor: [255, 255, 255],
-          fontStyle: 'bold',
-          halign: 'left'
-        },
-        alternateRowStyles: {
-          fillColor: temaConfig.alternada
-        },
-        columnStyles: {
-          0: { cellWidth: 18, halign: 'center' },
-          1: { cellWidth: 46 },
-          2: { cellWidth: 26 },
-          3: { cellWidth: 26 },
-          4: { cellWidth: 20 },
-          5: { cellWidth: 12, halign: 'center' },
-          6: { cellWidth: 20, halign: 'right', fontStyle: 'bold' },
-          7: { cellWidth: 14, halign: 'center' }
-        },
-        foot: [[
-          'Total Registros',
-          `${dados.length} lançamentos`,
-          '', '', '', '',
-          saldoPrevisto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-          ''
-        ]],
-        footStyles: {
-          fillColor: [15, 23, 42],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        didParseCell: function(data) {
-          if (data.section === 'body' && data.column.index === 6) {
-            const linhaRaw = dados[data.row.index];
-            if (linhaRaw && linhaRaw.Tipo === 'Receita') {
-              data.cell.styles.textColor = [16, 185, 129];
-            } else {
-              data.cell.styles.textColor = [225, 29, 72];
-            }
-          }
-        }
-      });
-
-      doc.save(nomeArquivo);
-      mostrarToast('Relatório PDF exportado com sucesso!', 'sucesso');
-    }
-
-    // -------------------------------------------------------------
-    // INICIALIZAÇÃO & GESTÃO DE SESSÃO / RECUPERAÇÃO
-    // -------------------------------------------------------------
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.lucide) lucide.createIcons();
-      filtroMes.value = mesAtual;
-      txData.value = new Date().toISOString().slice(0, 10);
-      aplicarTemaNaInterface();
-      atualizarIconePrivacidade();
-
-      if (client) {
-        client.auth.onAuthStateChange(async (event, session) => {
-          if (event === 'PASSWORD_RECOVERY') {
-            authScreen.classList.add('hidden');
-            dashboardScreen.classList.remove('hidden');
-            modalConfig.classList.remove('hidden');
-
-            containerFormSenha.classList.remove('hidden');
-            iconeSetaSenha.classList.add('rotate-180');
-            novaSenhaInput.focus();
-
-            msgSenha.textContent = 'Defina sua nova senha de acesso abaixo.';
-            msgSenha.className = 'text-[11px] p-2 rounded-lg bg-sky-500/15 border border-sky-500/30 text-sky-300';
-            msgSenha.classList.remove('hidden');
-            return;
-          }
-
-          if (session) {
-            authScreen.classList.add('hidden');
-            dashboardScreen.classList.remove('hidden');
-            if (window.lucide) lucide.createIcons();
-
-            usuarioLogadoId = session.user.id;
-            usuarioLogadoEmail = session.user.email;
-
-            if (filtroBusca) {
-              filtroBusca.value = '';
-              termoBuscaAtivo = '';
-            }
-
-            const userMeta = session.user?.user_metadata || {};
-            const nomeExibicao = userMeta.nome || session.user.email.split('@')[0];
-            if (labelSaudacaoUsuario) {
-              labelSaudacaoUsuario.textContent = `Olá, ${nomeExibicao}!`;
-            }
-
-            carregarDadosApp();
-          } else {
-            usuarioLogadoId = null;
-            usuarioLogadoEmail = null;
-            dashboardScreen.classList.add('hidden');
-            authScreen.classList.remove('hidden');
-            if (window.lucide) lucide.createIcons();
-          }
-        });
-      }
-
-      filtroBusca.addEventListener('input', (e) => {
-        termoBuscaAtivo = e.target.value.toLowerCase().trim();
-        renderizarTransacoes();
-      });
-    });
-
-    // -------------------------------------------------------------
-    // CONFIGURAÇÕES MODAL EVENTOS & EDIÇÃO DE PERFIL COM UPDATEUSER
-    // -------------------------------------------------------------
-    btnAbrirConfig.addEventListener('click', async () => {
-      executarFeedback('clique');
-      modalConfig.classList.remove('hidden');
-
-      if (msgPerfil) msgPerfil.classList.add('hidden');
-
-      if (client) {
-        const { data: { user } } = await client.auth.getUser();
-        if (user) {
-          const meta = user.user_metadata || {};
-          if (configUserEmailInput) configUserEmailInput.value = user.email || '';
-          if (configNomeInput) configNomeInput.value = meta.nome || '';
-          if (configTelefoneInput) configTelefoneInput.value = meta.telefone || '';
-        }
-      }
-
-      atualizarSwitchVisual();
-      containerFormSenha.classList.add('hidden');
-      iconeSetaSenha.classList.remove('rotate-180');
-      msgSenha.classList.add('hidden');
-      novaSenhaInput.value = '';
-      confirmaSenhaInput.value = '';
-    });
-
-    btnFecharConfig.addEventListener('click', () => {
-      modalConfig.classList.add('hidden');
-    });
-
-    configBtnLogout.addEventListener('click', async () => {
-      modalConfig.classList.add('hidden');
-      if (client) await client.auth.signOut();
-    });
-
-    if (btnSalvarPerfil) {
-      btnSalvarPerfil.addEventListener('click', async () => {
-        if (!client) return;
-        executarFeedback('clique');
-        msgPerfil.classList.add('hidden');
-
-        const novoNome = configNomeInput.value.trim();
-        const novoTelefone = configTelefoneInput.value.trim();
-
-        if (!novoNome) {
-          msgPerfil.textContent = 'Por favor, informe seu nome.';
-          msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300';
-          msgPerfil.classList.remove('hidden');
-          return;
-        }
-
-        btnSalvarPerfil.disabled = true;
-        btnSalvarPerfil.innerText = 'Salvando...';
-
-        try {
-          const { error } = await client.auth.updateUser({
-            data: {
-              nome: novoNome,
-              telefone: novoTelefone
-            }
-          });
-
-          if (error) throw error;
-
-          mostrarToast('Perfil atualizado com sucesso!', 'sucesso');
-          msgPerfil.textContent = 'Perfil atualizado com sucesso!';
-          msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
-          msgPerfil.classList.remove('hidden');
-
-          if (labelSaudacaoUsuario) {
-            labelSaudacaoUsuario.textContent = `Olá, ${novoNome}!`;
-          }
-
-          setTimeout(() => {
-            msgPerfil.classList.add('hidden');
-          }, 3000);
-        } catch (err) {
-          msgPerfil.textContent = err.message || 'Erro ao atualizar dados.';
-          msgPerfil.className = 'text-[11px] p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300';
-          msgPerfil.classList.remove('hidden');
-        } finally {
-          btnSalvarPerfil.disabled = false;
-          btnSalvarPerfil.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> Salvar Dados do Perfil';
-          if (window.lucide) lucide.createIcons();
-        }
-      });
-    }
-
-    toggleSomSwitch.addEventListener('click', () => {
-      configFeedbackAtivo = !configFeedbackAtivo;
-      try {
-        localStorage.setItem('fc_feedback_ativo', configFeedbackAtivo);
-      } catch (e) {}
-      atualizarSwitchVisual();
-      if (configFeedbackAtivo) executarFeedback('clique');
-    });
-
-    function atualizarSwitchVisual() {
-      if (configFeedbackAtivo) {
-        toggleSomSwitch.className = 'w-11 h-6 rounded-full bg-emerald-500 p-0.5 transition-colors duration-200 relative flex items-center cursor-pointer';
-        toggleSomKnob.className = 'w-5 h-5 rounded-full bg-white shadow-md transform translate-x-5 transition-transform duration-200';
-      } else {
-        toggleSomSwitch.className = 'w-11 h-6 rounded-full bg-slate-800 p-0.5 transition-colors duration-200 relative flex items-center cursor-pointer';
-        toggleSomKnob.className = 'w-5 h-5 rounded-full bg-slate-400 shadow-md transform translate-x-0 transition-transform duration-200';
-      }
-    }
-
-    btnToggleSenhaSection.addEventListener('click', () => {
-      executarFeedback('clique');
-      const aberto = !containerFormSenha.classList.contains('hidden');
-      if (aberto) {
-        containerFormSenha.classList.add('hidden');
-        iconeSetaSenha.classList.remove('rotate-180');
-      } else {
-        containerFormSenha.classList.remove('hidden');
-        iconeSetaSenha.classList.add('rotate-180');
-      }
-    });
-
-    btnSalvarNovaSenha.addEventListener('click', async () => {
-      if (!client) return;
-      const novaSenha = novaSenhaInput.value;
-      const confirmaSenha = confirmaSenhaInput.value;
-
-      msgSenha.classList.add('hidden');
-
-      if (!novaSenha || novaSenha.length < 6) {
-        msgSenha.textContent = 'A senha deve conter no mínimo 6 caracteres.';
-        msgSenha.className = 'text-[11px] p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300';
-        msgSenha.classList.remove('hidden');
-        return;
-      }
-
-      if (novaSenha !== confirmaSenha) {
-        msgSenha.textContent = 'As senhas digitadas não coincidem.';
-        msgSenha.className = 'text-[11px] p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300';
-        msgSenha.classList.remove('hidden');
-        return;
-      }
-
-      btnSalvarNovaSenha.disabled = true;
-      btnSalvarNovaSenha.innerText = 'Atualizando...';
-
-      try {
-        const { error } = await client.auth.updateUser({ password: novaSenha });
-        if (error) throw error;
-
-        mostrarToast('Senha atualizada com sucesso!', 'sucesso');
-        msgSenha.textContent = 'Senha atualizada com sucesso!';
-        msgSenha.className = 'text-[11px] p-2 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
-        msgSenha.classList.remove('hidden');
-
-        novaSenhaInput.value = '';
-        confirmaSenhaInput.value = '';
-
-        setTimeout(() => {
-          containerFormSenha.classList.add('hidden');
-          iconeSetaSenha.classList.remove('rotate-180');
-          msgSenha.classList.add('hidden');
-        }, 2000);
-      } catch (err) {
-        msgSenha.textContent = err.message || 'Erro ao redefinir senha.';
-        msgSenha.className = 'text-[11px] p-2 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300';
-        msgSenha.classList.remove('hidden');
-      } finally {
-        btnSalvarNovaSenha.disabled = false;
-        btnSalvarNovaSenha.innerText = 'Atualizar Senha';
-      }
-    });
-
-    // -------------------------------------------------------------
-    // CANAL DE FEEDBACK VIA WHATSAPP (FASE BETA)
-    // -------------------------------------------------------------
-    if (btnFeedbackWpp) {
-      btnFeedbackWpp.addEventListener('click', async () => {
-        executarFeedback('clique');
-
-        let nomeUsuario = 'Amigo Testador';
-        let emailUsuario = 'Não informado';
-        if (client) {
-          const { data: { user } } = await client.auth.getUser();
-          const meta = user?.user_metadata || {};
-          nomeUsuario = meta.nome || 'Amigo Testador';
-          emailUsuario = user?.email || 'Não informado';
-        }
-
-        const mensagemTexto = 
-`Fala Matheus! Estou testando o *FinanceControl* (Fase Beta).
-
-*Testador:* ${nomeUsuario}
-*E-mail:* ${emailUsuario}
-
-*Relato / Sugestão:*
-[Escreva aqui o que você achou, se encontrou algum erro ou sugestão de melhoria]`;
-
-        const linkWhatsApp = `https://wa.me/${NUMERO_WHATSAPP_TESTES}?text=${encodeURIComponent(mensagemTexto)}`;
-        window.open(linkWhatsApp, '_blank');
-      });
-    }
-
-    // -------------------------------------------------------------
-    // FLUXO "ESQUECI MINHA SENHA" POR E-MAIL
-    // -------------------------------------------------------------
-    if (btnEsqueceuSenha) {
-      btnEsqueceuSenha.addEventListener('click', async () => {
-        if (!client) {
-          mostrarToast('Conexão com o servidor indisponível no momento.', 'erro');
-          return;
-        }
-        executarFeedback('clique');
-        const email = document.getElementById('auth-email').value.trim();
-
-        if (!email) {
-          authMsg.textContent = 'Digite seu e-mail no campo acima para receber o link de recuperação.';
-          authMsg.className = 'text-xs p-3 rounded-lg mb-4 bg-amber-500/15 border border-amber-500/30 text-amber-300';
-          authMsg.classList.remove('hidden');
-          return;
-        }
-
-        authBtnSubmit.disabled = true;
-        authMsg.classList.add('hidden');
-
-        try {
-          const { error } = await client.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + window.location.pathname
-          });
-
-          if (error) throw error;
-
-          executarFeedback('sucesso');
-          authMsg.textContent = 'Link de recuperação enviado! Verifique seu e-mail (incluindo caixa de spam).';
-          authMsg.className = 'text-xs p-3 rounded-lg mb-4 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300';
-          authMsg.classList.remove('hidden');
-        } catch (err) {
-          authMsg.textContent = err.message || 'Falha ao enviar e-mail de recuperação.';
-          authMsg.className = 'text-xs p-3 rounded-lg mb-4 bg-rose-500/15 border border-rose-500/30 text-rose-300';
-          authMsg.classList.remove('hidden');
-        } finally {
-          authBtnSubmit.disabled = false;
-        }
-      });
-    }
-
-    if (btnFabAdicionar) {
-      btnFabAdicionar.addEventListener('click', () => {
-        executarFeedback('clique');
-        modalTransacao.classList.remove('hidden');
-        atualizarEstadoTipo();
-        atualizarOpcoesCategoriasNoModal();
-        calcularPrevia();
-      });
-    }
-
-    // -------------------------------------------------------------
-    // ALTERNÂNCIA: ENTRAR VS CRIAR CONTA (COM NOME E TELEFONE)
-    // -------------------------------------------------------------
-    tabLogin.addEventListener('click', () => setModoAuth('login'));
-    tabSignup.addEventListener('click', () => setModoAuth('signup'));
-
-    function setModoAuth(modo) {
-      modoAuth = modo;
-      authMsg.classList.add('hidden');
-      if (modo === 'login') {
-        tabLogin.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all';
-        tabSignup.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
-        authBtnSubmit.innerText = 'Acessar Painel';
-        btnEsqueceuSenha.classList.remove('hidden');
-        campoCadastroNome.classList.add('hidden');
-        campoCadastroTelefone.classList.add('hidden');
-        authNome.required = false;
-        authTelefone.required = false;
-      } else {
-        tabSignup.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all';
-        tabLogin.className = 'flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all';
-        authBtnSubmit.innerText = 'Cadastrar e Começar';
-        btnEsqueceuSenha.classList.add('hidden');
-        campoCadastroNome.classList.remove('hidden');
-        campoCadastroTelefone.classList.remove('hidden');
-        authNome.required = true;
-        authTelefone.required = true;
-      }
-    }
-
-    authForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client) {
-        mostrarToast('Erro de conexão com o servidor. Recarregue a página.', 'erro');
-        return;
-      }
-
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value;
-
-      authBtnSubmit.disabled = true;
-      authBtnSubmit.innerText = 'Conectando...';
-      authMsg.classList.add('hidden');
-
-      try {
-        if (modoAuth === 'login') {
-          const { error } = await client.auth.signInWithPassword({ email, password });
-          if (error) throw error;
-        } else {
-          const nome = authNome.value.trim();
-          const telefone = authTelefone.value.trim();
-
-          const { error } = await client.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                nome: nome,
-                telefone: telefone
-              }
-            }
-          });
-          if (error) throw error;
-
-          authMsg.textContent = 'Conta cadastrada com sucesso! Faça login para começar a testar.';
-          authMsg.className = 'text-xs p-3 rounded-lg mb-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400';
-          authMsg.classList.remove('hidden');
-          setModoAuth('login');
-        }
-      } catch (err) {
-        authMsg.textContent = err.message || 'Erro de autenticação.';
-        authMsg.className = 'text-xs p-3 rounded-lg mb-4 bg-rose-500/10 border border-rose-500/20 text-rose-400';
-        authMsg.classList.remove('hidden');
-      } finally {
-        authBtnSubmit.disabled = false;
-        authBtnSubmit.innerText = modoAuth === 'login' ? 'Acessar Painel' : 'Cadastrar e Começar';
-      }
-    });
-
-    // -------------------------------------------------------------
-    // NAVEGAÇÃO DE DATAS & FILTROS
-    // -------------------------------------------------------------
-    btnMesAnterior.addEventListener('click', () => navegarMes(-1));
-    btnMesProximo.addEventListener('click', () => navegarMes(1));
-
-    function navegarMes(direcao) {
-      let [ano, mes] = mesAtual.split('-').map(Number);
-      mes += direcao;
-
-      if (mes > 12) { mes = 1; ano += 1; }
-      else if (mes < 1) { mes = 12; ano -= 1; }
-
-      mesAtual = `${ano}-${String(mes).padStart(2, '0')}`;
-      filtroMes.value = mesAtual;
-      carregarTransacoes();
-    }
-
-    filtroMes.addEventListener('change', (e) => {
-      mesAtual = e.target.value;
-      carregarTransacoes();
-    });
-
-    window.aplicarFiltroTipo = function(tipo) {
-      filtroTipoAtivo = tipo;
-      const botoes = document.querySelectorAll('.btn-filtro');
-      botoes.forEach(b => {
-        b.className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-slate-400 hover:text-white';
-      });
-
-      if (tipo === 'todos') {
-        document.getElementById('btn-filtro-todos').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
-      } else if (tipo === 'Despesa Cartão') {
-        document.getElementById('btn-filtro-cartao').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
-      } else if (tipo === 'Débito/Pix') {
-        document.getElementById('btn-filtro-debito').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
-      } else if (tipo === 'Receita') {
-        document.getElementById('btn-filtro-receita').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-emerald-500/20 text-emerald-300';
-      } else if (tipo === 'pendentes') {
-        document.getElementById('btn-filtro-pendentes').className = 'btn-filtro px-3 py-1.5 rounded-lg font-medium whitespace-nowrap bg-amber-500/20 text-amber-300 flex items-center gap-1';
-      }
-
-      renderizarTransacoes();
-    };
-
-    // -------------------------------------------------------------
-    // CARGA DE DADOS
-    // -------------------------------------------------------------
-    async function carregarDadosApp() {
-      exibirSkeletons();
-      await Promise.all([
-        buscarOuCriarContas(),
-        buscarOuCriarCategorias()
-      ]);
-      await carregarTransacoes();
-    }
-
-    async function buscarOuCriarContas() {
-      if (!client) return;
-      const { data, error } = await client.from('contas').select('*').order('nome');
-      if (error) return;
-
-      if (!data || data.length === 0) {
-        const { data: novas } = await client.from('contas').insert([
-          { nome: 'Conta Corrente', tipo: 'Corrente', saldo_inicial: 0, user_id: usuarioLogadoId },
-          { nome: 'Cartão Principal', tipo: 'Cartão de Crédito', dia_fechamento: 30, dia_vencimento: 5, user_id: usuarioLogadoId }
-        ]).select();
-        contasUsuario = novas || [];
-      } else {
-        contasUsuario = data;
-      }
-
-      txConta.innerHTML = contasUsuario.map(c => `<option value="${c.id}">${c.nome} (${c.tipo})</option>`).join('');
-      renderizarGridContas();
-    }
-
-    async function buscarOuCriarCategorias() {
-      if (!client) return;
-      const { data, error } = await client.from('categorias').select('*').order('nome');
-      if (error) return;
-
-      if (!data || data.length === 0) {
-        const categoriasPadrao = [
-          { nome: 'Alimentação', icone: 'utensils', teto_mensal: 1200.00, tipo: 'Despesa' },
-          { nome: 'Moradia & Contas', icone: 'home', teto_mensal: 1500.00, tipo: 'Despesa' },
-          { nome: 'Transporte', icone: 'car', teto_mensal: 400.00, tipo: 'Despesa' },
-          { nome: 'Lazer & Assinaturas', icone: 'tv', teto_mensal: 350.00, tipo: 'Despesa' },
-          { nome: 'Saúde', icone: 'activity', teto_mensal: 300.00, tipo: 'Despesa' },
-          { nome: 'Salário / Remuneração', icone: 'wallet', teto_mensal: null, tipo: 'Receita' },
-          { nome: 'Renda Extra / Vendas', icone: 'trending-up', teto_mensal: null, tipo: 'Receita' },
-          { nome: 'Rendimentos & Investimentos', icone: 'piggy-bank', teto_mensal: null, tipo: 'Receita' }
-        ];
-        const { data: novas } = await client.from('categorias').insert(categoriasPadrao).select();
-        categoriasUsuario = novas || [];
-      } else {
-        categoriasUsuario = data;
-      }
-
-      atualizarOpcoesCategoriasNoModal();
-      renderizarGridCategorias();
-    }
-
-    function atualizarOpcoesCategoriasNoModal() {
-      const tipoSelecionado = txTipo.value;
-      const isReceita = tipoSelecionado === 'Receita';
-
-      const compativeis = categoriasUsuario.filter(cat => {
-        const nomeLower = (cat.nome || '').toLowerCase();
-        const tipoCat = cat.tipo || (nomeLower.includes('salário') || nomeLower.includes('renda') || nomeLower.includes('investimento') ? 'Receita' : 'Despesa');
-        return isReceita ? (tipoCat === 'Receita') : (tipoCat === 'Despesa');
-      });
-
-      if (compativeis.length === 0) {
-        txCategoria.innerHTML = `<option value="">Nenhuma categoria de ${isReceita ? 'receita' : 'despesa'} encontrada</option>`;
-      } else {
-        txCategoria.innerHTML = compativeis.map(cat => `<option value="${cat.id}">${cat.nome}</option>`).join('');
-      }
-    }
-
-    function renderizarGridContas() {
-      const container = document.getElementById('grid-cartoes-contas');
-      if (!container) return;
-
-      const listaVisao = obterTransacoesDaVisao();
-
-      container.innerHTML = contasUsuario.map(c => {
-        const isCartao = c.tipo === 'Cartão de Crédito';
-        let totalNoMes = 0;
-        listaVisao.forEach(t => {
-          if (t.conta_id === c.id) totalNoMes += Number(t.valor);
-        });
-
-        const valorFmt = formatarMoeda(totalNoMes);
-        const nomeEscapado = (c.nome || '').replace(/'/g, "\\'");
-        const isSelecionado = filtroContaIdAtiva === c.id;
-        const classeCard = isSelecionado 
-          ? 'border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/40' 
-          : 'border-slate-800 bg-slate-900/80 hover:border-slate-700';
-
-        return `
-          <div onclick="alternarFiltroConta('${c.id}')" class="p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition active:scale-[0.99] ${classeCard}">
-            <div>
-              <div class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full mr-0.5 ${isCartao ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
-                <h3 class="text-xs font-bold text-white">${c.nome}</h3>
-                <button type="button" onclick="event.stopPropagation(); editarConta('${c.id}')" class="p-1 text-slate-500 hover:text-sky-400 transition" title="Editar conta/cartão">
-                  <i data-lucide="pencil" class="w-3 h-3"></i>
-                </button>
-                <button type="button" onclick="event.stopPropagation(); deletarConta('${c.id}', '${nomeEscapado}')" class="p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir conta/cartão">
-                  <i data-lucide="trash-2" class="w-3 h-3"></i>
-                </button>
-              </div>
-              <div class="text-[11px] font-mono text-slate-400 mt-1">
-                ${isCartao ? `Fecha dia ${c.dia_fechamento || '--'} • Vence dia ${c.dia_vencimento || '--'}` : 'Conta Corrente'}
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="text-[10px] text-slate-500 block">${isCartao ? 'Fatura' : 'Movimento'}</span>
-              <span class="text-sm font-bold font-mono ${isCartao ? 'text-amber-300' : 'text-white'}">${valorFmt}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function renderizarGridCategorias() {
-      const container = document.getElementById('grid-categorias-orcamento');
-      if (!container) return;
-
-      const listaVisao = obterTransacoesDaVisao();
-
-      const categoriasOrcamento = categoriasUsuario.filter(cat => {
-        const teto = Number(cat.teto_mensal) || 0;
-        const nomeLower = (cat.nome || '').toLowerCase();
-        const isReceita = (cat.tipo === 'Receita') || nomeLower.includes('salário') || nomeLower.includes('renda') || nomeLower.includes('investimento');
-        return !isReceita && teto > 0;
-      });
-
-      if (categoriasOrcamento.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 py-3 col-span-full">Nenhum limite de gastos estipulado para as categorias.</p>`;
-        return;
-      }
-
-      container.innerHTML = categoriasOrcamento.map(cat => {
-        let gastoTotal = 0;
-        listaVisao.forEach(t => {
-          if (t.categoria_id === cat.id && t.tipo !== 'Receita') gastoTotal += Number(t.valor);
-        });
-
-        const teto = Number(cat.teto_mensal) || 0;
-        const percentual = Math.min(Math.round((gastoTotal / teto) * 100), 100);
-        const estourou = gastoTotal > teto;
-        const corBarra = estourou ? 'bg-rose-500' : (percentual >= 75 ? 'bg-amber-500' : 'bg-emerald-500');
-        const nomeEscapado = (cat.nome || '').replace(/'/g, "\\'");
-
-        return `
-          <div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1">
-                <i data-lucide="${cat.icone || 'tag'}" class="w-3.5 h-3.5 text-sky-400 mr-0.5"></i>
-                <h4 class="text-xs font-bold text-white">${cat.nome}</h4>
-                <button type="button" onclick="editarTetoCategoria('${cat.id}', '${nomeEscapado}', ${teto})" class="p-1 text-slate-500 hover:text-sky-400 transition" title="Alterar limite">
-                  <i data-lucide="pencil" class="w-3 h-3"></i>
-                </button>
-                <button type="button" onclick="deletarCategoria('${cat.id}', '${nomeEscapado}')" class="p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir categoria">
-                  <i data-lucide="trash-2" class="w-3 h-3"></i>
-                </button>
-              </div>
-              <span class="text-xs font-mono font-bold ${estourou ? 'text-rose-400' : 'text-slate-200'}">
-                ${formatarMoeda(gastoTotal)}
-              </span>
-            </div>
-            <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
-              <div class="${corBarra} h-full transition-all duration-300" style="width: ${percentual}%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-slate-500">
-              <span>Meta: ${formatarMoeda(teto)}</span>
-              <span class="${estourou ? 'text-rose-400 font-semibold' : ''}">${percentual}%</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    // -------------------------------------------------------------
-    // MODAL CUSTOMIZADO PARA EDITAR TETO DE CATEGORIA
-    // -------------------------------------------------------------
-    window.editarTetoCategoria = function(id, nome, tetoAtual) {
-      if (!client) return;
-      executarFeedback('clique');
-
-      categoriaEditandoTetoId = id;
-      document.getElementById('teto-categoria-nome').textContent = nome;
-      const inputValor = document.getElementById('teto-novo-valor');
-      inputValor.value = Number(tetoAtual || 0).toFixed(2);
-
-      const modal = document.getElementById('modal-editar-teto');
-      const content = document.getElementById('modal-teto-content');
-      modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
-
-      requestAnimationFrame(() => {
-        content.classList.remove('scale-95', 'opacity-0');
-        inputValor.focus();
-        inputValor.select();
-      });
-    };
-
-    window.fecharModalTeto = function() {
-      const modal = document.getElementById('modal-editar-teto');
-      const content = document.getElementById('modal-teto-content');
-      content.classList.add('scale-95', 'opacity-0');
-
-      setTimeout(() => {
-        modal.classList.add('hidden');
-        categoriaEditandoTetoId = null;
-      }, 200);
-    };
-
-    document.getElementById('form-editar-teto').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client || !categoriaEditandoTetoId) return;
-
-      const btn = document.getElementById('btn-salvar-teto');
-      const novoTeto = parseFloat(document.getElementById('teto-novo-valor').value);
-
-      if (isNaN(novoTeto) || novoTeto < 0) {
-        mostrarToast('Informe um valor numérico válido.', 'erro');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = 'Salvando...';
-
-      const { error } = await client
-        .from('categorias')
-        .update({ teto_mensal: novoTeto === 0 ? null : novoTeto })
-        .eq('id', categoriaEditandoTetoId);
-
-      btn.disabled = false;
-      btn.innerText = 'Salvar Limite';
-
-      if (error) {
-        mostrarToast('Erro ao atualizar limite: ' + error.message, 'erro');
-      } else {
-        mostrarToast(novoTeto === 0 ? 'Limite removido!' : 'Limite atualizado!', 'sucesso');
-        fecharModalTeto();
-        await buscarOuCriarCategorias();
-        renderizarGridCategorias();
-      }
-    });
-
-    window.editarConta = function(id) {
-      const c = contasUsuario.find(item => item.id === id);
-      if (!c) return;
-
-      executarFeedback('clique');
-      contaEditandoId = id;
-
-      document.getElementById('modal-conta-titulo').innerHTML = '<i data-lucide="credit-card" class="w-4 h-4 text-sky-400"></i> Editar Conta ou Cartão';
-      document.getElementById('btn-salvar-conta').innerText = 'Salvar Alterações';
-
-      document.getElementById('conta-nome').value = c.nome || '';
-      contaTipo.value = c.tipo || 'Cartão de Crédito';
-
-      if (contaTipo.value === 'Cartão de Crédito') {
-        camposCartao.classList.remove('hidden');
-        document.getElementById('conta-fechamento').value = c.dia_fechamento || '';
-        document.getElementById('conta-vencimento').value = c.dia_vencimento || '';
-      } else {
-        camposCartao.classList.add('hidden');
-      }
-
-      document.getElementById('conta-saldo-inicial').value = Number(c.saldo_inicial || 0).toFixed(2);
-      modalConta.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
-    };
-
-    window.deletarConta = async function(id, nome) {
-      if (!client) return;
-      
-      if (!await customConfirm(`Deseja realmente excluir a conta/cartão "${nome}"?`, 'perigo')) {
-        return;
-      }
-
-      const { error } = await client.from('contas').delete().eq('id', id);
-      if (error) {
-        mostrarToast('Existem lançamentos vinculados a esta conta. Exclua ou edite os lançamentos primeiro.', 'erro');
-      } else {
-        mostrarToast('Conta excluída com sucesso.', 'sucesso');
-        if (filtroContaIdAtiva === id) alternarFiltroConta(null);
-        await buscarOuCriarContas();
-        await carregarTransacoes();
-      }
-    };
-
-    window.deletarCategoria = async function(id, nome) {
-      if (!client) return;
-
-      if (!await customConfirm(`Deseja realmente excluir a categoria "${nome}"?`, 'perigo')) {
-        return;
-      }
-
-      const { error } = await client.from('categorias').delete().eq('id', id);
-      if (error) {
-        mostrarToast('Existem lançamentos vinculados a esta categoria. Exclua ou edite os lançamentos primeiro.', 'erro');
-      } else {
-        mostrarToast('Categoria excluída com sucesso.', 'sucesso');
-        await buscarOuCriarCategorias();
-        await carregarTransacoes();
-      }
-    };
-
-    // -------------------------------------------------------------
-    // GRÁFICO DE PROJEÇÃO DE 6 MESES (CHART.JS)
-    // -------------------------------------------------------------
-    async function carregarGraficoProjecao() {
-      if (!client) return;
-      const mesesLabels = [];
-      const mesesChaves = [];
-      let [anoBase, mesBase] = mesAtual.split('-').map(Number);
-
-      for (let i = 0; i < 6; i++) {
-        mesesChaves.push(`${anoBase}-${String(mesBase).padStart(2, '0')}`);
-        const dataObj = new Date(anoBase, mesBase - 1, 1);
-        mesesLabels.push(dataObj.toLocaleDateString('pt-BR', { month: 'short' }).slice(0, 3).toUpperCase());
-
-        mesBase++;
-        if (mesBase > 12) { mesBase = 1; anoBase++; }
-      }
-
-      let query = client
-        .from('transacoes')
-        .select('valor, tipo, mes_competencia, user_id, atribuido_para_email')
-        .in('mes_competencia', mesesChaves);
-
-      if (usuarioLogadoId && usuarioLogadoEmail) {
-        query = query.or(`user_id.eq.${usuarioLogadoId},atribuido_para_email.eq.${usuarioLogadoEmail}`);
-      }
-
-      const { data } = await query;
-      const dadosVisao = obterTransacoesDaVisao(data || []);
-
-      const receitasPorMes = [0, 0, 0, 0, 0, 0];
-      const saidasPorMes = [0, 0, 0, 0, 0, 0];
-
-      dadosVisao.forEach(t => {
-        const idx = mesesChaves.indexOf(t.mes_competencia);
-        if (idx !== -1) {
-          const val = Number(t.valor);
-          if (t.tipo === 'Receita') receitasPorMes[idx] += val;
-          else saidasPorMes[idx] += val;
-        }
-      });
-
-      let somaComp = 0;
-      let mesesComReceita = 0;
-      for (let i = 0; i < 6; i++) {
-        if (receitasPorMes[i] > 0) {
-          somaComp += (saidasPorMes[i] / receitasPorMes[i]) * 100;
-          mesesComReceita++;
-        }
-      }
-      const mediaFinal = mesesComReceita > 0 ? Math.round(somaComp / mesesComReceita) : 0;
-      const elMedia = document.getElementById('val-media-comp');
-      if (elMedia) {
-        elMedia.textContent = `${mediaFinal}%`;
-        elMedia.className = mediaFinal > 80 ? 'font-bold text-rose-400' : (mediaFinal > 60 ? 'font-bold text-amber-400' : 'font-bold text-emerald-400');
-      }
-
-      const ctx = document.getElementById('grafico-projecao').getContext('2d');
-      if (meuGraficoProjecao) meuGraficoProjecao.destroy();
-
-      if (window.Chart) {
-        meuGraficoProjecao = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: mesesLabels,
-            datasets: [
-              {
-                label: 'Entradas',
-                data: receitasPorMes,
-                backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                borderRadius: 4
-              },
-              {
-                label: 'Saídas',
-                data: saidasPorMes,
-                backgroundColor: 'rgba(244, 63, 94, 0.8)',
-                borderRadius: 4
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 }
-              }
-            },
-            scales: {
-              x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-              y: { grid: { color: 'rgba(51, 65, 85, 0.2)' }, ticks: { color: '#94a3b8', font: { size: 9 } } }
-            }
-          }
-        });
-      }
-    }
-
-    // -------------------------------------------------------------
-    // GRÁFICO DE ROSCA: DESPESAS POR CATEGORIA
-    // -------------------------------------------------------------
-    function renderizarGraficoCategorias() {
-      const canvas = document.getElementById('grafico-categorias');
-      const msgVazio = document.getElementById('msg-grafico-categorias-vazio');
-      if (!canvas || !window.Chart) return;
-
-      const listaVisao = obterTransacoesDaVisao();
-      const gastosPorCategoria = {};
-
-      listaVisao.forEach(t => {
-        if (t.tipo !== 'Receita') {
-          const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
-          const nomeCat = catObj ? catObj.nome : 'Outros';
-          gastosPorCategoria[nomeCat] = (gastosPorCategoria[nomeCat] || 0) + Number(t.valor);
-        }
-      });
-
-      const entradas = Object.entries(gastosPorCategoria).sort((a, b) => b[1] - a[1]);
-
-      if (meuGraficoCategorias) {
-        meuGraficoCategorias.destroy();
-        meuGraficoCategorias = null;
-      }
-
-      if (entradas.length === 0) {
-        if (msgVazio) msgVazio.classList.remove('hidden');
-        return;
-      }
-
-      if (msgVazio) msgVazio.classList.add('hidden');
-
-      const labels = entradas.map(e => e[0]);
-      const valores = entradas.map(e => e[1]);
-      const cores = [
-        '#10b981', '#0ea5e9', '#f59e0b', '#f43f5e',
-        '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b'
-      ];
-
-      meuGraficoCategorias = new Chart(canvas.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: valores,
-            backgroundColor: labels.map((_, i) => cores[i % cores.length]),
-            borderColor: '#0f172a',
-            borderWidth: 2,
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '65%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#94a3b8',
-                font: { size: 10 },
-                boxWidth: 10,
-                padding: 10
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const val = context.raw || 0;
-                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                  const pct = total > 0 ? Math.round((val / total) * 100) : 0;
-                  const valFmt = modoPrivacidadeAtivo
-                    ? 'R$ •••••'
-                    : val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                  return ` ${context.label}: ${valFmt} (${pct}%)`;
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-
-    // Carrega tanto transações próprias quanto atribuídas ao e-mail logado
-    async function carregarTransacoes() {
-      if (!client) return;
-      exibirSkeletons();
-      let query = client
-        .from('transacoes')
-        .select('*')
-        .eq('mes_competencia', mesAtual);
-
-      if (usuarioLogadoId && usuarioLogadoEmail) {
-        query = query.or(`user_id.eq.${usuarioLogadoId},atribuido_para_email.eq.${usuarioLogadoEmail}`);
-      }
-
-      const { data } = await query.order('data_movimento', { ascending: false });
-
-      transacoesCarregadas = data || [];
-      renderizarAbasVisao();
-      renderizarTransacoes();
-      atualizarTotais();
-      renderizarGridContas();
-      renderizarGridCategorias();
-      renderizarGraficoCategorias();
-      await carregarGraficoProjecao();
-    }
-
-    // -------------------------------------------------------------
-    // RENDERIZAÇÃO: FEED MOBILE & TABELA DESKTOP COM EDIÇÃO E TRAVA
-    // -------------------------------------------------------------
-    function renderizarTransacoes() {
-      const containerMobile = document.getElementById('lista-transacoes-mobile');
-      const tbodyDesktop = document.getElementById('lista-transacoes-desktop');
-      if (!containerMobile || !tbodyDesktop) return;
-
-      const listaVisao = obterTransacoesDaVisao();
-
-      let filtradas = listaVisao.filter(t => {
-        if (filtroContaIdAtiva && t.conta_id !== filtroContaIdAtiva) return false;
-
-        if (filtroTipoAtivo === 'pendentes') {
-          if (t.status === 'Pago') return false;
-        } else if (filtroTipoAtivo !== 'todos') {
-          if (t.tipo !== filtroTipoAtivo) return false;
-        }
-
-        if (termoBuscaAtivo) {
-          const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
-          const nomeCategoria = catObj ? catObj.nome.toLowerCase() : '';
-          const descricao = (t.descricao || '').toLowerCase();
-          const atribuido = (t.atribuido_para_email || '').toLowerCase();
-          return descricao.includes(termoBuscaAtivo) || nomeCategoria.includes(termoBuscaAtivo) || atribuido.includes(termoBuscaAtivo);
-        }
-
-        return true;
-      });
-
-      contadorTransacoes.innerText = `${filtradas.length} registro${filtradas.length === 1 ? '' : 's'}`;
-
-      if (filtradas.length === 0) {
-        const vazioMsg = `<div class="py-8 text-center text-xs text-slate-500">Nenhum lançamento encontrado em ${mesAtual}.</div>`;
-        containerMobile.innerHTML = vazioMsg;
-        tbodyDesktop.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-500">Nenhum lançamento encontrado em ${mesAtual}.</td></tr>`;
-        return;
-      }
-
-      // 1. Cards Mobile
-      containerMobile.innerHTML = filtradas.map(t => {
-        const valorFmt = formatarMoeda(t.valor);
-        const isReceita = t.tipo === 'Receita';
-        const isLiquidado = t.status === 'Pago';
-        const parcelaBadge = t.parcela_total > 1 ? `<span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">${t.parcela_atual}/${t.parcela_total}</span>` : '';
-        
-        const contaObj = contasUsuario.find(c => c.id === t.conta_id);
-        const nomeConta = contaObj ? contaObj.nome : 'Conta';
-
-        const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
-        const nomeCategoria = catObj ? catObj.nome : 'Geral';
-
-        const souDono = !t.user_id || (t.user_id === usuarioLogadoId);
-        const ehCompartilhadoComigo = t.atribuido_para_email && (t.atribuido_para_email === usuarioLogadoEmail) && !souDono;
-
-        let badgeCompartilhamento = '';
-        if (ehCompartilhadoComigo) {
-          badgeCompartilhamento = `<span class="bg-sky-500/15 border border-sky-500/30 text-sky-300 text-[10px] px-1.5 py-0.5 rounded font-medium flex items-center gap-1"><i data-lucide="lock" class="w-2.5 h-2.5"></i> No Cartão de ${t.criador_nome || 'Administrador'}</span>`;
-        } else if (t.atribuido_para_email) {
-          badgeCompartilhamento = `<span class="bg-slate-800 border border-slate-700 text-slate-300 text-[10px] px-1.5 py-0.5 rounded font-medium flex items-center gap-1"><i data-lucide="user" class="w-2.5 h-2.5"></i> Para: ${t.atribuido_para_email}</span>`;
-        }
-
-        const textoStatus = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
-        const corStatus = isLiquidado ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : (isReceita ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40');
-        const iconeStatus = isLiquidado ? 'check-circle-2' : (isReceita ? 'arrow-down-left' : 'clock');
-
-        const agrupadorParam = t.id_agrupador ? `'${t.id_agrupador}'` : 'null';
-
-        return `
-          <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5">
-            <div class="flex items-start justify-between gap-2">
-              <div class="space-y-0.5">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <h4 class="text-sm font-bold text-white">${t.descricao}</h4>
-                  ${parcelaBadge}
-                  ${badgeCompartilhamento}
-                </div>
-                <div class="flex items-center gap-2 text-[11px] text-slate-400">
-                  <span class="font-mono text-slate-500">${t.data_movimento.split('-').reverse().join('/')}</span>
-                  <span>•</span>
-                  <span>${nomeCategoria}</span>
-                  <span>•</span>
-                  <span>${nomeConta}</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="text-sm font-bold font-mono ${isReceita ? 'text-emerald-400' : 'text-slate-100'}">
-                  ${isReceita ? '+' : '-'} ${valorFmt}
-                </span>
-                <span class="block text-[10px] text-slate-500">${t.tipo}</span>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
-              ${souDono ? `
-                <button 
-                  type="button" 
-                  onclick="alternarStatus('${t.id}', '${t.status}')" 
-                  class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition active:scale-95 ${corStatus}">
-                  <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
-                  ${textoStatus}
-                </button>
-              ` : `
-                <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border opacity-80 cursor-default ${corStatus}">
-                  <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
-                  ${textoStatus} (Somente Leitura)
-                </span>
-              `}
-              
-              ${souDono ? `
-                <div class="flex items-center gap-1">
-                  <button 
-                    type="button" 
-                    onclick="editarTransacao('${t.id}')" 
-                    class="p-2 text-slate-500 hover:text-sky-400 transition" 
-                    title="Editar">
-                    <i data-lucide="pencil" class="w-4 h-4"></i>
-                  </button>
-                  <button 
-                    type="button" 
-                    onclick="deletarTransacao('${t.id}', ${agrupadorParam})" 
-                    class="p-2 text-slate-500 hover:text-rose-400 transition" 
-                    title="Excluir">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </div>
-              ` : `
-                <span class="p-2 text-slate-600" title="Gerenciado pelo dono do cartão">
-                  <i data-lucide="lock" class="w-4 h-4"></i>
-                </span>
-              `}
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      // 2. Tabela Desktop
-      tbodyDesktop.innerHTML = filtradas.map(t => {
-        const valorFmt = formatarMoeda(t.valor);
-        const isReceita = t.tipo === 'Receita';
-        const isLiquidado = t.status === 'Pago';
-        const parcelaBadge = t.parcela_total > 1 ? `<span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400 font-mono">${t.parcela_atual}/${t.parcela_total}</span>` : '-';
-        
-        const contaObj = contasUsuario.find(c => c.id === t.conta_id);
-        const nomeConta = contaObj ? contaObj.nome : 'Padrão';
-
-        const catObj = categoriasUsuario.find(c => c.id === t.categoria_id);
-        const nomeCategoria = catObj ? catObj.nome : 'Sem Categoria';
-
-        const souDono = !t.user_id || (t.user_id === usuarioLogadoId);
-        const ehCompartilhadoComigo = t.atribuido_para_email && (t.atribuido_para_email === usuarioLogadoEmail) && !souDono;
-
-        let badgeCompartilhamento = '';
-        if (ehCompartilhadoComigo) {
-          badgeCompartilhamento = `<span class="ml-1.5 bg-sky-500/15 border border-sky-500/30 text-sky-300 text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1"><i data-lucide="lock" class="w-2.5 h-2.5"></i> ${t.criador_nome || 'Admin'}</span>`;
-        } else if (t.atribuido_para_email) {
-          badgeCompartilhamento = `<span class="ml-1.5 bg-slate-800 border border-slate-700 text-slate-400 text-[10px] px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-1"><i data-lucide="user" class="w-2.5 h-2.5"></i> ${t.atribuido_para_email.split('@')[0]}</span>`;
-        }
-
-        const textoStatus = isReceita ? (isLiquidado ? 'Recebido' : 'A Receber') : (isLiquidado ? 'Pago' : 'Previsto');
-        const corStatus = isLiquidado ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : (isReceita ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40');
-        const iconeStatus = isLiquidado ? 'check-circle-2' : (isReceita ? 'arrow-down-left' : 'clock');
-
-        const agrupadorParam = t.id_agrupador ? `'${t.id_agrupador}'` : 'null';
-
-        return `
-          <tr class="hover:bg-slate-800/20 transition group">
-            <td class="py-2.5 font-mono text-slate-400">${t.data_movimento.split('-').reverse().join('/')}</td>
-            <td class="py-2.5 font-medium text-white flex items-center">
-              ${t.descricao}
-              ${badgeCompartilhamento}
-            </td>
-            <td class="py-2.5 text-slate-300">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 text-[11px]">
-                <i data-lucide="${catObj ? catObj.icone : 'tag'}" class="w-3 h-3 text-sky-400"></i>
-                ${nomeCategoria}
-              </span>
-            </td>
-            <td class="py-2.5 text-slate-400 font-medium">${nomeConta}</td>
-            <td class="py-2.5"><span class="px-2 py-0.5 rounded text-[10px] ${isReceita ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}">${t.tipo}</span></td>
-            <td class="py-2.5">${parcelaBadge}</td>
-            <td class="py-2.5 text-right font-mono font-medium ${isReceita ? 'text-emerald-400' : 'text-slate-200'}">${isReceita ? '+' : '-'} ${valorFmt}</td>
-            <td class="py-2.5 text-center">
-              ${souDono ? `
-                <button 
-                  type="button" 
-                  onclick="alternarStatus('${t.id}', '${t.status}')" 
-                  class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition active:scale-95 ${corStatus}">
-                  <i data-lucide="${iconeStatus}" class="w-3.5 h-3.5"></i>
-                  ${textoStatus}
-                </button>
-              ` : `
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full border opacity-75 cursor-default ${corStatus}">
-                  <i data-lucide="lock" class="w-3 h-3"></i>
-                  ${textoStatus}
-                </span>
-              `}
-            </td>
-            <td class="py-2.5 text-center">
-              ${souDono ? `
-                <div class="flex items-center justify-center gap-1">
-                  <button type="button" onclick="editarTransacao('${t.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-sky-400 transition" title="Editar">
-                    <i data-lucide="pencil" class="w-4 h-4"></i>
-                  </button>
-                  <button type="button" onclick="deletarTransacao('${t.id}', ${agrupadorParam})" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition" title="Excluir">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </div>
-              ` : `
-                <span class="p-1 text-slate-600" title="Apenas o titular do cartão pode excluir">
-                  <i data-lucide="lock" class="w-3.5 h-3.5 inline"></i>
-                </span>
-              `}
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      if (window.lucide) lucide.createIcons();
-    }
-
-    // -------------------------------------------------------------
-    // FUNÇÃO DE EDIÇÃO DE TRANSAÇÃO
-    // -------------------------------------------------------------
-    window.editarTransacao = function(id) {
-      const t = transacoesCarregadas.find(item => item.id === id);
-      if (!t) return;
-
-      if (t.user_id && t.user_id !== usuarioLogadoId) {
-        mostrarToast('Apenas o responsável que lançou esta despesa pode editá-la.', 'aviso');
-        return;
-      }
-
-      executarFeedback('clique');
-      transacaoEditandoId = id;
-
-      document.getElementById('modal-tx-titulo').innerText = 'Editar Lançamento';
-      document.getElementById('btn-salvar-tx').innerText = 'Salvar Alterações';
-
-      txTipo.value = t.tipo;
-      atualizarEstadoTipo();
-      atualizarOpcoesCategoriasNoModal();
-
-      txValor.value = Number(t.valor);
-      document.getElementById('tx-descricao').value = t.descricao;
-      txCategoria.value = t.categoria_id;
-      txConta.value = t.conta_id;
-      txData.value = t.data_movimento;
-
-      if (t.atribuido_para_email) {
-        txAtribuicaoPredefinida.value = 'outro';
-        txAtribuicaoEmail.classList.remove('hidden');
-        txAtribuicaoEmail.value = t.atribuido_para_email;
-      } else {
-        txAtribuicaoPredefinida.value = '';
-        txAtribuicaoEmail.classList.add('hidden');
-        txAtribuicaoEmail.value = '';
-      }
-
-      containerParcelas.classList.add('hidden');
-      containerRecorrencia.classList.add('hidden');
-      previaParcelamento.innerText = '';
-
-      modalTransacao.classList.remove('hidden');
-    };
-
-    window.alternarStatus = async function(id, statusAtual) {
-      if (!client) return;
-      const transacao = transacoesCarregadas.find(t => t.id === id);
-      if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
-        mostrarToast('Apenas o responsável que lançou esta despesa pode alterar o status.', 'aviso');
-        return;
-      }
-
-      executarFeedback('clique');
-      const novoStatus = (statusAtual === 'Pago') ? 'Previsto' : 'Pago';
-      const idx = transacoesCarregadas.findIndex(t => t.id === id);
-      if (idx !== -1) {
-        transacoesCarregadas[idx].status = novoStatus;
-        renderizarTransacoes();
-        atualizarTotais();
-      }
-
-      const { error } = await client.from('transacoes').update({ status: novoStatus }).eq('id', id);
-      if (error) {
-        mostrarToast('Erro ao atualizar status: ' + error.message, 'erro');
-        carregarTransacoes();
-      }
-    };
-
-    window.deletarTransacao = async function(id, idAgrupador) {
-      if (!client) return;
-      const transacao = transacoesCarregadas.find(t => t.id === id);
-      if (transacao && transacao.user_id && transacao.user_id !== usuarioLogadoId) {
-        mostrarToast('Apenas o responsável que lançou esta despesa pode excluí-la.', 'aviso');
-        return;
-      }
-
-      if (idAgrupador && idAgrupador !== 'null' && idAgrupador !== 'undefined') {
-        const mensagemParcela = 'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
-                                '• Clique em [Sim, Excluir] para excluir TODAS as parcelas/meses vinculados.\n' +
-                                '• Clique em [Cancelar] para escolher se deseja excluir apenas este mês.';
-        
-        const excluirTudo = await customConfirm(mensagemParcela, 'perigo', 'Excluir Vínculos');
-
-        if (excluirTudo) {
-          const { error } = await client
-            .from('transacoes')
-            .delete()
-            .eq('id_agrupador', idAgrupador);
-
-          if (error) {
-            mostrarToast('Erro ao excluir os registros: ' + error.message, 'erro');
-          } else {
-            mostrarToast('Registros vinculados excluídos!', 'sucesso');
-            carregarTransacoes();
-          }
-          return;
-        }
-
-        if (!await customConfirm('Deseja excluir APENAS o lançamento deste mês atual?', 'perigo', 'Exclusão Individual')) return;
-      } else {
-        if (!await customConfirm('Deseja excluir este lançamento definitivamente?', 'perigo', 'Excluir Lançamento')) return;
-      }
-
-      const { error } = await client
-        .from('transacoes')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        mostrarToast('Erro ao excluir: ' + error.message, 'erro');
-      } else {
-        mostrarToast('Lançamento excluído com sucesso!', 'sucesso');
-        carregarTransacoes();
-      }
-    };
-
-    function atualizarTotais() {
-      const listaVisao = obterTransacoesDaVisao();
-      let fatura = 0;
-      let receita = 0;
-      let despesa = 0;
-
-      listaVisao.forEach(t => {
-        const v = Number(t.valor);
-        if (t.tipo === 'Receita') receita += v;
-        else if (t.tipo === 'Despesa Cartão') fatura += v;
-        else despesa += v;
-      });
-
-      document.getElementById('card-fatura').innerText = formatarMoeda(fatura);
-      document.getElementById('card-receita').innerText = formatarMoeda(receita);
-      document.getElementById('card-despesa').innerText = formatarMoeda(fatura + despesa);
-      document.getElementById('card-saldo').innerText = formatarMoeda(receita - (fatura + despesa));
-    }
-
-    // -------------------------------------------------------------
-    // MODAIS DE SUBMISSÃO
-    // -------------------------------------------------------------
-    btnAbrirModalCategoria.addEventListener('click', () => {
-      executarFeedback('clique');
-      modalCategoria.classList.remove('hidden');
-      atualizarVisibilidadeTetoCategoria();
-      atualizarPreviewIconeCategoria();
-    });
-
-    function fecharModalCategoria() {
-      modalCategoria.classList.add('hidden');
-      formCategoria.reset();
-      atualizarVisibilidadeTetoCategoria();
-      atualizarPreviewIconeCategoria();
-    }
-
-    btnFecharModalCategoria.addEventListener('click', fecharModalCategoria);
-    btnCancelarModalCategoria.addEventListener('click', fecharModalCategoria);
-
-    categoriaTipoFluxo.addEventListener('change', atualizarVisibilidadeTetoCategoria);
-
-    function atualizarVisibilidadeTetoCategoria() {
-      if (categoriaTipoFluxo.value === 'Receita') {
-        campoContainerTeto.classList.add('hidden');
-        campoContainerIcone.className = 'col-span-2';
-        categoriaTeto.value = '';
-      } else {
-        campoContainerTeto.classList.remove('hidden');
-        campoContainerIcone.className = 'col-span-1';
-      }
-    }
-
-    formCategoria.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client) return;
-      const btn = document.getElementById('btn-salvar-categoria');
-      btn.disabled = true;
-      btn.innerText = 'Salvando...';
-
-      const nome = document.getElementById('categoria-nome').value.trim();
-      const tipo = categoriaTipoFluxo.value;
-      const tetoMensal = (tipo === 'Despesa') ? (parseFloat(categoriaTeto.value) || null) : null;
-      const icone = document.getElementById('categoria-icone').value;
-
-      try {
-        const { error } = await client.from('categorias').insert([{ 
-          nome, 
-          tipo, 
-          teto_mensal: tetoMensal, 
-          icone,
-          user_id: usuarioLogadoId 
-        }]);
-        if (error) throw error;
-        mostrarToast('Categoria salva com sucesso!', 'sucesso');
-        fecharModalCategoria();
-        await buscarOuCriarCategorias();
-        await carregarTransacoes();
-      } catch (err) {
-        mostrarToast('Erro: ' + err.message, 'erro');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Salvar';
-      }
-    });
-
-    btnAbrirModalConta.addEventListener('click', () => {
-      executarFeedback('clique');
-      modalConta.classList.remove('hidden');
-    });
-
-    function fecharModalConta() {
-      contaEditandoId = null;
-      document.getElementById('modal-conta-titulo').innerHTML = '<i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> Conta ou Cartão';
-      document.getElementById('btn-salvar-conta').innerText = 'Salvar';
-
-      modalConta.classList.add('hidden');
-      formConta.reset();
-      camposCartao.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
-    }
-
-    btnFecharModalConta.addEventListener('click', fecharModalConta);
-    btnCancelarModalConta.addEventListener('click', fecharModalConta);
-
-    contaTipo.addEventListener('change', () => {
-      if (contaTipo.value === 'Cartão de Crédito') camposCartao.classList.remove('hidden');
-      else camposCartao.classList.add('hidden');
-    });
-
-    formConta.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client) return;
-      const btn = document.getElementById('btn-salvar-conta');
-      btn.disabled = true;
-      btn.innerText = 'Salvando...';
-
-      const nome = document.getElementById('conta-nome').value;
-      const tipo = contaTipo.value;
-      const fechamento = (tipo === 'Cartão de Crédito') ? parseInt(document.getElementById('conta-fechamento').value) || null : null;
-      const vencimento = (tipo === 'Cartão de Crédito') ? parseInt(document.getElementById('conta-vencimento').value) || null : null;
-      const saldoInicial = parseFloat(document.getElementById('conta-saldo-inicial').value) || 0.00;
-
-      try {
-        if (contaEditandoId) {
-          const { error } = await client
-            .from('contas')
-            .update({
-              nome,
-              tipo,
-              dia_fechamento: fechamento,
-              dia_vencimento: vencimento,
-              saldo_inicial: saldoInicial
-            })
-            .eq('id', contaEditandoId);
-          if (error) throw error;
-        } else {
-          const { error } = await client.from('contas').insert([{ 
-            nome, 
-            tipo, 
-            dia_fechamento: fechamento, 
-            dia_vencimento: vencimento, 
-            saldo_inicial: saldoInicial,
-            user_id: usuarioLogadoId 
-          }]);
-          if (error) throw error;
-        }
-
-        mostrarToast(contaEditandoId ? 'Conta atualizada com sucesso!' : 'Conta criada com sucesso!', 'sucesso');
-        fecharModalConta();
-        await buscarOuCriarContas();
-        renderizarTransacoes();
-      } catch (err) {
-        mostrarToast('Erro: ' + err.message, 'erro');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = contaEditandoId ? 'Salvar Alterações' : 'Salvar';
-      }
-    });
-
-    btnAbrirModal.addEventListener('click', () => {
-      executarFeedback('clique');
-      modalTransacao.classList.remove('hidden');
-      atualizarEstadoTipo();
-      atualizarOpcoesCategoriasNoModal();
-      calcularPrevia();
-    });
-
-    function fecharModal() {
-      transacaoEditandoId = null;
-      document.getElementById('modal-tx-titulo').innerText = 'Novo Lançamento';
-      document.getElementById('btn-salvar-tx').innerText = 'Salvar';
-
-      modalTransacao.classList.add('hidden');
-      formTransacao.reset();
-      txData.value = new Date().toISOString().slice(0, 10);
-      previaParcelamento.innerText = '';
-      txAtribuicaoEmail.classList.add('hidden');
-      if (opcoesRecorrencia) opcoesRecorrencia.classList.add('hidden');
-      if (containerRecorrencia) containerRecorrencia.classList.remove('hidden');
-    }
-
-    btnFecharModal.addEventListener('click', fecharModal);
-    btnCancelarModal.addEventListener('click', fecharModal);
-
-    txTipo.addEventListener('change', () => {
-      atualizarEstadoTipo();
-      atualizarOpcoesCategoriasNoModal();
-      calcularPrevia();
-    });
-
-    txValor.addEventListener('input', calcularPrevia);
-    txData.addEventListener('change', calcularPrevia);
-    txConta.addEventListener('change', calcularPrevia);
-    txParcelas.addEventListener('change', calcularPrevia);
-
-    function atualizarEstadoTipo() {
-      const isAdmin = usuarioLogadoEmail && usuarioLogadoEmail.toLowerCase() === 'matheusgomes2225@hotmail.com';
-
-      if (txTipo.value === 'Despesa Cartão') {
-        if (!transacaoEditandoId && (!txRecorrente || !txRecorrente.checked)) {
-          containerParcelas.classList.remove('hidden');
-        }
-        if (isAdmin) {
-          containerAtribuicao.classList.remove('hidden');
-        } else {
-          containerAtribuicao.classList.add('hidden');
-        }
-      } else {
-        containerParcelas.classList.add('hidden');
-        containerAtribuicao.classList.add('hidden');
-      }
-    }
-
-    function calcularCompetencia(dataIso, contaId) {
-      const conta = contasUsuario.find(c => c.id === contaId);
-      const data = new Date(dataIso + 'T00:00:00');
-      let ano = data.getFullYear();
-      let mes = data.getMonth() + 1;
-
-      if (conta && conta.tipo === 'Cartão de Crédito' && conta.dia_fechamento) {
-        if (data.getDate() > conta.dia_fechamento) {
-          mes++;
-          if (mes > 12) { mes = 1; ano++; }
-        }
-      }
-      return { ano, mes, str: `${ano}-${String(mes).padStart(2, '0')}` };
-    }
-
-    function calcularPrevia() {
-      if (txTipo.value !== 'Despesa Cartão' || transacaoEditandoId || (txRecorrente && txRecorrente.checked)) {
-        previaParcelamento.innerText = '';
-        return;
-      }
-
-      const val = parseFloat(txValor.value) || 0;
-      const parcels = parseInt(txParcelas.value) || 1;
-      const dt = txData.value;
-      const cId = txConta.value;
-
-      if (!dt || val <= 0) {
-        previaParcelamento.innerText = '';
-        return;
-      }
-
-      const comp = calcularCompetencia(dt, cId);
-      const valParcela = (val / parcels).toFixed(2);
-      previaParcelamento.innerText = `${parcels}x de R$ ${valParcela} (1ª em ${comp.str})`;
-    }
-
-    let enviandoTransacao = false;
-
-    formTransacao.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!client || enviandoTransacao) return;
-      enviandoTransacao = true;
-
-      const btnSalvar = document.getElementById('btn-salvar-tx');
-      btnSalvar.disabled = true;
-      btnSalvar.innerText = 'Gravando...';
-
-      try {
-        const tipo = txTipo.value;
-        const valorTotal = parseFloat(txValor.value);
-        const descricao = document.getElementById('tx-descricao').value;
-        const categoriaId = txCategoria.value;
-        const dataMovimento = txData.value;
-        const contaId = txConta.value;
-
-        let emailAtribuido = null;
-        const isAdmin = usuarioLogadoEmail && usuarioLogadoEmail.toLowerCase() === 'matheusgomes2225@hotmail.com';
-
-        if (isAdmin && tipo === 'Despesa Cartão') {
-          if (txAtribuicaoPredefinida.value === 'outro') {
-            emailAtribuido = txAtribuicaoEmail.value.trim().toLowerCase() || null;
-          } else if (txAtribuicaoPredefinida.value) {
-            emailAtribuido = txAtribuicaoPredefinida.value.trim().toLowerCase();
-          }
-        }
-
-        if (transacaoEditandoId) {
-          // MODO EDIÇÃO
-          const txOriginal = transacoesCarregadas.find(t => t.id === transacaoEditandoId);
-          let atualizarGrupo = false;
-
-          if (txOriginal && txOriginal.id_agrupador) {
-            const mensagem = 'Este lançamento faz parte de uma compra parcelada ou conta fixa!\n\n' +
-                             '• Clique em [Sim, Continuar] para aplicar as alterações em TODAS as parcelas/meses vinculados.\n' +
-                             '• Clique em [Cancelar] para editar APENAS este mês.';
-            atualizarGrupo = await customConfirm(mensagem, 'info', 'Aplicar em Lote');
-          }
-
-          if (atualizarGrupo && txOriginal.id_agrupador) {
-            const dadosGrupo = {
-              tipo: tipo,
-              valor: valorTotal,
-              categoria_id: categoriaId,
-              conta_id: contaId,
-              atribuido_para_email: emailAtribuido
-            };
-
-            if (txOriginal.id_agrupador.startsWith('fixo_')) {
-              dadosGrupo.descricao = descricao;
-            }
-
-            const { error: errGrupo } = await client
-              .from('transacoes')
-              .update(dadosGrupo)
-              .eq('id_agrupador', txOriginal.id_agrupador);
-
-            if (errGrupo) throw errGrupo;
-
-            const { error: errAtual } = await client
-              .from('transacoes')
-              .update({
-                descricao: descricao,
-                data_movimento: dataMovimento
-              })
-              .eq('id', transacaoEditandoId);
-
-            if (errAtual) throw errAtual;
-          } else {
-            const { error } = await client
-              .from('transacoes')
-              .update({
-                tipo: tipo,
-                valor: valorTotal,
-                descricao: descricao,
-                categoria_id: categoriaId,
-                conta_id: contaId,
-                data_movimento: dataMovimento,
-                atribuido_para_email: emailAtribuido
-              })
-              .eq('id', transacaoEditandoId);
-
-            if (error) throw error;
-          }
-        } else {
-          // MODO CRIAÇÃO
-          const ehRecorrente = txRecorrente && txRecorrente.checked;
-          const totalRepeticoes = ehRecorrente 
-            ? parseInt(txRecorrenteMeses.value) 
-            : ((tipo === 'Despesa Cartão') ? parseInt(txParcelas.value) : 1);
-
-          const { data: { user } } = await client.auth.getUser();
-          const criadorNome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Admin';
-
-          const compInicial = calcularCompetencia(dataMovimento, contaId);
-          let ano = Number(compInicial.ano);
-          let mes = Number(compInicial.mes);
-
-          const valorParcela = ehRecorrente ? valorTotal : parseFloat((valorTotal / totalRepeticoes).toFixed(2));
-          const centavos = ehRecorrente ? 0 : parseFloat((valorTotal - (valorParcela * totalRepeticoes)).toFixed(2));
-          const idAgrupador = totalRepeticoes > 1 ? (ehRecorrente ? 'fixo_' : 'grp_') + Date.now() : null;
-
-          const linhas = [];
-          for (let i = 1; i <= totalRepeticoes; i++) {
-            const valorFinal = (i === 1) ? valorParcela + centavos : valorParcela;
-            const descFinal = (!ehRecorrente && totalRepeticoes > 1) 
-              ? `${descricao} (${i}/${totalRepeticoes})` 
-              : descricao;
-
-            linhas.push({
-              id_agrupador: idAgrupador,
-              data_movimento: dataMovimento,
-              mes_competencia: `${ano}-${String(mes).padStart(2, '0')}`,
-              descricao: descFinal,
-              tipo: tipo,
-              valor: valorFinal,
-              conta_id: contaId,
-              categoria_id: categoriaId,
-              parcela_atual: ehRecorrente ? 1 : i,
-              parcela_total: ehRecorrente ? 1 : totalRepeticoes,
-              status: 'Previsto',
-              user_id: usuarioLogadoId,
-              atribuido_para_email: emailAtribuido,
-              criador_nome: criadorNome
-            });
-
-            mes++;
-            if (mes > 12) { mes = 1; ano++; }
-          }
-
-          const { error } = await client.from('transacoes').insert(linhas);
-          if (error) throw error;
-        }
-
-        mostrarToast(transacaoEditandoId ? 'Alterações salvas com sucesso!' : 'Lançamento adicionado!', 'sucesso');
-        fecharModal();
-        await carregarTransacoes();
-      } catch (err) {
-        mostrarToast('Erro ao gravar: ' + err.message, 'erro');
-      } finally {
-        enviandoTransacao = false;
-        btnSalvar.disabled = false;
-        btnSalvar.innerText = transacaoEditandoId ? 'Salvar Alterações' : 'Salvar';
-      }
-    });
-
-    // Registro do Service Worker (PWA)
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(() => {});
-      });
-    }
-  </script>
+  <!-- A LÓGICA AGORA ESTÁ NO APP.JS -->
+  <script src="app.js" defer></script>
 </body>
 </html>
