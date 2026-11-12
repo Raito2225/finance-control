@@ -442,11 +442,19 @@
           <input type="text" id="tx-descricao" required placeholder="Ex: Mercado, Farmácia, Aluguel" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
         </div>
         
-        <div id="container-atribuicao" class="hidden p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+        <div id="container-atribuicao" class="hidden p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2.5">
           <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5"><i data-lucide="users" class="w-3.5 h-3.5 text-sky-400"></i> Responsável pelo Gasto</label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <select id="tx-atribuicao-predefinida" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"><option value="">Meu Gasto</option><option value="outro">Compartilhar...</option></select>
+            <select id="tx-atribuicao-predefinida" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+              <option value="">Meu Gasto</option>
+              <option value="outro">+ Compartilhar com outro e-mail...</option>
+            </select>
             <input type="email" id="tx-atribuicao-email" placeholder="E-mail do responsável" class="hidden bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+          </div>
+          <!-- Pílulas de E-mails Recentes / Frequentes -->
+          <div id="container-chips-emails" class="hidden pt-1 border-t border-slate-800/80 space-y-1.5">
+            <span class="text-[10px] text-slate-500 block">Contatos recentes (toque para selecionar):</span>
+            <div id="lista-chips-emails-frequentes" class="flex flex-wrap gap-1.5"></div>
           </div>
         </div>
 
