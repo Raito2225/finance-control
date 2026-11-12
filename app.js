@@ -191,7 +191,7 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
-   FECHAMENTO E PAGAMENTO DE FATURA EM 1 CLIQUE
+   PAGAMENTO DE FATURA EM 1 CLIQUE (APENAS QUITAÇÃO)
    ========================================================================== */
 window.pagarFaturaEmUmClique = async function(contaId) {
   if (!client) return;
@@ -200,7 +200,6 @@ window.pagarFaturaEmUmClique = async function(contaId) {
   const cartao = contasUsuario.find(c => c.id === contaId);
   if (!cartao) return;
 
-  // Filtra lançamentos pendentes da visão atual neste cartão que pertencem ao usuário logado
   const pendentes = obterTransacoesDaVisao().filter(
     t => t.conta_id === contaId &&
          t.tipo !== 'Receita' &&
@@ -228,43 +227,6 @@ window.pagarFaturaEmUmClique = async function(contaId) {
     if (error) throw error;
 
     mostrarToast(`Fatura ${cartao.nome} marcada como paga!`, 'sucesso');
-
-    // Verifica se existe Conta Corrente para lançar a saída do pagamento
-    const contasCorrentes = contasUsuario.filter(c => c.tipo === 'Corrente');
-    if (contasCorrentes.length > 0) {
-      const contaDestino = contasCorrentes[0];
-      const lancarSaida = await customConfirm(
-        `Deseja registrar o pagamento de ${totalFmt} como uma saída (Débito/Pix) na conta "${contaDestino.nome}"?`,
-        'info',
-        'Lançar Saída na Conta'
-      );
-
-      if (lancarSaida) {
-        const catDespesa = categoriasUsuario.find(c => (c.tipo || 'Despesa') === 'Despesa');
-        const hojeStr = new Date().toISOString().slice(0, 10);
-        const userResp = await client.auth.getUser();
-        const criadorNome = userResp.data?.user?.user_metadata?.nome || 'Admin';
-
-        const { error: errSaida } = await client.from('transacoes').insert([{
-          data_movimento: hojeStr,
-          mes_competencia: mesAtual,
-          descricao: `Pagamento Fatura ${cartao.nome}`,
-          tipo: 'Débito/Pix',
-          valor: Number(totalFatura.toFixed(2)),
-          conta_id: contaDestino.id,
-          categoria_id: catDespesa ? catDespesa.id : null,
-          parcela_atual: 1,
-          parcela_total: 1,
-          status: 'Pago',
-          user_id: usuarioLogadoId,
-          criador_nome: criadorNome
-        }]);
-
-        if (errSaida) throw errSaida;
-        mostrarToast(`Saída lançada em ${contaDestino.nome}!`, 'sucesso');
-      }
-    }
-
     await carregarTransacoes();
   } catch (err) {
     mostrarToast('Erro ao pagar fatura: ' + err.message, 'erro');
