@@ -1434,7 +1434,7 @@ function renderizarTransacoes() {
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
           ${sD ? `<button onclick="alternarStatus('${t.id}', '${t.status}')" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition active:scale-95 ${cS}"><i data-lucide="${iS}" class="w-3.5 h-3.5"></i>${tS}</button>` : `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border opacity-80 cursor-default ${cS}"><i data-lucide="${iS}" class="w-3.5 h-3.5"></i>${tS} (Leitura)</span>`}
-          ${sD ? `<div class="flex items-center gap-1"><button onclick="editarTransacao('${t.id}')" class="p-2 text-slate-500 hover:text-sky-400 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deletarTransacao('${t.id}', '${t.id_agrupador || null}')" class="p-2 text-slate-500 hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : `<span class="p-2 text-slate-600"><i data-lucide="lock" class="w-4 h-4"></i></span>`}
+          ${sD ? `<div class="flex items-center gap-1"><button onclick="duplicarTransacao('${t.id}')" title="Duplicar lançamento" class="p-2 text-slate-500 hover:text-emerald-400 transition"><i data-lucide="copy" class="w-4 h-4"></i></button><button onclick="editarTransacao('${t.id}')" title="Editar lançamento" class="p-2 text-slate-500 hover:text-sky-400 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deletarTransacao('${t.id}', '${t.id_agrupador || null}')" title="Excluir lançamento" class="p-2 text-slate-500 hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : `<span class="p-2 text-slate-600"><i data-lucide="lock" class="w-4 h-4"></i></span>`}
         </div>
       </div>`;
   }).join('');
@@ -1461,7 +1461,7 @@ function renderizarTransacoes() {
         <td class="py-2.5">${pB}</td>
         <td class="py-2.5 text-right font-mono font-medium ${isR ? 'text-emerald-400' : 'text-slate-200'}">${isR ? '+' : '-'} ${v}</td>
         <td class="py-2.5 text-center">${sD ? `<button onclick="alternarStatus('${t.id}', '${t.status}')" class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border transition active:scale-95 ${cS}"><i data-lucide="${iS}" class="w-3.5 h-3.5"></i>${tS}</button>` : `<span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full border opacity-75 cursor-default ${cS}"><i data-lucide="lock" class="w-3 h-3"></i>${tS}</span>`}</td>
-        <td class="py-2.5 text-center">${sD ? `<div class="flex items-center justify-center gap-1"><button onclick="editarTransacao('${t.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-sky-400 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deletarTransacao('${t.id}', '${t.id_agrupador || null}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : `<span class="p-1 text-slate-600"><i data-lucide="lock" class="w-3.5 h-3.5 inline"></i></span>`}</td>
+        <td class="py-2.5 text-center">${sD ? `<div class="flex items-center justify-center gap-1"><button onclick="duplicarTransacao('${t.id}')" title="Duplicar lançamento" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-emerald-400 transition"><i data-lucide="copy" class="w-4 h-4"></i></button><button onclick="editarTransacao('${t.id}')" title="Editar lançamento" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-sky-400 transition"><i data-lucide="pencil" class="w-4 h-4"></i></button><button onclick="deletarTransacao('${t.id}', '${t.id_agrupador || null}')" title="Excluir lançamento" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>` : `<span class="p-1 text-slate-600"><i data-lucide="lock" class="w-3.5 h-3.5 inline"></i></span>`}</td>
       </tr>`;
   }).join('');
   if (window.lucide) lucide.createIcons();
@@ -1863,6 +1863,56 @@ function fecharModal() {
 }
 document.getElementById('btn-fechar-modal')?.addEventListener('click', fecharModal);
 document.getElementById('btn-cancelar-modal')?.addEventListener('click', fecharModal);
+
+window.duplicarTransacao = function(id) {
+  const t = transacoesCarregadas.find(i => i.id === id);
+  if (!t) return;
+
+  executarFeedback('clique');
+  transacaoEditandoId = null;
+  document.getElementById('modal-tx-titulo').innerText = 'Duplicar Lançamento';
+  document.getElementById('btn-salvar-tx').innerText = 'Salvar';
+
+  txTipo.value = t.tipo;
+  atualizarEstadoTipo();
+  atualizarOpcoesCategoriasNoModal();
+
+  // Remove sufixo de parcela caso exista (ex: "Compra (1/3)" -> "Compra")
+  const descLimpa = (t.descricao || '').replace(/\s*\(\d+\/\d+\)\s*$/, '').trim();
+  txValor.value = Number(t.valor);
+  document.getElementById('tx-descricao').value = descLimpa;
+  txCategoria.value = t.categoria_id;
+  txConta.value = t.conta_id;
+  txData.value = new Date().toISOString().slice(0, 10);
+
+  if (t.atribuido_para_email) {
+    salvarEmailFrequente(t.atribuido_para_email);
+    const emLimpo = t.atribuido_para_email.trim().toLowerCase();
+    const emailsSalvos = obterEmailsFrequentes();
+
+    if (emailsSalvos.includes(emLimpo)) {
+      txAtribuicaoPredefinida.value = emLimpo;
+      txAtribuicaoEmail.classList.add('hidden');
+      txAtribuicaoEmail.value = '';
+    } else {
+      txAtribuicaoPredefinida.value = 'outro';
+      txAtribuicaoEmail.classList.remove('hidden');
+      txAtribuicaoEmail.value = t.atribuido_para_email;
+    }
+  } else {
+    txAtribuicaoPredefinida.value = '';
+    txAtribuicaoEmail.classList.add('hidden');
+    txAtribuicaoEmail.value = '';
+  }
+
+  if (txParcelas) txParcelas.value = '1';
+  if (txRecorrente) txRecorrente.checked = false;
+  opcoesRecorrencia?.classList.add('hidden');
+  containerRecorrencia?.classList.remove('hidden');
+  calcularPrevia();
+
+  abrirModalAnimado('modal-transacao', 'modal-tx-content');
+};
 
 window.editarTransacao = function(id) {
   const t = transacoesCarregadas.find(i => i.id === id);
