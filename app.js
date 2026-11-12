@@ -191,6 +191,105 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
+   ALERTAS DE VENCIMENTO DE FATURA (<= 3 DIAS)
+   ========================================================================== */
+window.filtrarFaturaAlerta = function(contaId) {
+  executarFeedback('clique');
+  filtroContaIdAtiva = contaId;
+  const badge = document.getElementById('badge-filtro-conta');
+  const textoBadge = document.getElementById('texto-filtro-conta');
+  if (badge && textoBadge) {
+    const c = contasUsuario.find(c => c.id === contaId);
+    textoBadge.textContent = c ? c.nome : 'Cartão';
+    badge.classList.remove('hidden');
+  }
+  aplicarFiltroTipo('pendentes');
+  renderizarGridContas();
+  document.getElementById('filtro-busca')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+function verificarAlertasVencimento() {
+  const container = document.getElementById('container-alerta-vencimento');
+  if (!container) return;
+
+  const hoje = new Date();
+  const mesSistema = hoje.toISOString().slice(0, 7);
+
+  // Só exibe alerta de vencimento quando o usuário está olhando o mês corrente
+  if (mesAtual !== mesSistema) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  const diaHoje = hoje.getDate();
+  const anoAtual = hoje.getFullYear();
+  const mesIndex = hoje.getMonth();
+  const ultimoDiaMes = new Date(anoAtual, mesIndex + 1, 0).getDate();
+
+  const alertas = [];
+  const transacoesVisao = obterTransacoesDaVisao();
+
+  contasUsuario.forEach(conta => {
+    if (conta.tipo !== 'Cartão de Crédito' || !conta.dia_vencimento) return;
+
+    const diaVenc = Math.min(Number(conta.dia_vencimento), ultimoDiaMes);
+    const diffDias = diaVenc - diaHoje;
+
+    // Faltam 3 dias ou menos (0 = hoje, 1 = amanhã, 2, 3)
+    if (diffDias >= 0 && diffDias <= 3) {
+      const pendentesCartao = transacoesVisao.filter(
+        t => t.conta_id === conta.id && t.tipo !== 'Receita' && t.status !== 'Pago'
+      );
+
+      if (pendentesCartao.length > 0) {
+        const valorPendente = pendentesCartao.reduce((acc, t) => acc + Number(t.valor), 0);
+        alertas.push({
+          contaId: conta.id,
+          nome: conta.nome,
+          diaVenc,
+          diffDias,
+          valorPendente
+        });
+      }
+    }
+  });
+
+  if (alertas.length === 0) {
+    container.classList.add('hidden');
+    container.innerHTML = '';
+    return;
+  }
+
+  container.classList.remove('hidden');
+  container.innerHTML = alertas.map(a => {
+    const isHoje = a.diffDias === 0;
+    const textoPrazo = isHoje
+      ? 'vence hoje!'
+      : a.diffDias === 1
+        ? 'vence amanhã (dia ' + a.diaVenc + ')'
+        : `vence em ${a.diffDias} dias (dia ${a.diaVenc})`;
+
+    return `
+      <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl border transition ${isHoje ? 'bg-rose-500/10 border-rose-500/30 text-rose-200' : 'bg-amber-500/10 border-amber-500/30 text-amber-200'}">
+        <div class="flex items-center gap-2 text-xs">
+          <i data-lucide="bell-ring" class="w-4 h-4 shrink-0 ${isHoje ? 'text-rose-400 animate-bounce' : 'text-amber-400'}"></i>
+          <span>
+            Fatura <strong class="text-white">${a.nome}</strong> ${textoPrazo} — 
+            <strong class="font-mono ${isHoje ? 'text-rose-300' : 'text-amber-300'}">${formatarMoeda(a.valorPendente)}</strong> pendente.
+          </span>
+        </div>
+        <button type="button" onclick="filtrarFaturaAlerta('${a.contaId}')" class="ml-auto px-2.5 py-1 rounded-lg text-[11px] font-bold transition active:scale-95 ${isHoje ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300'}">
+          Ver Fatura
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+/* ==========================================================================
    GERENCIAMENTO DE E-MAILS FREQUENTES (CONTATOS SALVOS)
    ========================================================================== */
 function obterEmailsFrequentes() {
@@ -210,7 +309,7 @@ function salvarEmailFrequente(email) {
 
   const lista = obterEmailsFrequentes();
   const filtrada = lista.filter(e => e !== limpo);
-  filtrada.unshift(limpo); // Coloca o mais recente primeiro
+  filtrada.unshift(limpo);
   try {
     localStorage.setItem('fc_emails_frequentes', JSON.stringify(filtrada.slice(0, 10)));
   } catch (e) {}
@@ -442,6 +541,7 @@ window.alternarPrivacidade = function() {
   modoPrivacidadeAtivo = !modoPrivacidadeAtivo;
   try { localStorage.setItem('fc_privacidade_ativa', modoPrivacidadeAtivo); } catch (e) {}
   atualizarIconePrivacidade();
+  verificarAlertasVencimento();
   atualizarTotais();
   renderizarGridContas();
   renderizarGridCategorias();
@@ -642,6 +742,7 @@ function obterTransacoesDaVisao(lista = transacoesCarregadas) {
 window.selecionarVisao = async function(novaVisao) {
   executarFeedback('clique');
   visaoAtiva = novaVisao;
+  verificarAlertasVencimento();
   renderizarAbasVisao();
   renderizarTransacoes();
   atualizarTotais();
@@ -818,6 +919,7 @@ async function buscarOuCriarContas() {
   }
   if (txConta) txConta.innerHTML = contasUsuario.map(c => `<option value="${c.id}">${c.nome} (${c.tipo})</option>`).join('');
   renderizarGridContas();
+  verificarAlertasVencimento();
 }
 
 async function buscarOuCriarCategorias() {
@@ -1081,13 +1183,13 @@ async function carregarTransacoes() {
   const { data } = await q.order('data_movimento', { ascending: false });
   transacoesCarregadas = data || [];
 
-  // Sincroniza e-mails já atribuídos no banco com os contatos frequentes locais
   transacoesCarregadas.forEach(t => {
     if (t.user_id === usuarioLogadoId && t.atribuido_para_email) {
       salvarEmailFrequente(t.atribuido_para_email);
     }
   });
 
+  verificarAlertasVencimento();
   renderizarAbasVisao();
   renderizarTransacoes();
   atualizarTotais();
@@ -1635,6 +1737,7 @@ window.alternarStatus = async function(id, s) {
   const idx = transacoesCarregadas.findIndex(i => i.id === id);
   if (idx !== -1) {
     transacoesCarregadas[idx].status = ns;
+    verificarAlertasVencimento();
     renderizarTransacoes();
     atualizarTotais();
   }
