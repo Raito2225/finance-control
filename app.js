@@ -191,6 +191,87 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
+   FECHAMENTO E PAGAMENTO DE FATURA EM 1 CLIQUE
+   ========================================================================== */
+window.pagarFaturaEmUmClique = async function(contaId) {
+  if (!client) return;
+  executarFeedback('clique');
+
+  const cartao = contasUsuario.find(c => c.id === contaId);
+  if (!cartao) return;
+
+  // Filtra lançamentos pendentes da visão atual neste cartão que pertencem ao usuário logado
+  const pendentes = obterTransacoesDaVisao().filter(
+    t => t.conta_id === contaId &&
+         t.tipo !== 'Receita' &&
+         t.status !== 'Pago' &&
+         (!t.user_id || t.user_id === usuarioLogadoId)
+  );
+
+  if (pendentes.length === 0) {
+    return mostrarToast(`Nenhuma pendência na fatura ${cartao.nome}.`, 'aviso');
+  }
+
+  const totalFatura = pendentes.reduce((acc, t) => acc + Number(t.valor), 0);
+  const totalFmt = totalFatura.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  const confirmouQuitacao = await customConfirm(
+    `Quitar ${pendentes.length} lançamento(s) da fatura "${cartao.nome}" (${mesAtual}) no valor total de ${totalFmt}?`,
+    'info',
+    'Pagar Fatura'
+  );
+  if (!confirmouQuitacao) return;
+
+  try {
+    const idsParaQuitar = pendentes.map(t => t.id);
+    const { error } = await client.from('transacoes').update({ status: 'Pago' }).in('id', idsParaQuitar);
+    if (error) throw error;
+
+    mostrarToast(`Fatura ${cartao.nome} marcada como paga!`, 'sucesso');
+
+    // Verifica se existe Conta Corrente para lançar a saída do pagamento
+    const contasCorrentes = contasUsuario.filter(c => c.tipo === 'Corrente');
+    if (contasCorrentes.length > 0) {
+      const contaDestino = contasCorrentes[0];
+      const lancarSaida = await customConfirm(
+        `Deseja registrar o pagamento de ${totalFmt} como uma saída (Débito/Pix) na conta "${contaDestino.nome}"?`,
+        'info',
+        'Lançar Saída na Conta'
+      );
+
+      if (lancarSaida) {
+        const catDespesa = categoriasUsuario.find(c => (c.tipo || 'Despesa') === 'Despesa');
+        const hojeStr = new Date().toISOString().slice(0, 10);
+        const userResp = await client.auth.getUser();
+        const criadorNome = userResp.data?.user?.user_metadata?.nome || 'Admin';
+
+        const { error: errSaida } = await client.from('transacoes').insert([{
+          data_movimento: hojeStr,
+          mes_competencia: mesAtual,
+          descricao: `Pagamento Fatura ${cartao.nome}`,
+          tipo: 'Débito/Pix',
+          valor: Number(totalFatura.toFixed(2)),
+          conta_id: contaDestino.id,
+          categoria_id: catDespesa ? catDespesa.id : null,
+          parcela_atual: 1,
+          parcela_total: 1,
+          status: 'Pago',
+          user_id: usuarioLogadoId,
+          criador_nome: criadorNome
+        }]);
+
+        if (errSaida) throw errSaida;
+        mostrarToast(`Saída lançada em ${contaDestino.nome}!`, 'sucesso');
+      }
+    }
+
+    await carregarTransacoes();
+  } catch (err) {
+    mostrarToast('Erro ao pagar fatura: ' + err.message, 'erro');
+  }
+};
+
+/* ==========================================================================
    ALERTAS DE VENCIMENTO DE FATURA (<= 3 DIAS)
    ========================================================================== */
 window.filtrarFaturaAlerta = function(contaId) {
@@ -277,9 +358,14 @@ function verificarAlertasVencimento() {
             <strong class="font-mono ${isHoje ? 'text-rose-300' : 'text-amber-300'}">${formatarMoeda(a.valorPendente)}</strong> pendente.
           </span>
         </div>
-        <button type="button" onclick="filtrarFaturaAlerta('${a.contaId}')" class="ml-auto px-2.5 py-1 rounded-lg text-[11px] font-bold transition active:scale-95 ${isHoje ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300' : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300'}">
-          Ver Fatura
-        </button>
+        <div class="flex items-center gap-1.5 ml-auto">
+          <button type="button" onclick="filtrarFaturaAlerta('${a.contaId}')" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition active:scale-95 bg-slate-900/70 hover:bg-slate-900 text-slate-200 border border-slate-700/60">
+            Ver Itens
+          </button>
+          <button type="button" onclick="pagarFaturaEmUmClique('${a.contaId}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition active:scale-95 bg-emerald-500 hover:bg-emerald-600 text-slate-950 flex items-center gap-1">
+            <i data-lucide="check-circle-2" class="w-3 h-3"></i> Pagar Fatura
+          </button>
+        </div>
       </div>
     `;
   }).join('');
@@ -321,7 +407,6 @@ async function carregarComprometimentoFuturo() {
   const { data } = await q;
   const listaVisao = obterTransacoesDaVisao(data || []);
 
-  // Renda do mês atual como referência caso o mês futuro ainda não tenha receita cadastrada
   const rendaMesAtual = obterTransacoesDaVisao()
     .filter(t => t.tipo === 'Receita')
     .reduce((acc, t) => acc + Number(t.valor), 0);
@@ -1068,26 +1153,46 @@ function renderizarGridContas() {
   const container = document.getElementById('grid-cartoes-contas');
   if (!container) return;
 
+  const transacoesVisao = obterTransacoesDaVisao();
+
   container.innerHTML = contasUsuario.map(c => {
     const isC = c.tipo === 'Cartão de Crédito';
     let tot = 0;
-    obterTransacoesDaVisao().forEach(t => { if (t.conta_id === c.id) tot += Number(t.valor); });
+    let pendenteFatura = 0;
+
+    transacoesVisao.forEach(t => {
+      if (t.conta_id === c.id) {
+        tot += Number(t.valor);
+        if (isC && t.tipo !== 'Receita' && t.status !== 'Pago' && (!t.user_id || t.user_id === usuarioLogadoId)) {
+          pendenteFatura += Number(t.valor);
+        }
+      }
+    });
+
+    const btnPagarCard = (isC && pendenteFatura > 0)
+      ? `<button type="button" onclick="event.stopPropagation(); pagarFaturaEmUmClique('${c.id}')" class="mt-2 w-full py-1.5 px-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1 transition active:scale-95">
+           <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Pagar Fatura (${formatarMoeda(pendenteFatura)})
+         </button>`
+      : '';
 
     return `
-      <div onclick="alternarFiltroConta('${c.id}')" class="p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition active:scale-95 ${filtroContaIdAtiva === c.id ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'}">
-        <div>
-          <div class="flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full mr-0.5 ${isC ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
-            <h3 class="text-xs font-bold">${c.nome}</h3>
-            <button type="button" onclick="event.stopPropagation(); editarConta('${c.id}')" class="p-1 text-slate-500 hover:text-sky-400"><i data-lucide="pencil" class="w-3 h-3"></i></button>
-            <button type="button" onclick="event.stopPropagation(); deletarConta('${c.id}', '${(c.nome || '').replace(/'/g, "\\'")}')" class="p-1 text-slate-500 hover:text-rose-400"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+      <div onclick="alternarFiltroConta('${c.id}')" class="p-3.5 rounded-2xl border flex flex-col justify-between cursor-pointer transition active:scale-[0.99] ${filtroContaIdAtiva === c.id ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'}">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full mr-0.5 ${isC ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
+              <h3 class="text-xs font-bold">${c.nome}</h3>
+              <button type="button" onclick="event.stopPropagation(); editarConta('${c.id}')" class="p-1 text-slate-500 hover:text-sky-400"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+              <button type="button" onclick="event.stopPropagation(); deletarConta('${c.id}', '${(c.nome || '').replace(/'/g, "\\'")}')" class="p-1 text-slate-500 hover:text-rose-400"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+            </div>
+            <div class="text-[11px] font-mono text-slate-400 mt-1">${isC ? `Fecha ${c.dia_fechamento || '--'} • Vence ${c.dia_vencimento || '--'}` : 'Corrente'}</div>
           </div>
-          <div class="text-[11px] font-mono text-slate-400 mt-1">${isC ? `Fecha ${c.dia_fechamento || '--'} • Vence ${c.dia_vencimento || '--'}` : 'Corrente'}</div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-500">${isC ? 'Fatura' : 'Movi.'}</span>
+            <span class="text-sm font-bold font-mono ${isC ? 'text-amber-300' : 'text-white'} block">${formatarMoeda(tot)}</span>
+          </div>
         </div>
-        <div class="text-right">
-          <span class="text-[10px] text-slate-500">${isC ? 'Fatura' : 'Movi.'}</span>
-          <span class="text-sm font-bold font-mono ${isC ? 'text-amber-300' : 'text-white'} block">${formatarMoeda(tot)}</span>
-        </div>
+        ${btnPagarCard}
       </div>`;
   }).join('');
   if (window.lucide) lucide.createIcons();
@@ -1854,6 +1959,7 @@ window.alternarStatus = async function(id, s) {
   if (idx !== -1) {
     transacoesCarregadas[idx].status = ns;
     verificarAlertasVencimento();
+    renderizarGridContas();
     renderizarTransacoes();
     atualizarTotais();
   }
