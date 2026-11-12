@@ -103,6 +103,8 @@ const previaParcelamento = document.getElementById('previa-parcelamento');
 const containerAtribuicao = document.getElementById('container-atribuicao');
 const txAtribuicaoPredefinida = document.getElementById('tx-atribuicao-predefinida');
 const txAtribuicaoEmail = document.getElementById('tx-atribuicao-email');
+const containerChipsEmails = document.getElementById('container-chips-emails');
+const listaChipsEmailsFrequentes = document.getElementById('lista-chips-emails-frequentes');
 const txRecorrente = document.getElementById('tx-recorrente');
 const opcoesRecorrencia = document.getElementById('opcoes-recorrencia');
 const txRecorrenteMeses = document.getElementById('tx-recorrente-meses');
@@ -189,6 +191,86 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
+   GERENCIAMENTO DE E-MAILS FREQUENTES (CONTATOS SALVOS)
+   ========================================================================== */
+function obterEmailsFrequentes() {
+  try {
+    const raw = localStorage.getItem('fc_emails_frequentes');
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarEmailFrequente(email) {
+  if (!email) return;
+  const limpo = email.trim().toLowerCase();
+  if (!limpo || !limpo.includes('@') || limpo === usuarioLogadoEmail?.toLowerCase()) return;
+
+  const lista = obterEmailsFrequentes();
+  const filtrada = lista.filter(e => e !== limpo);
+  filtrada.unshift(limpo); // Coloca o mais recente primeiro
+  try {
+    localStorage.setItem('fc_emails_frequentes', JSON.stringify(filtrada.slice(0, 10)));
+  } catch (e) {}
+  atualizarSelectEmailsFrequentes();
+}
+
+window.removerEmailFrequente = function(email) {
+  executarFeedback('clique');
+  const lista = obterEmailsFrequentes().filter(e => e !== email);
+  try {
+    localStorage.setItem('fc_emails_frequentes', JSON.stringify(lista));
+  } catch (e) {}
+  atualizarSelectEmailsFrequentes();
+};
+
+window.selecionarEmailFrequenteChip = function(email) {
+  executarFeedback('clique');
+  if (!txAtribuicaoPredefinida) return;
+  txAtribuicaoPredefinida.value = email;
+  txAtribuicaoEmail?.classList.add('hidden');
+  if (txAtribuicaoEmail) txAtribuicaoEmail.value = '';
+};
+
+function atualizarSelectEmailsFrequentes() {
+  if (!txAtribuicaoPredefinida) return;
+  const valorAtual = txAtribuicaoPredefinida.value;
+  const emails = obterEmailsFrequentes();
+
+  let htmlOptions = '<option value="">Meu Gasto</option>';
+  emails.forEach(em => {
+    htmlOptions += `<option value="${em}">${em}</option>`;
+  });
+  htmlOptions += '<option value="outro">+ Compartilhar com outro e-mail...</option>';
+  txAtribuicaoPredefinida.innerHTML = htmlOptions;
+
+  if (valorAtual && (emails.includes(valorAtual) || valorAtual === 'outro')) {
+    txAtribuicaoPredefinida.value = valorAtual;
+  }
+
+  if (containerChipsEmails && listaChipsEmailsFrequentes) {
+    if (emails.length > 0) {
+      containerChipsEmails.classList.remove('hidden');
+      listaChipsEmailsFrequentes.innerHTML = emails.map(em => `
+        <div class="inline-flex items-center bg-slate-900 border border-slate-700/80 rounded-lg overflow-hidden text-[11px]">
+          <button type="button" onclick="selecionarEmailFrequenteChip('${em}')" class="px-2 py-1 text-slate-300 hover:text-white hover:bg-slate-800 transition truncate max-w-[160px]" title="${em}">
+            ${em.split('@')[0]}
+          </button>
+          <button type="button" onclick="removerEmailFrequente('${em}')" class="px-1.5 py-1 text-slate-500 hover:text-rose-400 hover:bg-slate-800/80 transition border-l border-slate-800" title="Remover contato">
+            <i data-lucide="x" class="w-3 h-3"></i>
+          </button>
+        </div>
+      `).join('');
+      if (window.lucide) lucide.createIcons();
+    } else {
+      containerChipsEmails.classList.add('hidden');
+    }
+  }
+}
+
+/* ==========================================================================
    MODAIS ANIMADOS, TOASTS E CONFIRM
    ========================================================================== */
 window.abrirModalAnimado = function(modalId, contentId) {
@@ -227,7 +309,6 @@ window.fecharModalAnimado = function(modalId, contentId, callback) {
   }, 300);
 };
 
-// Fecha modais ao clicar no fundo escuro (backdrop)
 const mapaModaisBackdrop = [
   ['modal-configuracoes', 'modal-config-content'],
   ['modal-categoria', 'modal-categoria-content'],
@@ -624,7 +705,7 @@ window.enviarResumoWhatsApp = function() {
   }).join('\n');
 
   const msg = `Resumo de ${mesAtual} (${visaoAtiva.split('@')[0]}):\n\n${linhas}\n\n*Total:* ${tGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n*Falta Pagar:* ${tPendente.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
-  window.open(`[https://wa.me/?text=$](https://wa.me/?text=$){encodeURIComponent(msg)}`, '_blank');
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
 };
 
 window.marcarTudoComoPagoVisao = async function() {
@@ -1000,6 +1081,13 @@ async function carregarTransacoes() {
   const { data } = await q.order('data_movimento', { ascending: false });
   transacoesCarregadas = data || [];
 
+  // Sincroniza e-mails já atribuídos no banco com os contatos frequentes locais
+  transacoesCarregadas.forEach(t => {
+    if (t.user_id === usuarioLogadoId && t.atribuido_para_email) {
+      salvarEmailFrequente(t.atribuido_para_email);
+    }
+  });
+
   renderizarAbasVisao();
   renderizarTransacoes();
   atualizarTotais();
@@ -1214,7 +1302,7 @@ btnFeedbackWpp?.addEventListener('click', async () => {
     email = user?.email || 'Não informado';
   }
   const msg = `Fala Matheus! Testando o *FinanceControl*.\n\n*Testador:* ${nome}\n*E-mail:* ${email}\n\n*Relato:*\n`;
-  window.open(`[https://wa.me/$](https://wa.me/$){NUMERO_WHATSAPP_TESTES}?text=${encodeURIComponent(msg)}`, '_blank');
+  window.open(`https://wa.me/${NUMERO_WHATSAPP_TESTES}?text=${encodeURIComponent(msg)}`, '_blank');
 });
 
 // --- Categorias ---
@@ -1404,8 +1492,12 @@ function atualizarEstadoTipo() {
   const isAdm = usuarioLogadoEmail && usuarioLogadoEmail.toLowerCase() === ADMIN_EMAIL;
   if (txTipo.value === 'Despesa Cartão') {
     if (!transacaoEditandoId && (!txRecorrente || !txRecorrente.checked)) containerParcelas?.classList.remove('hidden');
-    if (isAdm) containerAtribuicao?.classList.remove('hidden');
-    else containerAtribuicao?.classList.add('hidden');
+    if (isAdm) {
+      atualizarSelectEmailsFrequentes();
+      containerAtribuicao?.classList.remove('hidden');
+    } else {
+      containerAtribuicao?.classList.add('hidden');
+    }
   } else {
     containerParcelas?.classList.add('hidden');
     containerAtribuicao?.classList.add('hidden');
@@ -1508,9 +1600,19 @@ window.editarTransacao = function(id) {
   txData.value = t.data_movimento;
 
   if (t.atribuido_para_email) {
-    txAtribuicaoPredefinida.value = 'outro';
-    txAtribuicaoEmail.classList.remove('hidden');
-    txAtribuicaoEmail.value = t.atribuido_para_email;
+    salvarEmailFrequente(t.atribuido_para_email);
+    const emLimpo = t.atribuido_para_email.trim().toLowerCase();
+    const emailsSalvos = obterEmailsFrequentes();
+
+    if (emailsSalvos.includes(emLimpo)) {
+      txAtribuicaoPredefinida.value = emLimpo;
+      txAtribuicaoEmail.classList.add('hidden');
+      txAtribuicaoEmail.value = '';
+    } else {
+      txAtribuicaoPredefinida.value = 'outro';
+      txAtribuicaoEmail.classList.remove('hidden');
+      txAtribuicaoEmail.value = t.atribuido_para_email;
+    }
   } else {
     txAtribuicaoPredefinida.value = '';
     txAtribuicaoEmail.classList.add('hidden');
@@ -1587,6 +1689,8 @@ formTransacao?.addEventListener('submit', async (e) => {
       emAtr = txAtribuicaoPredefinida.value === 'outro'
         ? txAtribuicaoEmail.value.trim().toLowerCase() || null
         : (txAtribuicaoPredefinida.value.trim().toLowerCase() || null);
+
+      if (emAtr) salvarEmailFrequente(emAtr);
     }
 
     if (transacaoEditandoId) {
@@ -1662,6 +1766,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (txData) txData.value = new Date().toISOString().slice(0, 10);
   aplicarTemaNaInterface();
   atualizarIconePrivacidade();
+  atualizarSelectEmailsFrequentes();
 
   if (client) {
     client.auth.onAuthStateChange(async (evt, session) => {
