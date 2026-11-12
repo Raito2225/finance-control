@@ -215,7 +215,6 @@ function verificarAlertasVencimento() {
   const hoje = new Date();
   const mesSistema = hoje.toISOString().slice(0, 7);
 
-  // Só exibe alerta de vencimento quando o usuário está olhando o mês corrente
   if (mesAtual !== mesSistema) {
     container.classList.add('hidden');
     container.innerHTML = '';
@@ -236,7 +235,6 @@ function verificarAlertasVencimento() {
     const diaVenc = Math.min(Number(conta.dia_vencimento), ultimoDiaMes);
     const diffDias = diaVenc - diaHoje;
 
-    // Faltam 3 dias ou menos (0 = hoje, 1 = amanhã, 2, 3)
     if (diffDias >= 0 && diffDias <= 3) {
       const pendentesCartao = transacoesVisao.filter(
         t => t.conta_id === conta.id && t.tipo !== 'Receita' && t.status !== 'Pago'
@@ -287,6 +285,118 @@ function verificarAlertasVencimento() {
   }).join('');
 
   if (window.lucide) lucide.createIcons();
+}
+
+/* ==========================================================================
+   VISÃO DE COMPROMETIMENTO FUTURO (PRÓXIMOS 3 MESES)
+   ========================================================================== */
+async function carregarComprometimentoFuturo() {
+  const container = document.getElementById('grid-comprometimento-futuro');
+  const legendaEl = document.getElementById('legenda-base-renda-futura');
+  if (!client || !container) return;
+
+  const mesesFuturos = [];
+  let [a, m] = mesAtual.split('-').map(Number);
+
+  for (let i = 1; i <= 3; i++) {
+    m++;
+    if (m > 12) { m = 1; a++; }
+    const compStr = `${a}-${String(m).padStart(2, '0')}`;
+    const nomeMes = new Date(a, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long' });
+    mesesFuturos.push({
+      comp: compStr,
+      titulo: `${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}/${String(a).slice(2)}`
+    });
+  }
+
+  const codigosMeses = mesesFuturos.map(x => x.comp);
+  let q = client.from('transacoes')
+    .select('valor, tipo, mes_competencia, parcela_total, id_agrupador, user_id, atribuido_para_email')
+    .in('mes_competencia', codigosMeses);
+
+  if (usuarioLogadoId) {
+    q = q.or(`user_id.eq.${usuarioLogadoId},atribuido_para_email.eq.${usuarioLogadoEmail}`);
+  }
+
+  const { data } = await q;
+  const listaVisao = obterTransacoesDaVisao(data || []);
+
+  // Renda do mês atual como referência caso o mês futuro ainda não tenha receita cadastrada
+  const rendaMesAtual = obterTransacoesDaVisao()
+    .filter(t => t.tipo === 'Receita')
+    .reduce((acc, t) => acc + Number(t.valor), 0);
+
+  let usouReferenciaAtual = false;
+
+  container.innerHTML = mesesFuturos.map(mf => {
+    const txsMes = listaVisao.filter(t => t.mes_competencia === mf.comp);
+    const rendaMesFuturo = txsMes
+      .filter(t => t.tipo === 'Receita')
+      .reduce((acc, t) => acc + Number(t.valor), 0);
+
+    const baseRenda = rendaMesFuturo > 0 ? rendaMesFuturo : rendaMesAtual;
+    if (rendaMesFuturo === 0 && rendaMesAtual > 0) usouReferenciaAtual = true;
+
+    let totalParcelas = 0;
+    let totalFixas = 0;
+
+    txsMes.forEach(t => {
+      if (t.tipo === 'Receita') return;
+      const val = Number(t.valor);
+      const isParcela = Number(t.parcela_total) > 1;
+      const isFixa = t.id_agrupador && String(t.id_agrupador).startsWith('fixo_');
+
+      if (isParcela) totalParcelas += val;
+      else if (isFixa) totalFixas += val;
+    });
+
+    const totalTravado = totalParcelas + totalFixas;
+    const pct = baseRenda > 0 ? Math.min(Math.round((totalTravado / baseRenda) * 100), 100) : 0;
+    const pctReal = baseRenda > 0 ? Math.round((totalTravado / baseRenda) * 100) : 0;
+
+    let corBarra = 'bg-emerald-500';
+    let corTextoPct = 'text-emerald-400';
+    if (pctReal >= 80) {
+      corBarra = 'bg-rose-500';
+      corTextoPct = 'text-rose-400';
+    } else if (pctReal >= 50) {
+      corBarra = 'bg-amber-500';
+      corTextoPct = 'text-amber-400';
+    }
+
+    const livreEstimado = baseRenda > 0 ? baseRenda - totalTravado : 0;
+
+    return `
+      <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/90 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-white">${mf.titulo}</span>
+          <span class="text-xs font-mono font-bold ${baseRenda > 0 ? corTextoPct : 'text-slate-400'}">
+            ${baseRenda > 0 ? `${pctReal}% travado` : 'Sem renda base'}
+          </span>
+        </div>
+
+        <div class="flex items-baseline justify-between">
+          <span class="text-sm sm:text-base font-bold font-mono text-slate-100">${formatarMoeda(totalTravado)}</span>
+          ${baseRenda > 0 ? `<span class="text-[10px] font-mono ${livreEstimado < 0 ? 'text-rose-400' : 'text-slate-400'}">Livre: ${formatarMoeda(livreEstimado)}</span>` : ''}
+        </div>
+
+        <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+          <div class="${corBarra} h-full transition-all duration-500" style="width:${baseRenda > 0 ? pct : 0}%"></div>
+        </div>
+
+        <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-800/70 font-mono">
+          <span>Parc.: <strong class="text-slate-200">${formatarMoeda(totalParcelas)}</strong></span>
+          <span>Fixas: <strong class="text-slate-200">${formatarMoeda(totalFixas)}</strong></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (legendaEl) {
+    legendaEl.textContent = usouReferenciaAtual
+      ? 'Baseado na receita prevista ou na renda do mês atual'
+      : 'Renda já travada com parcelas e contas fixas';
+  }
 }
 
 /* ==========================================================================
@@ -536,7 +646,7 @@ function atualizarIconePrivacidade() {
   }
 }
 
-window.alternarPrivacidade = function() {
+window.alternarPrivacidade = async function() {
   executarFeedback('clique');
   modoPrivacidadeAtivo = !modoPrivacidadeAtivo;
   try { localStorage.setItem('fc_privacidade_ativa', modoPrivacidadeAtivo); } catch (e) {}
@@ -547,6 +657,7 @@ window.alternarPrivacidade = function() {
   renderizarGridCategorias();
   renderizarGraficoCategorias();
   renderizarTransacoes();
+  await carregarComprometimentoFuturo();
 };
 
 function exibirSkeletons() {
@@ -554,6 +665,11 @@ function exibirSkeletons() {
     const el = document.getElementById(id);
     if (el) el.innerHTML = '<div class="h-6 sm:h-7 w-24 bg-slate-800 rounded-lg animate-pulse mt-1"></div>';
   });
+
+  const gridFuturo = document.getElementById('grid-comprometimento-futuro');
+  if (gridFuturo) {
+    gridFuturo.innerHTML = Array(3).fill(`<div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2.5 animate-pulse"><div class="flex justify-between"><div class="h-3.5 w-20 bg-slate-800 rounded"></div><div class="h-3.5 w-16 bg-slate-800 rounded"></div></div><div class="h-4 w-24 bg-slate-800 rounded"></div><div class="w-full bg-slate-800 rounded-full h-1.5"></div></div>`).join('');
+  }
 
   const gridContas = document.getElementById('grid-cartoes-contas');
   if (gridContas) {
@@ -749,7 +865,7 @@ window.selecionarVisao = async function(novaVisao) {
   renderizarGridContas();
   renderizarGridCategorias();
   renderizarGraficoCategorias();
-  await carregarGraficoProjecao();
+  await Promise.all([carregarGraficoProjecao(), carregarComprometimentoFuturo()]);
 };
 
 function renderizarAbasVisao() {
@@ -1196,7 +1312,7 @@ async function carregarTransacoes() {
   renderizarGridContas();
   renderizarGridCategorias();
   renderizarGraficoCategorias();
-  await carregarGraficoProjecao();
+  await Promise.all([carregarGraficoProjecao(), carregarComprometimentoFuturo()]);
 }
 
 function renderizarTransacoes() {
