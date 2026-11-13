@@ -26,6 +26,7 @@ let mesAtual = new Date().toISOString().slice(0, 7);
 let contasUsuario = [];
 let categoriasUsuario = [];
 let transacoesCarregadas = [];
+let caixinhasUsuario = [];
 
 let meuGraficoProjecao = null;
 let meuGraficoCategorias = null;
@@ -38,6 +39,9 @@ let periodoGrafico = '6m'; // '6m' | '3m' | 'ano'
 let transacaoEditandoId = null;
 let contaEditandoId = null;
 let categoriaEditandoTetoId = null;
+let caixinhaEditandoId = null;
+let caixinhaAporteId = null;
+let tipoMovimentoCaixinha = 'aportar'; // 'aportar' | 'resgatar'
 let enviandoTransacao = false;
 
 let configFeedbackAtivo = true;
@@ -122,6 +126,9 @@ const categoriaTeto = document.getElementById('categoria-teto');
 const selectCategoriaIcone = document.getElementById('categoria-icone');
 const previewIconeCategoria = document.getElementById('preview-icone-categoria');
 
+const formCaixinha = document.getElementById('form-caixinha');
+const formAporteCaixinha = document.getElementById('form-aporte-caixinha');
+
 /* ==========================================================================
    ÁUDIO, VIBRAÇÃO E FORMATAÇÃO
    ========================================================================== */
@@ -189,6 +196,238 @@ function aplicarMascaraTelefone(inputEl) {
 }
 aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
+
+/* ==========================================================================
+   CAIXINHAS / METAS DE ECONOMIA (SEPARADO DO SALDO CORRENTE)
+   ========================================================================== */
+function chaveStorageCaixinhas() {
+  return `fc_caixinhas_${usuarioLogadoId || 'default'}`;
+}
+
+function carregarCaixinhasStorage() {
+  try {
+    const raw = localStorage.getItem(chaveStorageCaixinhas());
+    const arr = raw ? JSON.parse(raw) : [];
+    caixinhasUsuario = Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    caixinhasUsuario = [];
+  }
+  renderizarCaixinhas();
+}
+
+function salvarCaixinhasStorage() {
+  try {
+    localStorage.setItem(chaveStorageCaixinhas(), JSON.stringify(caixinhasUsuario));
+  } catch (e) {}
+  renderizarCaixinhas();
+}
+
+function renderizarCaixinhas() {
+  const container = document.getElementById('grid-caixinhas-metas');
+  const badgeTotal = document.getElementById('badge-total-caixinhas');
+  if (!container) return;
+
+  const totalGuardado = caixinhasUsuario.reduce((acc, c) => acc + Number(c.valor_atual || 0), 0);
+  if (badgeTotal) {
+    badgeTotal.textContent = `Guardado: ${formatarMoeda(totalGuardado)}`;
+  }
+
+  if (caixinhasUsuario.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full p-4 rounded-2xl bg-slate-950/50 border border-dashed border-slate-800 text-center space-y-1">
+        <p class="text-xs text-slate-400">Nenhuma caixinha criada ainda.</p>
+        <p class="text-[11px] text-slate-500">Crie metas como Reserva de Emergência, Obra ou Viagem para acompanhar seu progresso separado do saldo mensal.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = caixinhasUsuario.map(c => {
+    const atual = Number(c.valor_atual || 0);
+    const meta = Number(c.valor_meta || 1);
+    const pctReal = meta > 0 ? Math.round((atual / meta) * 100) : 0;
+    const pctBarra = Math.min(pctReal, 100);
+    const concluida = atual >= meta;
+    const falta = Math.max(meta - atual, 0);
+
+    return `
+      <div class="p-3.5 rounded-2xl bg-slate-950/75 border ${concluida ? 'border-emerald-500/40' : 'border-slate-800/90'} flex flex-col justify-between space-y-2.5">
+        <div class="space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <div class="w-7 h-7 rounded-lg ${concluida ? 'bg-emerald-500/20 text-emerald-400' : 'bg-sky-500/15 text-sky-400'} flex items-center justify-center shrink-0">
+                <i data-lucide="${c.icone || 'piggy-bank'}" class="w-3.5 h-3.5"></i>
+              </div>
+              <h3 class="text-xs font-bold text-white truncate" title="${c.nome}">${c.nome}</h3>
+            </div>
+            <div class="flex items-center gap-0.5 shrink-0">
+              <button type="button" onclick="editarCaixinha('${c.id}')" title="Editar caixinha" class="p-1 text-slate-500 hover:text-sky-400 transition"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+              <button type="button" onclick="deletarCaixinha('${c.id}')" title="Excluir caixinha" class="p-1 text-slate-500 hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+            </div>
+          </div>
+
+          <div class="flex items-baseline justify-between">
+            <span class="text-sm font-bold font-mono ${concluida ? 'text-emerald-400' : 'text-white'}">${formatarMoeda(atual)}</span>
+            <span class="text-[11px] font-mono font-semibold ${concluida ? 'text-emerald-400' : 'text-sky-400'}">${pctReal}%</span>
+          </div>
+
+          <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+            <div class="${concluida ? 'bg-emerald-500' : 'bg-sky-500'} h-full transition-all duration-500" style="width:${pctBarra}%"></div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+            <span>Meta: ${formatarMoeda(meta)}</span>
+            <span>${concluida ? 'Meta atingida!' : `Falta: ${formatarMoeda(falta)}`}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-slate-800/70">
+          <button type="button" onclick="abrirModalAporte('${c.id}', 'aportar')" class="py-1.5 px-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1 transition active:scale-95">
+            <i data-lucide="plus" class="w-3 h-3"></i> Aportar
+          </button>
+          <button type="button" onclick="abrirModalAporte('${c.id}', 'resgatar')" class="py-1.5 px-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 text-slate-300 font-semibold text-[11px] flex items-center justify-center gap-1 transition active:scale-95">
+            <i data-lucide="minus" class="w-3 h-3"></i> Resgatar
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+window.abrirModalCaixinha = function() {
+  executarFeedback('clique');
+  caixinhaEditandoId = null;
+  document.getElementById('modal-caixinha-titulo').innerHTML = '<i data-lucide="piggy-bank" class="w-4 h-4 text-emerald-400"></i> Nova Caixinha';
+  document.getElementById('btn-salvar-caixinha').innerText = 'Salvar Caixinha';
+  formCaixinha?.reset();
+  abrirModalAnimado('modal-caixinha', 'modal-caixinha-content');
+  if (window.lucide) lucide.createIcons();
+};
+
+window.fecharModalCaixinha = function() {
+  fecharModalAnimado('modal-caixinha', 'modal-caixinha-content', () => {
+    formCaixinha?.reset();
+    caixinhaEditandoId = null;
+  });
+};
+
+window.editarCaixinha = function(id) {
+  const c = caixinhasUsuario.find(item => item.id === id);
+  if (!c) return;
+  executarFeedback('clique');
+  caixinhaEditandoId = id;
+  document.getElementById('modal-caixinha-titulo').innerHTML = '<i data-lucide="piggy-bank" class="w-4 h-4 text-sky-400"></i> Editar Caixinha';
+  document.getElementById('btn-salvar-caixinha').innerText = 'Atualizar Caixinha';
+  document.getElementById('caixinha-nome').value = c.nome || '';
+  document.getElementById('caixinha-meta').value = Number(c.valor_meta || 0).toFixed(2);
+  document.getElementById('caixinha-atual').value = Number(c.valor_atual || 0).toFixed(2);
+  document.getElementById('caixinha-icone').value = c.icone || 'piggy-bank';
+  abrirModalAnimado('modal-caixinha', 'modal-caixinha-content');
+  if (window.lucide) lucide.createIcons();
+};
+
+window.deletarCaixinha = async function(id) {
+  const c = caixinhasUsuario.find(item => item.id === id);
+  if (!c) return;
+  if (await customConfirm(`Excluir a caixinha "${c.nome}"?`, 'perigo')) {
+    caixinhasUsuario = caixinhasUsuario.filter(item => item.id !== id);
+    salvarCaixinhasStorage();
+    mostrarToast('Caixinha excluída!', 'sucesso');
+  }
+};
+
+formCaixinha?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const nome = document.getElementById('caixinha-nome').value.trim();
+  const valorMeta = parseFloat(document.getElementById('caixinha-meta').value) || 0;
+  const valorAtual = parseFloat(document.getElementById('caixinha-atual').value) || 0;
+  const icone = document.getElementById('caixinha-icone').value || 'piggy-bank';
+
+  if (!nome || valorMeta <= 0) {
+    return mostrarToast('Preencha o nome e um valor de meta válido.', 'aviso');
+  }
+
+  if (caixinhaEditandoId) {
+    const idx = caixinhasUsuario.findIndex(item => item.id === caixinhaEditandoId);
+    if (idx !== -1) {
+      caixinhasUsuario[idx] = { ...caixinhasUsuario[idx], nome, valor_meta: valorMeta, valor_atual: valorAtual, icone };
+    }
+    mostrarToast('Caixinha atualizada!', 'sucesso');
+  } else {
+    caixinhasUsuario.push({
+      id: 'cx_' + Date.now(),
+      nome,
+      valor_meta: valorMeta,
+      valor_atual: valorAtual,
+      icone
+    });
+    mostrarToast('Caixinha criada!', 'sucesso');
+  }
+
+  salvarCaixinhasStorage();
+  fecharModalCaixinha();
+});
+
+window.abrirModalAporte = function(id, tipo = 'aportar') {
+  const c = caixinhasUsuario.find(item => item.id === id);
+  if (!c) return;
+  executarFeedback('clique');
+  caixinhaAporteId = id;
+  tipoMovimentoCaixinha = tipo;
+
+  const tituloEl = document.getElementById('aporte-modal-titulo');
+  const btnConfirmar = document.getElementById('btn-confirmar-aporte');
+  document.getElementById('aporte-caixinha-nome').textContent = c.nome;
+  document.getElementById('aporte-valor-input').value = '';
+
+  if (tipo === 'aportar') {
+    tituloEl.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4 text-emerald-400"></i> Registrar Aporte';
+    btnConfirmar.className = 'px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-slate-950 transition';
+    btnConfirmar.textContent = 'Confirmar Aporte';
+  } else {
+    tituloEl.innerHTML = '<i data-lucide="minus-circle" class="w-4 h-4 text-amber-400"></i> Resgatar Valor';
+    btnConfirmar.className = 'px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 transition';
+    btnConfirmar.textContent = 'Confirmar Resgate';
+  }
+
+  abrirModalAnimado('modal-aporte-caixinha', 'modal-aporte-content');
+  if (window.lucide) lucide.createIcons();
+  setTimeout(() => document.getElementById('aporte-valor-input')?.focus(), 250);
+};
+
+window.fecharModalAporte = function() {
+  fecharModalAnimado('modal-aporte-caixinha', 'modal-aporte-content', () => {
+    formAporteCaixinha?.reset();
+    caixinhaAporteId = null;
+  });
+};
+
+formAporteCaixinha?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (!caixinhaAporteId) return;
+  const val = parseFloat(document.getElementById('aporte-valor-input').value) || 0;
+  if (val <= 0) return mostrarToast('Informe um valor maior que zero.', 'aviso');
+
+  const idx = caixinhasUsuario.findIndex(item => item.id === caixinhaAporteId);
+  if (idx === -1) return;
+
+  const atual = Number(caixinhasUsuario[idx].valor_atual || 0);
+  if (tipoMovimentoCaixinha === 'aportar') {
+    caixinhasUsuario[idx].valor_atual = Number((atual + val).toFixed(2));
+    mostrarToast(`Aporte de ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} registrado!`, 'sucesso');
+  } else {
+    if (val > atual) {
+      return mostrarToast('O valor de resgate é maior que o saldo guardado na caixinha.', 'erro');
+    }
+    caixinhasUsuario[idx].valor_atual = Number((atual - val).toFixed(2));
+    mostrarToast(`Resgate de ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} realizado!`, 'sucesso');
+  }
+
+  salvarCaixinhasStorage();
+  fecharModalAporte();
+});
 
 /* ==========================================================================
    PAGAMENTO DE FATURA EM 1 CLIQUE (APENAS QUITAÇÃO)
@@ -570,7 +809,9 @@ const mapaModaisBackdrop = [
   ['modal-categoria', 'modal-categoria-content'],
   ['modal-conta', 'modal-conta-content'],
   ['modal-transacao', 'modal-tx-content'],
-  ['modal-editar-teto', 'modal-teto-content']
+  ['modal-editar-teto', 'modal-teto-content'],
+  ['modal-caixinha', 'modal-caixinha-content'],
+  ['modal-aporte-caixinha', 'modal-aporte-content']
 ];
 
 mapaModaisBackdrop.forEach(([modalId, contentId]) => {
@@ -700,6 +941,7 @@ window.alternarPrivacidade = async function() {
   atualizarIconePrivacidade();
   verificarAlertasVencimento();
   atualizarTotais();
+  renderizarCaixinhas();
   renderizarGridContas();
   renderizarGridCategorias();
   renderizarGraficoCategorias();
@@ -1064,6 +1306,7 @@ function exportarPDF(dados, nome) {
    ========================================================================== */
 async function carregarDadosApp() {
   exibirSkeletons();
+  carregarCaixinhasStorage();
   await Promise.all([buscarOuCriarContas(), buscarOuCriarCategorias()]);
   await carregarTransacoes();
 }
@@ -1877,7 +2120,6 @@ window.duplicarTransacao = function(id) {
   atualizarEstadoTipo();
   atualizarOpcoesCategoriasNoModal();
 
-  // Remove sufixo de parcela caso exista (ex: "Compra (1/3)" -> "Compra")
   const descLimpa = (t.descricao || '').replace(/\s*\(\d+\/\d+\)\s*$/, '').trim();
   txValor.value = Number(t.valor);
   document.getElementById('tx-descricao').value = descLimpa;
