@@ -5,6 +5,7 @@ const SUPABASE_URL = 'https://vrivgmpdcgpqhuohzkaf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZyaXZnbXBkY2dwcWh1b2h6a2FmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM4MjAxODQsImV4cCI6MjEwOTM5NjE4NH0.H7qIvpF3rm-k-moF101qC2JLLe1mHOlqQlMWnzhFGo4';
 const NUMERO_WHATSAPP_TESTES = '5575988660943';
 const ADMIN_EMAIL = 'matheusgomes2225@hotmail.com';
+const PARCEIRA_PREFIXO = 'clarinha2100';
 
 let client = null;
 try {
@@ -198,27 +199,27 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
-   CAIXINHAS / METAS DE ECONOMIA (SEPARADO DO SALDO CORRENTE)
+   CAIXINHAS / METAS DE ECONOMIA (COMPARTILHADO VIA SUPABASE)
    ========================================================================== */
-function chaveStorageCaixinhas() {
-  return `fc_caixinhas_${usuarioLogadoId || 'default'}`;
+function usuarioTemAcessoCaixinhaCompartilhada() {
+  if (!usuarioLogadoEmail) return false;
+  const em = usuarioLogadoEmail.toLowerCase();
+  return em === ADMIN_EMAIL || em.startsWith(`${PARCEIRA_PREFIXO}@`);
 }
 
-function carregarCaixinhasStorage() {
+async function carregarCaixinhas() {
+  if (!client) return;
   try {
-    const raw = localStorage.getItem(chaveStorageCaixinhas());
-    const arr = raw ? JSON.parse(raw) : [];
-    caixinhasUsuario = Array.isArray(arr) ? arr : [];
+    const { data, error } = await client
+      .from('caixinhas')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+    caixinhasUsuario = data || [];
   } catch (e) {
     caixinhasUsuario = [];
   }
-  renderizarCaixinhas();
-}
-
-function salvarCaixinhasStorage() {
-  try {
-    localStorage.setItem(chaveStorageCaixinhas(), JSON.stringify(caixinhasUsuario));
-  } catch (e) {}
   renderizarCaixinhas();
 }
 
@@ -329,17 +330,25 @@ window.editarCaixinha = function(id) {
 };
 
 window.deletarCaixinha = async function(id) {
+  if (!client) return;
   const c = caixinhasUsuario.find(item => item.id === id);
   if (!c) return;
   if (await customConfirm(`Excluir a caixinha "${c.nome}"?`, 'perigo')) {
-    caixinhasUsuario = caixinhasUsuario.filter(item => item.id !== id);
-    salvarCaixinhasStorage();
-    mostrarToast('Caixinha excluída!', 'sucesso');
+    const { error } = await client.from('caixinhas').delete().eq('id', id);
+    if (error) {
+      mostrarToast('Erro ao excluir caixinha: ' + error.message, 'erro');
+    } else {
+      mostrarToast('Caixinha excluída!', 'sucesso');
+      await carregarCaixinhas();
+    }
   }
 };
 
-formCaixinha?.addEventListener('submit', (e) => {
+formCaixinha?.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (!client) return;
+
+  const btn = document.getElementById('btn-salvar-caixinha');
   const nome = document.getElementById('caixinha-nome').value.trim();
   const valorMeta = parseFloat(document.getElementById('caixinha-meta').value) || 0;
   const valorAtual = parseFloat(document.getElementById('caixinha-atual').value) || 0;
@@ -349,25 +358,33 @@ formCaixinha?.addEventListener('submit', (e) => {
     return mostrarToast('Preencha o nome e um valor de meta válido.', 'aviso');
   }
 
-  if (caixinhaEditandoId) {
-    const idx = caixinhasUsuario.findIndex(item => item.id === caixinhaEditandoId);
-    if (idx !== -1) {
-      caixinhasUsuario[idx] = { ...caixinhasUsuario[idx], nome, valor_meta: valorMeta, valor_atual: valorAtual, icone };
-    }
-    mostrarToast('Caixinha atualizada!', 'sucesso');
-  } else {
-    caixinhasUsuario.push({
-      id: 'cx_' + Date.now(),
-      nome,
-      valor_meta: valorMeta,
-      valor_atual: valorAtual,
-      icone
-    });
-    mostrarToast('Caixinha criada!', 'sucesso');
-  }
+  btn.disabled = true;
+  btn.innerText = 'Salvando...';
 
-  salvarCaixinhasStorage();
-  fecharModalCaixinha();
+  try {
+    if (caixinhaEditandoId) {
+      const { error } = await client
+        .from('caixinhas')
+        .update({ nome, valor_meta: valorMeta, valor_atual: valorAtual, icone })
+        .eq('id', caixinhaEditandoId);
+      if (error) throw error;
+      mostrarToast('Caixinha atualizada!', 'sucesso');
+    } else {
+      const { error } = await client
+        .from('caixinhas')
+        .insert([{ user_id: usuarioLogadoId, nome, valor_meta: valorMeta, valor_atual: valorAtual, icone }]);
+      if (error) throw error;
+      mostrarToast('Caixinha criada!', 'sucesso');
+    }
+
+    fecharModalCaixinha();
+    await carregarCaixinhas();
+  } catch (err) {
+    mostrarToast('Erro ao salvar caixinha: ' + err.message, 'erro');
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Salvar Caixinha';
+  }
 });
 
 window.abrirModalAporte = function(id, tipo = 'aportar') {
@@ -404,29 +421,51 @@ window.fecharModalAporte = function() {
   });
 };
 
-formAporteCaixinha?.addEventListener('submit', (e) => {
+formAporteCaixinha?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!caixinhaAporteId) return;
+  if (!client || !caixinhaAporteId) return;
+
   const val = parseFloat(document.getElementById('aporte-valor-input').value) || 0;
   if (val <= 0) return mostrarToast('Informe um valor maior que zero.', 'aviso');
 
-  const idx = caixinhasUsuario.findIndex(item => item.id === caixinhaAporteId);
-  if (idx === -1) return;
+  const c = caixinhasUsuario.find(item => item.id === caixinhaAporteId);
+  if (!c) return;
 
-  const atual = Number(caixinhasUsuario[idx].valor_atual || 0);
+  const atual = Number(c.valor_atual || 0);
+  let novoValor = atual;
+
   if (tipoMovimentoCaixinha === 'aportar') {
-    caixinhasUsuario[idx].valor_atual = Number((atual + val).toFixed(2));
-    mostrarToast(`Aporte de ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} registrado!`, 'sucesso');
+    novoValor = Number((atual + val).toFixed(2));
   } else {
     if (val > atual) {
       return mostrarToast('O valor de resgate é maior que o saldo guardado na caixinha.', 'erro');
     }
-    caixinhasUsuario[idx].valor_atual = Number((atual - val).toFixed(2));
-    mostrarToast(`Resgate de ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} realizado!`, 'sucesso');
+    novoValor = Number((atual - val).toFixed(2));
   }
 
-  salvarCaixinhasStorage();
-  fecharModalAporte();
+  const btn = document.getElementById('btn-confirmar-aporte');
+  btn.disabled = true;
+
+  try {
+    const { error } = await client
+      .from('caixinhas')
+      .update({ valor_atual: novoValor })
+      .eq('id', caixinhaAporteId);
+
+    if (error) throw error;
+
+    const msgSucesso = tipoMovimentoCaixinha === 'aportar'
+      ? `Aporte de ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} registrado!`
+      : `Resgate de ${val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} realizado!`;
+
+    mostrarToast(msgSucesso, 'sucesso');
+    fecharModalAporte();
+    await carregarCaixinhas();
+  } catch (err) {
+    mostrarToast('Erro ao atualizar caixinha: ' + err.message, 'erro');
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 /* ==========================================================================
@@ -1151,6 +1190,7 @@ window.selecionarVisao = async function(novaVisao) {
   renderizarAbasVisao();
   renderizarTransacoes();
   atualizarTotais();
+  renderizarCaixinhas();
   renderizarGridContas();
   renderizarGridCategorias();
   renderizarGraficoCategorias();
@@ -1306,8 +1346,7 @@ function exportarPDF(dados, nome) {
    ========================================================================== */
 async function carregarDadosApp() {
   exibirSkeletons();
-  carregarCaixinhasStorage();
-  await Promise.all([buscarOuCriarContas(), buscarOuCriarCategorias()]);
+  await Promise.all([buscarOuCriarContas(), buscarOuCriarCategorias(), carregarCaixinhas()]);
   await carregarTransacoes();
 }
 
@@ -1619,6 +1658,7 @@ async function carregarTransacoes() {
   renderizarAbasVisao();
   renderizarTransacoes();
   atualizarTotais();
+  renderizarCaixinhas();
   renderizarGridContas();
   renderizarGridCategorias();
   renderizarGraficoCategorias();
