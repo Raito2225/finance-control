@@ -54,7 +54,7 @@
   <!-- 1. TELA DE AUTENTICAÇÃO -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md space-y-4">
-      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-2xl backdrop-blur-xl">
+      <div class="glass-card bg-slate-900/90 border border-slate-800 border-t-white/15 rounded-2xl p-5 shadow-2xl backdrop-blur-xl">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
@@ -77,7 +77,7 @@
         </div>
       </div>
 
-      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
+      <div class="glass-card bg-slate-900/90 border border-slate-800 border-t-white/15 rounded-2xl p-6 sm:p-7 shadow-2xl backdrop-blur-xl">
         <div class="flex bg-slate-950/60 p-1 rounded-xl mb-5 border border-slate-800">
           <button type="button" id="tab-login" class="flex-1 py-2.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 transition-all">Entrar</button>
           <button type="button" id="tab-signup" class="flex-1 py-2.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">Criar Conta</button>
@@ -201,27 +201,28 @@
         </div>
       </div>
 
+      <!-- 4 Cards Principais com Glassmorphism e Borda Superior Iluminada -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <div class="glass-card kpi-glow-card relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-slate-900/65 backdrop-blur-md border border-slate-800/90 border-t-white/15 shadow-lg">
           <span class="text-[11px] font-medium text-slate-400 block truncate">Saldo do Mês</span>
           <div id="card-saldo" class="text-base sm:text-xl font-bold text-white mt-0.5 truncate tabular-nums tracking-tight">R$ 0,00</div>
         </div>
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <div class="glass-card kpi-glow-card relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-slate-900/65 backdrop-blur-md border border-slate-800/90 border-t-white/15 shadow-lg">
           <span class="text-[11px] font-medium text-slate-400 block truncate">Faturas Cartão</span>
           <div id="card-fatura" class="text-base sm:text-xl font-bold text-amber-400 mt-0.5 truncate tabular-nums tracking-tight">R$ 0,00</div>
         </div>
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <div class="glass-card kpi-glow-card relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-slate-900/65 backdrop-blur-md border border-slate-800/90 border-t-white/15 shadow-lg">
           <span class="text-[11px] font-medium text-slate-400 block truncate">Receitas</span>
           <div id="card-receita" class="text-base sm:text-xl font-bold text-emerald-400 mt-0.5 truncate tabular-nums tracking-tight">R$ 0,00</div>
         </div>
-        <div class="p-3.5 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <div class="glass-card kpi-glow-card relative overflow-hidden p-3.5 sm:p-4 rounded-2xl bg-slate-900/65 backdrop-blur-md border border-slate-800/90 border-t-white/15 shadow-lg">
           <span class="text-[11px] font-medium text-slate-400 block truncate">Despesas</span>
           <div id="card-despesa" class="text-base sm:text-xl font-bold text-rose-400 mt-0.5 truncate tabular-nums tracking-tight">R$ 0,00</div>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+        <div class="glass-card lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800 border-t-white/10 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 id="titulo-grafico-projecao" class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
               <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Projeção 6 Meses
@@ -242,7 +243,7 @@
           <div class="h-48 sm:h-64 w-full"><canvas id="grafico-projecao"></canvas></div>
         </div>
 
-        <div class="lg:col-span-1 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3 flex flex-col">
+        <div class="glass-card lg:col-span-1 p-4 sm:p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800 border-t-white/10 space-y-3 flex flex-col">
           <div class="flex items-center justify-between">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5"><i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> Despesas do Mês</h2>
           </div>
@@ -254,7 +255,7 @@
       </div>
 
       <!-- Visão de Comprometimento Futuro (Próximos 3 Meses) -->
-      <div class="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800 border-t-white/10 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
             <i data-lucide="lock" class="w-4 h-4 text-amber-400"></i> Comprometimento Futuro (Próximos 3 Meses)
@@ -265,7 +266,7 @@
       </div>
 
       <!-- Caixinhas / Metas de Economia (Separado do Saldo Corrente) -->
-      <div class="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+      <div class="glass-card p-4 sm:p-5 rounded-2xl bg-slate-900/60 backdrop-blur-md border border-slate-800 border-t-white/10 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
@@ -303,7 +304,7 @@
         <div id="grid-categorias-orcamento" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 tabular-nums"></div>
       </div>
 
-      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3.5">
+      <div class="glass-card bg-slate-900/60 backdrop-blur-md border border-slate-800 border-t-white/10 rounded-2xl p-4 space-y-3.5">
         <div class="flex flex-col gap-2.5">
           <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2">
