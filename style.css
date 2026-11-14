@@ -168,6 +168,14 @@ body.light-mode .text-slate-500 {
   color: #64748b !important;
 }
 
+/* Preserva o texto claro dentro dos cartões físicos realistas no Modo Claro */
+body.light-mode .cartao-fisico-card,
+body.light-mode .cartao-fisico-card .text-white,
+body.light-mode .cartao-fisico-card h3,
+body.light-mode .cartao-fisico-card span {
+  color: #ffffff !important;
+}
+
 body.light-mode input,
 body.light-mode select {
   background-color: #ffffff !important;
