@@ -108,12 +108,23 @@ body.light-mode {
 }
 
 body.light-mode header {
-  background-color: rgba(255, 255, 255, 0.9) !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
   border-color: #e2e8f0 !important;
+}
+
+body.light-mode #mobile-bottom-bar {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.light-mode #btn-fab-adicionar {
+  border-color: #ffffff !important;
 }
 
 /* Cards, containers e modais */
 body.light-mode .bg-slate-900,
+body.light-mode .bg-slate-900\/95,
 body.light-mode .bg-slate-900\/90,
 body.light-mode .bg-slate-900\/80,
 body.light-mode .bg-slate-900\/60,
