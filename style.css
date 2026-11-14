@@ -1,30 +1,6 @@
-/* style.css - Customizações e Ajustes Finos */
-
-/* Remove o fundo azul/cinza ao tocar em botões no celular (Android/iOS) */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Customização da Barra de Rolagem (Scrollbar) elegante e escura */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #334155; /* slate-700 */
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: #475569; /* slate-600 */
-}
-
-/* Ocultar scrollbar em menus horizontais mantendo o scroll ativo */
+/* ==========================================================================
+   ESTILOS BASE E ANIMAÇÕES
+   ========================================================================== */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -33,7 +9,155 @@
   scrollbar-width: none;
 }
 
-/* Curva suave estilo app nativo para modais e bottom sheets */
 .modal-spring {
   transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+
+body.light-mode input[type="month"]::-webkit-calendar-picker-indicator,
+body.light-mode input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.2);
+}
+
+/* ==========================================================================
+   SISTEMA DE TEMAS DINÂMICOS E MODO CLARO / ESCURO
+   ========================================================================== */
+:root {
+  --accent-main: #10b981;
+  --accent-hover: #059669;
+  --accent-soft: rgba(16, 185, 129, 0.15);
+  --accent-border: rgba(16, 185, 129, 0.35);
+  --accent-text: #34d399;
+}
+
+/* Aplicação global da cor escolhida no painel */
+body.has-custom-theme #btn-abrir-modal,
+body.has-custom-theme #btn-fab-adicionar,
+body.has-custom-theme #auth-btn-submit,
+body.has-custom-theme #btn-salvar-perfil,
+body.has-custom-theme #btn-salvar-nova-senha,
+body.has-custom-theme #btn-salvar-conta,
+body.has-custom-theme #btn-salvar-tx,
+body.has-custom-theme #btn-salvar-caixinha {
+  background-color: var(--accent-main) !important;
+  color: #020617 !important;
+}
+
+body.has-custom-theme #btn-abrir-modal:hover,
+body.has-custom-theme #btn-fab-adicionar:hover,
+body.has-custom-theme #auth-btn-submit:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+/* Ícones e destaques com a cor do tema */
+body.has-custom-theme header .w-8.h-8,
+body.has-custom-theme #auth-screen .w-9.h-9 {
+  background-color: var(--accent-soft) !important;
+  border-color: var(--accent-border) !important;
+  color: var(--accent-text) !important;
+}
+
+body.has-custom-theme #tab-login.bg-emerald-500\/20,
+body.has-custom-theme #tab-signup.bg-emerald-500\/20,
+body.has-custom-theme .btn-filtro.bg-emerald-500\/20,
+body.has-custom-theme .btn-graf-periodo.bg-emerald-500\/20,
+body.has-custom-theme #badge-filtro-conta,
+body.has-custom-theme #badge-total-caixinhas {
+  background-color: var(--accent-soft) !important;
+  border-color: var(--accent-border) !important;
+  color: var(--accent-text) !important;
+}
+
+body.has-custom-theme #toggle-som-switch.bg-emerald-500 {
+  background-color: var(--accent-main) !important;
+}
+
+body.has-custom-theme input:focus,
+body.has-custom-theme select:focus {
+  border-color: var(--accent-main) !important;
+}
+
+/* ==========================================================================
+   MODO CLARO (LIGHT MODE)
+   ========================================================================== */
+body.light-mode {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+body.light-mode header {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Cards, containers e modais */
+body.light-mode .bg-slate-900,
+body.light-mode .bg-slate-900\/90,
+body.light-mode .bg-slate-900\/80,
+body.light-mode .bg-slate-900\/60,
+body.light-mode .bg-slate-900\/50 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+
+body.light-mode .bg-slate-950,
+body.light-mode .bg-slate-950\/90,
+body.light-mode .bg-slate-950\/75,
+body.light-mode .bg-slate-950\/70,
+body.light-mode .bg-slate-950\/60,
+body.light-mode .bg-slate-950\/50,
+body.light-mode .bg-slate-950\/40 {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.light-mode .bg-slate-800,
+body.light-mode .bg-slate-800\/80,
+body.light-mode .bg-slate-800\/60 {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+body.light-mode .border-slate-800,
+body.light-mode .border-slate-800\/90,
+body.light-mode .border-slate-800\/80,
+body.light-mode .border-slate-800\/70,
+body.light-mode .border-slate-700,
+body.light-mode .border-slate-700\/80,
+body.light-mode .border-slate-700\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Textos no modo claro */
+body.light-mode .text-white,
+body.light-mode .text-slate-100,
+body.light-mode .text-slate-200 {
+  color: #0f172a !important;
+}
+
+body.light-mode .text-slate-300 {
+  color: #334155 !important;
+}
+
+body.light-mode .text-slate-400,
+body.light-mode .text-slate-500 {
+  color: #64748b !important;
+}
+
+body.light-mode input,
+body.light-mode select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.light-mode .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0 !important;
 }
