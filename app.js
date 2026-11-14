@@ -1252,8 +1252,9 @@ function aplicarTemaNaInterface() {
 
   document.body.classList.add('has-custom-theme');
 
-  if (btnFabAdicionar) {
-    btnFabAdicionar.className = `w-[52px] h-[52px] rounded-2xl ${paleta.btn} text-slate-950 flex items-center justify-center shadow-lg border-2 border-slate-950 transition-transform duration-200 active:scale-90`;
+  const fabBox = document.getElementById('btn-fab-icone-box');
+  if (fabBox) {
+    fabBox.className = `w-12 h-12 rounded-2xl ${paleta.btn} text-slate-950 flex items-center justify-center shadow-lg border-2 border-slate-950 transition-transform duration-200 group-active:scale-90`;
   }
   const btnModal = document.getElementById('btn-abrir-modal');
   if (btnModal) {
@@ -2539,14 +2540,13 @@ txRecorrente?.addEventListener('change', () => {
   }
 });
 
-function abrirModalNovaTx() {
+window.abrirModalNovaTx = function() {
   executarFeedback('clique');
   atualizarEstadoTipo();
   atualizarOpcoesCategoriasNoModal();
   calcularPrevia();
   abrirModalAnimado('modal-transacao', 'modal-tx-content');
-}
-btnFabAdicionar?.addEventListener('click', abrirModalNovaTx);
+};
 document.getElementById('btn-abrir-modal')?.addEventListener('click', abrirModalNovaTx);
 
 function fecharModal() {
