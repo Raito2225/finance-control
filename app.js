@@ -317,6 +317,28 @@ window.definirTema = function(cor) {
   executarFeedback('clique');
 };
 
+function atualizarIconePrivacidade() {
+  if (btnModoPrivacidade) {
+    btnModoPrivacidade.innerHTML = `<i data-lucide="${modoPrivacidadeAtivo ? 'eye-off' : 'eye'}" class="w-4 h-4 ${modoPrivacidadeAtivo ? 'text-amber-400' : ''}"></i>`;
+    if (window.lucide) lucide.createIcons();
+  }
+}
+
+window.alternarPrivacidade = async function() {
+  executarFeedback('clique');
+  modoPrivacidadeAtivo = !modoPrivacidadeAtivo;
+  try { localStorage.setItem('fc_privacidade_ativa', modoPrivacidadeAtivo); } catch (e) {}
+  atualizarIconePrivacidade();
+  verificarAlertasVencimento();
+  atualizarTotais();
+  renderizarCaixinhas();
+  renderizarGridContas();
+  renderizarGridCategorias();
+  renderizarGraficoCategorias();
+  renderizarTransacoes();
+  await carregarComprometimentoFuturo();
+};
+
 /* ==========================================================================
    BADGES DE CATEGORIA COLORIDOS (PÍLULAS DINÂMICAS)
    ========================================================================== */
