@@ -1,55 +1,36 @@
-const CACHE_NAME = 'financecontrol-v1';
-const ASSETS_ESTATICOS = [
+const CACHE_NAME = 'financecontrol-v5';
+const ASSETS = [
   './',
   './index.html',
+  './style.css',
+  './app.js',
   './manifest.json'
 ];
 
-// Instala o Service Worker e guarda os arquivos básicos no cache
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_ESTATICOS);
-    })
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
+  );
 });
 
-// Limpa caches antigos quando uma nova versão do Service Worker é ativada
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      );
-    })
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    )
   );
   self.clients.claim();
 });
 
-// Estratégia Network-First para o app e bypass total para o Supabase
-// Estratégia Network-First para o app e bypass total para o Supabase
 self.addEventListener('fetch', (event) => {
-  const url = event.request.url;
-
-  // Nunca faz cache das requisições do Supabase ou de extensões do Chrome
-  if (url.includes('supabase.co') || !url.startsWith('http')) {
-    return;
-  }
-
-  // Para os demais arquivos: tenta a rede primeiro; se falhar (offline), usa o cache
+  if (event.request.method !== 'GET') return;
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        if (event.request.method === 'GET' && response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
+      .then((res) => {
+        const clone = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return res;
       })
       .catch(() => caches.match(event.request))
   );
