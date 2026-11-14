@@ -220,7 +220,7 @@ function animarContadorMoeda(elementId, valorFinal, duracao = 460) {
   const inicio = performance.now();
   const passo = (agora) => {
     const progresso = Math.min((agora - inicio) / duracao, 1);
-    const eased = 1 - Math.pow(1 - progresso, 3); // Ease-out cubic
+    const eased = 1 - Math.pow(1 - progresso, 3);
     const atual = valorInicial + (valorFinal - valorInicial) * eased;
 
     el.innerText = Number(atual).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -463,11 +463,20 @@ function renderizarCaixinhas() {
 
   if (caixinhasUsuario.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full p-4 rounded-2xl bg-slate-950/50 border border-dashed border-slate-800 text-center space-y-1">
-        <p class="text-xs text-slate-400">Nenhuma caixinha criada ainda.</p>
-        <p class="text-[11px] text-slate-500">Crie metas como Reserva de Emergência, Obra ou Viagem para acompanhar seu progresso separado do saldo mensal.</p>
+      <div class="col-span-full py-6 px-4 rounded-2xl bg-slate-950/50 border border-dashed border-slate-800 flex flex-col items-center justify-center text-center space-y-2.5">
+        <div class="w-11 h-11 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+        </div>
+        <div class="space-y-1 max-w-sm">
+          <h4 class="text-xs sm:text-sm font-bold text-slate-200">Nenhuma caixinha criada ainda</h4>
+          <p class="text-[11px] text-slate-400 leading-relaxed">Crie metas como Reserva de Emergência, Obra ou Viagem para acompanhar seu progresso separado do saldo mensal.</p>
+        </div>
+        <button type="button" onclick="abrirModalCaixinha()" class="mt-1 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-xs inline-flex items-center gap-1.5 transition active:scale-95">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Criar primeira caixinha
+        </button>
       </div>
     `;
+    if (window.lucide) lucide.createIcons();
     return;
   }
 
@@ -1561,6 +1570,14 @@ window.alternarFiltroConta = function(contaId) {
   renderizarTransacoes();
 };
 
+window.limparTodosFiltrosExtrato = function() {
+  executarFeedback('clique');
+  termoBuscaAtivo = '';
+  if (filtroBusca) filtroBusca.value = '';
+  alternarFiltroConta(null);
+  aplicarFiltroTipo('todos');
+};
+
 function obterTransacoesDaVisao(lista = transacoesCarregadas) {
   return lista.filter(t => {
     if (visaoAtiva === 'geral') return true;
@@ -1889,7 +1906,23 @@ function renderizarGridCategorias() {
 
   const cats = categoriasUsuario.filter(c => c.tipo !== 'Receita' && Number(c.teto_mensal) > 0);
   if (!cats.length) {
-    container.innerHTML = `<p class="text-xs text-slate-500 py-3 col-span-full">Nenhum limite estipulado.</p>`;
+    container.innerHTML = `
+      <div class="col-span-full py-5 px-4 rounded-2xl bg-slate-900/50 border border-dashed border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+            <i data-lucide="target" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-200">Nenhum teto de gastos definido</h4>
+            <p class="text-[11px] text-slate-400">Defina metas mensais por categoria para receber alertas visuais antes de estourar o orçamento.</p>
+          </div>
+        </div>
+        <button type="button" onclick="abrirModalCategoriaRapido()" class="px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 font-bold text-xs inline-flex items-center gap-1.5 transition active:scale-95 shrink-0">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Definir limite
+        </button>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
     return;
   }
 
@@ -2129,8 +2162,37 @@ function renderizarTransacoes() {
   if (contadorTransacoes) contadorTransacoes.innerText = `${f.length} registro${f.length !== 1 ? 's' : ''}`;
 
   if (!f.length) {
-    cm.innerHTML = `<div class="py-8 text-center text-xs text-slate-500">Nenhum lançamento.</div>`;
-    cd.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-500">Nenhum lançamento.</td></tr>`;
+    const temFiltroAtivo = Boolean(termoBuscaAtivo || filtroContaIdAtiva || filtroTipoAtivo !== 'todos');
+    const iconeVazio = temFiltroAtivo ? 'search-x' : 'receipt';
+    const tituloVazio = temFiltroAtivo ? 'Nenhum lançamento encontrado' : 'Nenhum lançamento neste mês';
+    const subtituloVazio = temFiltroAtivo
+      ? 'Nenhum registro corresponde aos filtros ou busca atual.'
+      : 'Seu extrato está limpo por enquanto. Que tal registrar a primeira movimentação?';
+
+    const botaoAcaoVazio = temFiltroAtivo
+      ? `<button type="button" onclick="limparTodosFiltrosExtrato()" class="mt-1 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs inline-flex items-center gap-1.5 transition active:scale-95">
+           <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpar filtros
+         </button>`
+      : `<button type="button" onclick="abrirModalNovaTx()" class="mt-1 px-4 py-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-xs inline-flex items-center gap-1.5 transition active:scale-95">
+           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Adicionar primeiro gasto
+         </button>`;
+
+    const emptyStateHtml = `
+      <div class="py-10 px-4 flex flex-col items-center justify-center text-center space-y-2.5">
+        <div class="w-12 h-12 rounded-full bg-slate-800/80 border border-slate-700/70 flex items-center justify-center text-emerald-400 shadow-inner">
+          <i data-lucide="${iconeVazio}" class="w-5 h-5"></i>
+        </div>
+        <div class="space-y-1 max-w-xs">
+          <h4 class="text-sm font-bold text-slate-200">${tituloVazio}</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">${subtituloVazio}</p>
+        </div>
+        ${botaoAcaoVazio}
+      </div>
+    `;
+
+    cm.innerHTML = emptyStateHtml;
+    cd.innerHTML = `<tr><td colspan="9">${emptyStateHtml}</td></tr>`;
+    if (window.lucide) lucide.createIcons();
     return;
   }
 
