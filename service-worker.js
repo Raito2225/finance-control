@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financecontrol-v6';
+const CACHE_NAME = 'financecontrol-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -25,6 +25,10 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  
+  // Ignora requisições que não sejam HTTP/HTTPS (como extensões do Chrome)
+  if (!event.request.url.startsWith('http')) return;
+
   event.respondWith(
     fetch(event.request)
       .then((res) => {
