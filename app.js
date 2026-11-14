@@ -249,7 +249,7 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
-   TEMAS E MODO CLARO/ESCURO (DEFINIDOS NO TOPO)
+   TEMAS, MODO CLARO/ESCURO E PRIVACIDADE
    ========================================================================== */
 const PALETAS_TEMA = {
   esmeralda: { main: '#10b981', hover: '#059669', soft: 'rgba(16, 185, 129, 0.16)', border: 'rgba(16, 185, 129, 0.35)', text: '#34d399', btn: 'bg-emerald-500 hover:bg-emerald-600' },
@@ -545,7 +545,7 @@ function renderizarBandeiraSVG(tipo) {
 }
 
 /* ==========================================================================
-   CAIXINHAS / METAS DE ECONOMIA (COMPARTILHADO VIA SUPABASE)
+   CAIXINHAS / METAS DE ECONOMIA
    ========================================================================== */
 async function carregarCaixinhas() {
   if (!client) return;
@@ -818,7 +818,7 @@ formAporteCaixinha?.addEventListener('submit', async (e) => {
 });
 
 /* ==========================================================================
-   PAGAMENTO DE FATURA EM 1 CLIQUE (APENAS QUITAÇÃO)
+   PAGAMENTO DE FATURA EM 1 CLIQUE
    ========================================================================== */
 window.pagarFaturaEmUmClique = async function(contaId) {
   if (!client) return;
@@ -1074,7 +1074,7 @@ async function carregarComprometimentoFuturo() {
 }
 
 /* ==========================================================================
-   RENDERIZAÇÃO DO EXTRATO (COM BADGES DE CATEGORIA COLORIDOS E EMPTY STATE)
+   RENDERIZAÇÃO DO EXTRATO
    ========================================================================== */
 function renderizarTransacoes() {
   const cm = document.getElementById('lista-transacoes-mobile');
