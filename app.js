@@ -51,6 +51,14 @@ let temaAtivo = 'esmeralda';
 let modoPrivacidadeAtivo = false;
 let modoClaroAtivo = false;
 
+const totaisAnteriores = {
+  'card-saldo': 0,
+  'card-fatura': 0,
+  'card-receita': 0,
+  'card-despesa': 0
+};
+const animacoesContagemAtivas = {};
+
 try {
   configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
   temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
@@ -134,7 +142,7 @@ const formCaixinha = document.getElementById('form-caixinha');
 const formAporteCaixinha = document.getElementById('form-aporte-caixinha');
 
 /* ==========================================================================
-   ÁUDIO, VIBRAÇÃO E FORMATAÇÃO
+   ÁUDIO, VIBRAÇÃO, FORMATAÇÃO E CONTAGEM SUAVE
    ========================================================================== */
 let audioCtx = null;
 function obterAudioContext() {
@@ -185,6 +193,48 @@ function executarFeedback(tipo = 'clique') {
 function formatarMoeda(valor) {
   if (modoPrivacidadeAtivo) return 'R$ •••••';
   return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function animarContadorMoeda(elementId, valorFinal, duracao = 460) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  if (animacoesContagemAtivas[elementId]) {
+    cancelAnimationFrame(animacoesContagemAtivas[elementId]);
+    delete animacoesContagemAtivas[elementId];
+  }
+
+  if (modoPrivacidadeAtivo) {
+    totaisAnteriores[elementId] = valorFinal;
+    el.innerText = 'R$ •••••';
+    return;
+  }
+
+  const valorInicial = Number(totaisAnteriores[elementId] || 0);
+  if (Math.abs(valorFinal - valorInicial) < 0.01) {
+    totaisAnteriores[elementId] = valorFinal;
+    el.innerText = formatarMoeda(valorFinal);
+    return;
+  }
+
+  const inicio = performance.now();
+  const passo = (agora) => {
+    const progresso = Math.min((agora - inicio) / duracao, 1);
+    const eased = 1 - Math.pow(1 - progresso, 3); // Ease-out cubic
+    const atual = valorInicial + (valorFinal - valorInicial) * eased;
+
+    el.innerText = Number(atual).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    if (progresso < 1) {
+      animacoesContagemAtivas[elementId] = requestAnimationFrame(passo);
+    } else {
+      totaisAnteriores[elementId] = valorFinal;
+      el.innerText = formatarMoeda(valorFinal);
+      delete animacoesContagemAtivas[elementId];
+    }
+  };
+
+  animacoesContagemAtivas[elementId] = requestAnimationFrame(passo);
 }
 
 function aplicarMascaraTelefone(inputEl) {
@@ -1322,6 +1372,10 @@ window.alternarPrivacidade = async function() {
 
 function exibirSkeletons() {
   ['card-saldo', 'card-fatura', 'card-receita', 'card-despesa'].forEach(id => {
+    if (animacoesContagemAtivas[id]) {
+      cancelAnimationFrame(animacoesContagemAtivas[id]);
+      delete animacoesContagemAtivas[id];
+    }
     const el = document.getElementById(id);
     if (el) el.innerHTML = '<div class="h-6 sm:h-7 w-24 bg-slate-800 rounded-lg animate-pulse mt-1"></div>';
   });
@@ -2148,10 +2202,13 @@ function atualizarTotais() {
     else desp += v;
   });
 
-  document.getElementById('card-fatura').innerText = formatarMoeda(fat);
-  document.getElementById('card-receita').innerText = formatarMoeda(rec);
-  document.getElementById('card-despesa').innerText = formatarMoeda(fat + desp);
-  document.getElementById('card-saldo').innerText = formatarMoeda(rec - (fat + desp));
+  const totalDespesas = fat + desp;
+  const saldoMes = rec - totalDespesas;
+
+  animarContadorMoeda('card-fatura', fat);
+  animarContadorMoeda('card-receita', rec);
+  animarContadorMoeda('card-despesa', totalDespesas);
+  animarContadorMoeda('card-saldo', saldoMes);
 }
 
 /* ==========================================================================
