@@ -44,9 +44,14 @@
             </div>
             <h1 class="text-lg font-bold tracking-tight text-white">FinanceControl</h1>
           </div>
-          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Fase Beta
-          </span>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="alternarModoClaroEscuro()" class="btn-toggle-tema-modo p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-white transition active:scale-95" title="Alternar Modo Claro/Escuro">
+              <i data-lucide="sun" class="w-4 h-4"></i>
+            </button>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Fase Beta
+            </span>
+          </div>
         </div>
         <div class="space-y-2 text-xs text-slate-300 leading-relaxed border-t border-slate-800/80 pt-3">
           <p class="font-semibold text-slate-100 flex items-center gap-1.5">👋 Seja muito bem-vindo ao teste antecipado!</p>
@@ -119,6 +124,9 @@
           <button type="button" id="btn-abrir-modal-categoria" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
             <i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> <span class="hidden md:inline">Categoria</span>
           </button>
+          <button type="button" onclick="abrirModalRaioX()" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Raio-X Anual">
+            <i data-lucide="calendar-range" class="w-4 h-4 text-violet-400"></i> <span class="hidden md:inline">Raio-X</span>
+          </button>
 
           <div class="relative">
             <button type="button" id="btn-dropdown-exportar" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
@@ -131,11 +139,15 @@
             </div>
           </div>
 
-          <button type="button" onclick="alternarPrivacidade()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0" id="btn-modo-privacidade">
+          <button type="button" onclick="alternarModoClaroEscuro()" class="btn-toggle-tema-modo p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0" title="Alternar Modo Claro/Escuro">
+            <i data-lucide="sun" class="w-4 h-4"></i>
+          </button>
+
+          <button type="button" onclick="alternarPrivacidade()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95" id="btn-modo-privacidade" title="Ocultar/Exibir Valores">
             <i data-lucide="eye" class="w-4 h-4"></i>
           </button>
 
-          <button type="button" id="btn-abrir-config" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95">
+          <button type="button" id="btn-abrir-config" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95" title="Configurações">
             <i data-lucide="settings" class="w-4 h-4"></i>
           </button>
         </div>
@@ -315,6 +327,57 @@
   <!-- 3. MODAIS & TOASTS -->
   <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-80"></div>
 
+  <!-- Modal Raio-X Anual -->
+  <div id="modal-raiox" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
+    <div id="modal-raiox-content" class="w-full max-w-3xl bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 modal-spring translate-y-full sm:translate-y-10 sm:scale-95 opacity-0 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div class="flex items-center gap-2.5">
+          <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="calendar-range" class="w-4 h-4 text-violet-400"></i> Raio-X Anual
+          </h3>
+          <div class="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 text-xs">
+            <button type="button" onclick="alterarAnoRaioX(-1)" class="p-1 text-slate-400 hover:text-white"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+            <span id="label-ano-raiox" class="px-2 font-mono font-bold text-slate-200">2026</span>
+            <button type="button" onclick="alterarAnoRaioX(1)" class="p-1 text-slate-400 hover:text-white"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+          </div>
+        </div>
+        <button type="button" onclick="fecharModalRaioX()" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <!-- Cards Resumo do Ano -->
+      <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
+        <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">Receitas no Ano</span>
+          <strong id="raiox-total-receita" class="text-xs sm:text-sm font-mono font-bold text-emerald-400">R$ 0,00</strong>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">Despesas no Ano</span>
+          <strong id="raiox-total-despesa" class="text-xs sm:text-sm font-mono font-bold text-rose-400">R$ 0,00</strong>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
+          <span class="text-[10px] text-slate-400 block">Balanço Anual</span>
+          <strong id="raiox-total-saldo" class="text-xs sm:text-sm font-mono font-bold text-white">R$ 0,00</strong>
+        </div>
+      </div>
+
+      <!-- Tabela Mês a Mês -->
+      <div class="overflow-x-auto border border-slate-800 rounded-xl">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950/90 text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="py-2.5 px-3 font-semibold">Mês</th>
+              <th class="py-2.5 px-3 font-semibold text-right">Receitas</th>
+              <th class="py-2.5 px-3 font-semibold text-right">Despesas</th>
+              <th class="py-2.5 px-3 font-semibold text-right">Saldo</th>
+              <th class="py-2.5 px-3 font-semibold text-center">Comprom.</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-corpo-raiox" class="divide-y divide-slate-800/60 text-slate-300 font-mono"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Nova / Editar Caixinha -->
   <div id="modal-caixinha" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
     <div id="modal-caixinha-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl transform transition-all duration-300 modal-spring translate-y-full sm:translate-y-10 sm:scale-95 opacity-0">
@@ -426,11 +489,18 @@
         <div><p class="text-xs font-semibold text-white">Som e Vibração</p></div>
         <button type="button" id="toggle-som-switch" class="w-11 h-6 rounded-full bg-emerald-500 p-0.5 transition-colors relative flex items-center"><div id="toggle-som-knob" class="w-5 h-5 rounded-full bg-white shadow transform translate-x-5 transition-transform"></div></button>
       </div>
-      <div class="grid grid-cols-4 gap-2 pt-2">
-        <button type="button" onclick="definirTema('esmeralda')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-emerald-500"></span>Esmeralda</button>
-        <button type="button" onclick="definirTema('azul')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-sky-500"></span>Azul</button>
-        <button type="button" onclick="definirTema('roxo')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-violet-500"></span>Violeta</button>
-        <button type="button" onclick="definirTema('ambar')" class="p-2 rounded-xl border border-slate-800 bg-slate-950/60 text-[10px] text-slate-300 flex flex-col items-center gap-1"><span class="w-4 h-4 rounded-full bg-amber-500"></span>Ouro</button>
+      <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-white">Cor do Painel</span>
+          <span class="text-[10px] text-slate-400">Personalize o destaque</span>
+        </div>
+        <div class="grid grid-cols-5 gap-1.5">
+          <button type="button" onclick="definirTema('esmeralda')" id="tema-btn-esmeralda" class="btn-cor-tema p-2 rounded-xl border border-slate-800 bg-slate-900/80 text-[10px] text-slate-300 flex flex-col items-center gap-1 transition"><span class="w-4 h-4 rounded-full bg-emerald-500"></span>Verde</button>
+          <button type="button" onclick="definirTema('azul')" id="tema-btn-azul" class="btn-cor-tema p-2 rounded-xl border border-slate-800 bg-slate-900/80 text-[10px] text-slate-300 flex flex-col items-center gap-1 transition"><span class="w-4 h-4 rounded-full bg-sky-500"></span>Azul</button>
+          <button type="button" onclick="definirTema('roxo')" id="tema-btn-roxo" class="btn-cor-tema p-2 rounded-xl border border-slate-800 bg-slate-900/80 text-[10px] text-slate-300 flex flex-col items-center gap-1 transition"><span class="w-4 h-4 rounded-full bg-violet-500"></span>Roxo</button>
+          <button type="button" onclick="definirTema('ambar')" id="tema-btn-ambar" class="btn-cor-tema p-2 rounded-xl border border-slate-800 bg-slate-900/80 text-[10px] text-slate-300 flex flex-col items-center gap-1 transition"><span class="w-4 h-4 rounded-full bg-amber-500"></span>Ouro</button>
+          <button type="button" onclick="definirTema('rosa')" id="tema-btn-rosa" class="btn-cor-tema p-2 rounded-xl border border-slate-800 bg-slate-900/80 text-[10px] text-slate-300 flex flex-col items-center gap-1 transition"><span class="w-4 h-4 rounded-full bg-rose-500"></span>Rosa</button>
+        </div>
       </div>
     </div>
   </div>
