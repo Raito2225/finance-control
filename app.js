@@ -202,6 +202,37 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
+   NAVEGAÇÃO BOTTOM TAB BAR MOBILE
+   ========================================================================== */
+function atualizarAbaBottomAtiva(aba = 'inicio') {
+  const paleta = PALETAS_TEMA[temaAtivo] || PALETAS_TEMA.esmeralda;
+  document.querySelectorAll('.nav-bottom-item').forEach(btn => {
+    btn.style.color = '';
+    btn.classList.remove('text-emerald-400', 'font-bold');
+    btn.classList.add('text-slate-400');
+  });
+
+  const alvo = document.getElementById(`nav-tab-${aba}`);
+  if (alvo) {
+    alvo.classList.remove('text-slate-400');
+    alvo.style.color = paleta.text;
+  }
+}
+
+window.navegarBottomBar = function(destino) {
+  executarFeedback('clique');
+  atualizarAbaBottomAtiva(destino);
+
+  if (destino === 'inicio') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (destino === 'raiox') {
+    abrirModalRaioX();
+  } else if (destino === 'ajustes') {
+    document.getElementById('btn-abrir-config')?.click();
+  }
+};
+
+/* ==========================================================================
    LIMITES E IDENTIDADE VISUAL REALISTA DOS CARTÕES
    ========================================================================== */
 function obterLimitesCartoes() {
@@ -343,7 +374,6 @@ function renderizarBandeiraSVG(tipo) {
   if (tipo === 'corrente') {
     return `<i data-lucide="landmark" class="w-4 h-4 text-emerald-300/80"></i>`;
   }
-  // Mastercard estilizado (dois círculos sobrepostos)
   return `
     <span class="inline-flex items-center select-none" title="Mastercard">
       <span class="w-3.5 h-3.5 rounded-full bg-rose-500/90 inline-block"></span>
@@ -883,7 +913,9 @@ window.abrirModalRaioX = async function() {
 };
 
 window.fecharModalRaioX = function() {
-  fecharModalAnimado('modal-raiox', 'modal-raiox-content');
+  fecharModalAnimado('modal-raiox', 'modal-raiox-content', () => {
+    atualizarAbaBottomAtiva('inicio');
+  });
 };
 
 window.alterarAnoRaioX = async function(delta) {
@@ -1111,7 +1143,11 @@ mapaModaisBackdrop.forEach(([modalId, contentId]) => {
   const modalEl = document.getElementById(modalId);
   modalEl?.addEventListener('click', (e) => {
     if (e.target === modalEl) {
-      fecharModalAnimado(modalId, contentId);
+      fecharModalAnimado(modalId, contentId, () => {
+        if (modalId === 'modal-configuracoes' || modalId === 'modal-raiox') {
+          atualizarAbaBottomAtiva('inicio');
+        }
+      });
     }
   });
 });
@@ -1217,11 +1253,11 @@ function aplicarTemaNaInterface() {
   document.body.classList.add('has-custom-theme');
 
   if (btnFabAdicionar) {
-    btnFabAdicionar.className = `fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full ${paleta.btn} active:scale-95 text-slate-950 flex items-center justify-center shadow-lg border border-white/10 transition`;
+    btnFabAdicionar.className = `w-[52px] h-[52px] rounded-2xl ${paleta.btn} text-slate-950 flex items-center justify-center shadow-lg border-2 border-slate-950 transition-transform duration-200 active:scale-90`;
   }
   const btnModal = document.getElementById('btn-abrir-modal');
   if (btnModal) {
-    btnModal.className = `flex-1 sm:flex-none flex items-center justify-center gap-1.5 ${paleta.btn} text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md active:scale-95`;
+    btnModal.className = `flex items-center justify-center gap-1.5 ${paleta.btn} text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md active:scale-95`;
   }
 
   document.querySelectorAll('.btn-cor-tema').forEach(btn => {
@@ -1231,6 +1267,8 @@ function aplicarTemaNaInterface() {
   if (btnAtivo) {
     btnAtivo.classList.add('ring-2', 'ring-white');
   }
+
+  atualizarAbaBottomAtiva('inicio');
 }
 
 function aplicarModoClaroEscuro() {
@@ -1710,7 +1748,6 @@ function renderizarGridContas() {
       }
     });
 
-    // Barra fina de limite consumido (se limite estiver cadastrado)
     const limiteTotal = isC ? Number(limitesSalvos[c.id] || 0) : 0;
     let htmlBarraLimite = '';
     if (isC && limiteTotal > 0) {
@@ -1740,11 +1777,9 @@ function renderizarGridContas() {
 
     return `
       <div onclick="alternarFiltroConta('${c.id}')" class="cartao-fisico-card relative overflow-hidden p-4 rounded-2xl bg-gradient-to-br ${estilo.gradiente} border ${selecionado ? 'border-white ring-2 ring-white/80' : estilo.borda} shadow-lg flex flex-col justify-between cursor-pointer transition-all duration-200 active:scale-[0.99]">
-        <!-- Brilho decorativo sutil de cartão físico -->
         <div class="pointer-events-none absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/10 blur-xl"></div>
 
         <div class="space-y-2.5 relative z-10">
-          <!-- Topo: Chip metálico + Contactless + Badge Banco + Ações -->
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
               ${isC
@@ -1765,7 +1800,6 @@ function renderizarGridContas() {
             </div>
           </div>
 
-          <!-- Meio: Nome e Valor da Fatura / Movimentação -->
           <div class="flex items-end justify-between gap-2">
             <div class="min-w-0">
               <h3 class="text-sm font-bold text-white truncate">${c.nome}</h3>
@@ -1779,11 +1813,9 @@ function renderizarGridContas() {
             </div>
           </div>
 
-          <!-- Barra fina de limite consumido -->
           ${htmlBarraLimite}
         </div>
 
-        <!-- Rodapé: Bandeira + Botão Pagar Fatura -->
         <div class="relative z-10">
           ${btnPagarCard}
           <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-white/10">
@@ -2148,12 +2180,18 @@ document.getElementById('btn-abrir-config')?.addEventListener('click', () => {
   }
   atualizarSwitchVisual();
   aplicarTemaNaInterface();
+  atualizarAbaBottomAtiva('ajustes');
   containerFormSenha?.classList.add('hidden');
   iconeSetaSenha?.classList.remove('rotate-180');
   abrirModalAnimado('modal-configuracoes', 'modal-config-content');
 });
 
-document.getElementById('btn-fechar-config')?.addEventListener('click', () => fecharModalAnimado('modal-configuracoes', 'modal-config-content'));
+document.getElementById('btn-fechar-config')?.addEventListener('click', () => {
+  fecharModalAnimado('modal-configuracoes', 'modal-config-content', () => {
+    atualizarAbaBottomAtiva('inicio');
+  });
+});
+
 document.getElementById('config-btn-logout')?.addEventListener('click', async () => {
   fecharModalAnimado('modal-configuracoes', 'modal-config-content');
   if (client) await client.auth.signOut();
@@ -2251,10 +2289,12 @@ selectCategoriaIcone?.addEventListener('change', () => {
   }
 });
 
-document.getElementById('btn-abrir-modal-categoria')?.addEventListener('click', () => {
+window.abrirModalCategoriaRapido = function() {
   atualizarVisibilidadeTetoCategoria();
   abrirModalAnimado('modal-categoria', 'modal-categoria-content');
-});
+};
+
+document.getElementById('btn-abrir-modal-categoria')?.addEventListener('click', abrirModalCategoriaRapido);
 
 function fecharModalCategoria() {
   fecharModalAnimado('modal-categoria', 'modal-categoria-content', () => formCategoria?.reset());
@@ -2330,11 +2370,13 @@ contaTipo?.addEventListener('change', () => {
   camposCartao?.classList.toggle('hidden', contaTipo.value !== 'Cartão de Crédito');
 });
 
-document.getElementById('btn-abrir-modal-conta')?.addEventListener('click', () => {
+window.abrirModalContaRapido = function() {
   const inpLimite = document.getElementById('conta-limite');
   if (inpLimite) inpLimite.value = '';
   abrirModalAnimado('modal-conta', 'modal-conta-content');
-});
+};
+
+document.getElementById('btn-abrir-modal-conta')?.addEventListener('click', abrirModalContaRapido);
 
 function fecharModalConta() {
   fecharModalAnimado('modal-conta', 'modal-conta-content', () => {
@@ -2498,6 +2540,7 @@ txRecorrente?.addEventListener('change', () => {
 });
 
 function abrirModalNovaTx() {
+  executarFeedback('clique');
   atualizarEstadoTipo();
   atualizarOpcoesCategoriasNoModal();
   calcularPrevia();
