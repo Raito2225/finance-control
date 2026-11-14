@@ -9,13 +9,10 @@ const PARCEIRA_PREFIXO = 'clarinha2100';
 
 let client = null;
 try {
-  if (!window.supabase) throw new Error('Biblioteca do Supabase não carregou.');
-  client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (err) {
-  setTimeout(() => {
-    if (window.mostrarToast) window.mostrarToast('Erro ao iniciar: ' + err.message, 'erro');
-  }, 800);
-}
+  if (window.supabase) {
+    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (err) {}
 
 /* ==========================================================================
    VARIÁVEIS DE ESTADO (STATE)
@@ -252,7 +249,7 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
-   TEMAS E MODO CLARO/ESCURO (DEFINIDOS ANTES DO DOMContentLoaded)
+   TEMAS E MODO CLARO/ESCURO (DEFINIDOS NO TOPO)
    ========================================================================== */
 const PALETAS_TEMA = {
   esmeralda: { main: '#10b981', hover: '#059669', soft: 'rgba(16, 185, 129, 0.16)', border: 'rgba(16, 185, 129, 0.35)', text: '#34d399', btn: 'bg-emerald-500 hover:bg-emerald-600' },
