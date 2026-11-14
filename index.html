@@ -353,8 +353,8 @@
     </main>
 
     <!-- Barra de Navegação Inferior Fixa no Mobile (Bottom Tab Bar estilo App Nativo) -->
-    <nav id="mobile-bottom-bar" class="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/90 px-2 pt-1.5 pb-[calc(0.45rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.45)]">
-      <div class="grid grid-cols-4 items-center max-w-md mx-auto">
+    <nav id="mobile-bottom-bar" class="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/90 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.45)]">
+      <div class="grid grid-cols-4 items-end max-w-md mx-auto">
         <!-- 1. Início -->
         <button type="button" onclick="navegarBottomBar('inicio')" id="nav-tab-inicio" class="nav-bottom-item flex flex-col items-center justify-center gap-1 py-1 text-emerald-400 transition active:scale-95">
           <i data-lucide="home" class="w-5 h-5"></i>
@@ -368,12 +368,12 @@
         </button>
 
         <!-- 3. + Novo (Botão Central Elevado) -->
-        <div class="flex flex-col items-center justify-center -mt-6">
-          <button type="button" id="btn-fab-adicionar" class="w-13 h-13 w-[52px] h-[52px] rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 border-2 border-slate-950 transition-transform duration-200 active:scale-90">
+        <button type="button" id="btn-fab-adicionar" onclick="abrirModalNovaTx()" class="flex flex-col items-center justify-center -mt-6 focus:outline-none group">
+          <span id="btn-fab-icone-box" class="w-12 h-12 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center shadow-lg border-2 border-slate-950 transition-transform duration-200 group-active:scale-90">
             <i data-lucide="plus" class="w-6 h-6 stroke-[2.75]"></i>
-          </button>
+          </span>
           <span class="text-[10px] font-bold text-slate-300 mt-1 tracking-tight">Novo</span>
-        </div>
+        </button>
 
         <!-- 4. Ajustes -->
         <button type="button" onclick="navegarBottomBar('ajustes')" id="nav-tab-ajustes" class="nav-bottom-item flex flex-col items-center justify-center gap-1 py-1 text-slate-400 hover:text-white transition active:scale-95">
