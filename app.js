@@ -36,6 +36,7 @@ let filtroContaIdAtiva = null;
 let termoBuscaAtivo = '';
 let visaoAtiva = 'pessoal';
 let periodoGrafico = '6m'; // '6m' | '3m' | 'ano'
+let anoRaioX = new Date().getFullYear();
 
 let transacaoEditandoId = null;
 let contaEditandoId = null;
@@ -48,11 +49,13 @@ let enviandoTransacao = false;
 let configFeedbackAtivo = true;
 let temaAtivo = 'esmeralda';
 let modoPrivacidadeAtivo = false;
+let modoClaroAtivo = false;
 
 try {
   configFeedbackAtivo = localStorage.getItem('fc_feedback_ativo') !== 'false';
   temaAtivo = localStorage.getItem('fc_tema_app') || 'esmeralda';
   modoPrivacidadeAtivo = localStorage.getItem('fc_privacidade_ativa') === 'true';
+  modoClaroAtivo = localStorage.getItem('fc_modo_claro') === 'true';
 } catch (e) {}
 
 /* ==========================================================================
@@ -201,12 +204,6 @@ aplicarMascaraTelefone(configTelefoneInput);
 /* ==========================================================================
    CAIXINHAS / METAS DE ECONOMIA (COMPARTILHADO VIA SUPABASE)
    ========================================================================== */
-function usuarioTemAcessoCaixinhaCompartilhada() {
-  if (!usuarioLogadoEmail) return false;
-  const em = usuarioLogadoEmail.toLowerCase();
-  return em === ADMIN_EMAIL || em.startsWith(`${PARCEIRA_PREFIXO}@`);
-}
-
 async function carregarCaixinhas() {
   if (!client) return;
   try {
@@ -725,6 +722,111 @@ async function carregarComprometimentoFuturo() {
 }
 
 /* ==========================================================================
+   RAIO-X ANUAL (COMPARATIVO MÊS A MÊS DE JAN A DEZ)
+   ========================================================================== */
+window.abrirModalRaioX = async function() {
+  executarFeedback('clique');
+  anoRaioX = Number(mesAtual.split('-')[0]) || new Date().getFullYear();
+  abrirModalAnimado('modal-raiox', 'modal-raiox-content');
+  await carregarDadosRaioX();
+};
+
+window.fecharModalRaioX = function() {
+  fecharModalAnimado('modal-raiox', 'modal-raiox-content');
+};
+
+window.alterarAnoRaioX = async function(delta) {
+  executarFeedback('clique');
+  anoRaioX += delta;
+  await carregarDadosRaioX();
+};
+
+window.irParaMesDoRaioX = function(compStr) {
+  executarFeedback('clique');
+  fecharModalRaioX();
+  mesAtual = compStr;
+  if (filtroMes) filtroMes.value = mesAtual;
+  carregarTransacoes();
+};
+
+async function carregarDadosRaioX() {
+  const labelAno = document.getElementById('label-ano-raiox');
+  const tbody = document.getElementById('tabela-corpo-raiox');
+  if (!client || !tbody) return;
+
+  if (labelAno) labelAno.textContent = anoRaioX;
+  tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500 font-sans">Calculando dados de ${anoRaioX}...</td></tr>`;
+
+  const mesesAno = Array.from({ length: 12 }, (_, i) => `${anoRaioX}-${String(i + 1).padStart(2, '0')}`);
+
+  let q = client.from('transacoes')
+    .select('valor, tipo, mes_competencia, user_id, atribuido_para_email')
+    .in('mes_competencia', mesesAno);
+
+  if (usuarioLogadoId) {
+    q = q.or(`user_id.eq.${usuarioLogadoId},atribuido_para_email.eq.${usuarioLogadoEmail}`);
+  }
+
+  const { data } = await q;
+  const listaVisao = obterTransacoesDaVisao(data || []);
+
+  let somaAnualRec = 0;
+  let somaAnualDesp = 0;
+
+  tbody.innerHTML = mesesAno.map((comp, idx) => {
+    const txs = listaVisao.filter(t => t.mes_competencia === comp);
+    let rec = 0;
+    let desp = 0;
+
+    txs.forEach(t => {
+      const v = Number(t.valor);
+      if (t.tipo === 'Receita') rec += v;
+      else desp += v;
+    });
+
+    somaAnualRec += rec;
+    somaAnualDesp += desp;
+    const saldo = rec - desp;
+    const pct = rec > 0 ? Math.round((desp / rec) * 100) : (desp > 0 ? 100 : 0);
+
+    const nomeMes = new Date(anoRaioX, idx, 1).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
+    const isMesAtual = comp === mesAtual;
+
+    let badgePct = '<span class="text-slate-600">-</span>';
+    if (rec > 0 || desp > 0) {
+      const corBadge = pct > 90
+        ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+        : pct > 70
+          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+      badgePct = `<span class="px-2 py-0.5 rounded-full text-[10px] border ${corBadge}">${pct}%</span>`;
+    }
+
+    return `
+      <tr onclick="irParaMesDoRaioX('${comp}')" class="cursor-pointer hover:bg-slate-800/40 transition ${isMesAtual ? 'bg-violet-500/10' : ''}">
+        <td class="py-2.5 px-3 font-sans font-bold text-white flex items-center gap-1.5">
+          ${nomeMes}
+          ${isMesAtual ? '<span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>' : ''}
+        </td>
+        <td class="py-2.5 px-3 text-right text-emerald-400">${formatarMoeda(rec)}</td>
+        <td class="py-2.5 px-3 text-right text-rose-400">${formatarMoeda(desp)}</td>
+        <td class="py-2.5 px-3 text-right font-bold ${saldo < 0 ? 'text-rose-400' : 'text-slate-100'}">${formatarMoeda(saldo)}</td>
+        <td class="py-2.5 px-3 text-center">${badgePct}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const balancoAnual = somaAnualRec - somaAnualDesp;
+  document.getElementById('raiox-total-receita').textContent = formatarMoeda(somaAnualRec);
+  document.getElementById('raiox-total-despesa').textContent = formatarMoeda(somaAnualDesp);
+  const elSaldoAnual = document.getElementById('raiox-total-saldo');
+  elSaldoAnual.textContent = formatarMoeda(balancoAnual);
+  elSaldoAnual.className = `text-xs sm:text-sm font-mono font-bold ${balancoAnual < 0 ? 'text-rose-400' : 'text-emerald-400'}`;
+
+  if (window.lucide) lucide.createIcons();
+}
+
+/* ==========================================================================
    GERENCIAMENTO DE E-MAILS FREQUENTES (CONTATOS SALVOS)
    ========================================================================== */
 function obterEmailsFrequentes() {
@@ -850,7 +952,8 @@ const mapaModaisBackdrop = [
   ['modal-transacao', 'modal-tx-content'],
   ['modal-editar-teto', 'modal-teto-content'],
   ['modal-caixinha', 'modal-caixinha-content'],
-  ['modal-aporte-caixinha', 'modal-aporte-content']
+  ['modal-aporte-caixinha', 'modal-aporte-content'],
+  ['modal-raiox', 'modal-raiox-content']
 ];
 
 mapaModaisBackdrop.forEach(([modalId, contentId]) => {
@@ -940,29 +1043,68 @@ document.getElementById('btn-confirm-cancel')?.addEventListener('click', () => f
 document.getElementById('btn-confirm-ok')?.addEventListener('click', () => fecharModalConfirm(true));
 
 /* ==========================================================================
-   TEMAS, PRIVACIDADE E SKELETONS
+   TEMAS, MODO CLARO/ESCURO, PRIVACIDADE E SKELETONS
    ========================================================================== */
+const PALETAS_TEMA = {
+  esmeralda: { main: '#10b981', hover: '#059669', soft: 'rgba(16, 185, 129, 0.16)', border: 'rgba(16, 185, 129, 0.35)', text: '#34d399', btn: 'bg-emerald-500 hover:bg-emerald-600' },
+  azul:      { main: '#0ea5e9', hover: '#0284c7', soft: 'rgba(14, 165, 233, 0.16)', border: 'rgba(14, 165, 233, 0.35)', text: '#38bdf8', btn: 'bg-sky-500 hover:bg-sky-600' },
+  roxo:      { main: '#8b5cf6', hover: '#7c3aed', soft: 'rgba(139, 92, 246, 0.16)', border: 'rgba(139, 92, 246, 0.35)', text: '#a78bfa', btn: 'bg-violet-500 hover:bg-violet-600' },
+  ambar:     { main: '#f59e0b', hover: '#d97706', soft: 'rgba(245, 158, 11, 0.16)', border: 'rgba(245, 158, 11, 0.35)', text: '#fbbf24', btn: 'bg-amber-500 hover:bg-amber-600' },
+  rosa:      { main: '#f43f5e', hover: '#e11d48', soft: 'rgba(244, 63, 94, 0.16)',  border: 'rgba(244, 63, 94, 0.35)',  text: '#fb7185', btn: 'bg-rose-500 hover:bg-rose-600' }
+};
+
 function aplicarTemaNaInterface() {
-  const cfg = {
-    esmeralda: 'bg-emerald-500 hover:bg-emerald-600',
-    azul: 'bg-sky-500 hover:bg-sky-600',
-    roxo: 'bg-violet-500 hover:bg-violet-600',
-    ambar: 'bg-amber-500 hover:bg-amber-600'
-  }[temaAtivo] || 'bg-emerald-500 hover:bg-emerald-600';
+  const paleta = PALETAS_TEMA[temaAtivo] || PALETAS_TEMA.esmeralda;
+  const root = document.documentElement;
+
+  root.style.setProperty('--accent-main', paleta.main);
+  root.style.setProperty('--accent-hover', paleta.hover);
+  root.style.setProperty('--accent-soft', paleta.soft);
+  root.style.setProperty('--accent-border', paleta.border);
+  root.style.setProperty('--accent-text', paleta.text);
+
+  document.body.classList.add('has-custom-theme');
 
   if (btnFabAdicionar) {
-    btnFabAdicionar.className = `fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full ${cfg} active:scale-95 text-slate-950 flex items-center justify-center shadow-lg border border-white/10 transition`;
+    btnFabAdicionar.className = `fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full ${paleta.btn} active:scale-95 text-slate-950 flex items-center justify-center shadow-lg border border-white/10 transition`;
   }
   const btnModal = document.getElementById('btn-abrir-modal');
   if (btnModal) {
-    btnModal.className = `flex-1 sm:flex-none flex items-center justify-center gap-1.5 ${cfg} text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md active:scale-95`;
+    btnModal.className = `flex-1 sm:flex-none flex items-center justify-center gap-1.5 ${paleta.btn} text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md active:scale-95`;
+  }
+
+  document.querySelectorAll('.btn-cor-tema').forEach(btn => {
+    btn.classList.remove('ring-2', 'ring-white', 'border-white');
+  });
+  const btnAtivo = document.getElementById(`tema-btn-${temaAtivo}`);
+  if (btnAtivo) {
+    btnAtivo.classList.add('ring-2', 'ring-white');
   }
 }
+
+function aplicarModoClaroEscuro() {
+  document.body.classList.toggle('light-mode', modoClaroAtivo);
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.setAttribute('content', modoClaroAtivo ? '#f1f5f9' : '#020617');
+
+  document.querySelectorAll('.btn-toggle-tema-modo').forEach(btn => {
+    btn.innerHTML = `<i data-lucide="${modoClaroAtivo ? 'moon' : 'sun'}" class="w-4 h-4 ${modoClaroAtivo ? 'text-slate-700' : 'text-amber-400'}"></i>`;
+  });
+  if (window.lucide) lucide.createIcons();
+}
+
+window.alternarModoClaroEscuro = function() {
+  executarFeedback('clique');
+  modoClaroAtivo = !modoClaroAtivo;
+  try { localStorage.setItem('fc_modo_claro', modoClaroAtivo); } catch (e) {}
+  aplicarModoClaroEscuro();
+};
 
 window.definirTema = function(cor) {
   temaAtivo = cor;
   try { localStorage.setItem('fc_tema_app', cor); } catch (e) {}
   aplicarTemaNaInterface();
+  if (meuGraficoProjecao) carregarGraficoProjecao();
   executarFeedback('clique');
 };
 
@@ -1562,6 +1704,8 @@ async function carregarGraficoProjecao() {
     em.className = md > 80 ? 'font-bold text-rose-400' : (md > 60 ? 'font-bold text-amber-400' : 'font-bold text-emerald-400');
   }
 
+  const paleta = PALETAS_TEMA[temaAtivo] || PALETAS_TEMA.esmeralda;
+
   if (meuGraficoProjecao) meuGraficoProjecao.destroy();
   const canvasProj = document.getElementById('grafico-projecao');
   if (window.Chart && canvasProj) {
@@ -1570,7 +1714,7 @@ async function carregarGraficoProjecao() {
       data: {
         labels: ml,
         datasets: [
-          { label: 'Entradas', data: rec, backgroundColor: 'rgba(16, 185, 129, 0.8)', borderRadius: 4 },
+          { label: 'Entradas', data: rec, backgroundColor: paleta.main, borderRadius: 4 },
           { label: 'Saídas', data: sai, backgroundColor: 'rgba(244, 63, 94, 0.8)', borderRadius: 4 }
         ]
       },
@@ -1614,7 +1758,7 @@ function renderizarGraficoCategorias() {
       datasets: [{
         data: ent.map(e => e[1]),
         backgroundColor: ent.map((_, i) => cores[i % cores.length]),
-        borderColor: '#0f172a',
+        borderColor: modoClaroAtivo ? '#ffffff' : '#0f172a',
         borderWidth: 2
       }]
     },
@@ -1791,6 +1935,7 @@ document.getElementById('btn-abrir-config')?.addEventListener('click', () => {
     });
   }
   atualizarSwitchVisual();
+  aplicarTemaNaInterface();
   containerFormSenha?.classList.add('hidden');
   iconeSetaSenha?.classList.remove('rotate-180');
   abrirModalAnimado('modal-configuracoes', 'modal-config-content');
@@ -2384,6 +2529,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (filtroMes) filtroMes.value = mesAtual;
   if (txData) txData.value = new Date().toISOString().slice(0, 10);
   aplicarTemaNaInterface();
+  aplicarModoClaroEscuro();
   atualizarIconePrivacidade();
   atualizarSelectEmailsFrequentes();
 
