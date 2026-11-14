@@ -49,7 +49,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-12 overflow-x-hidden">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-300 pb-20 sm:pb-12 overflow-x-hidden">
 
   <!-- 1. TELA DE AUTENTICAÇÃO -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
@@ -113,66 +113,73 @@
 
   <!-- 2. DASHBOARD MOBILE-FIRST -->
   <div id="dashboard-screen" class="hidden min-h-screen flex flex-col">
-    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-30">
-      <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-center justify-between w-full sm:w-auto">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-              <i data-lucide="wallet" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <span class="font-bold text-base text-white tracking-tight block leading-tight">FinanceControl</span>
-              <span id="label-saudacao-usuario" class="text-[10px] text-slate-400 hidden sm:block">Olá!</span>
-            </div>
+    <header class="border-b border-slate-800/80 bg-slate-900/75 backdrop-blur-lg sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+        <!-- Esquerda: Logo -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <i data-lucide="wallet" class="w-4 h-4"></i>
           </div>
-          <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1">
-            <button type="button" id="btn-mes-anterior" class="p-1 text-slate-400 hover:text-white transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-            <input type="month" id="filtro-mes" class="bg-transparent border-0 px-1 py-0.5 text-xs text-slate-200 font-semibold focus:outline-none cursor-pointer tabular-nums">
-            <button type="button" id="btn-mes-proximo" class="p-1 text-slate-400 hover:text-white transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+          <div class="min-w-0">
+            <span class="font-bold text-sm sm:text-base text-white tracking-tight block leading-tight truncate">FinanceControl</span>
+            <span id="label-saudacao-usuario" class="text-[10px] text-slate-400 hidden sm:block">Olá!</span>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button type="button" id="btn-abrir-modal" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md shadow-emerald-500/10 active:scale-95">
-            <i data-lucide="plus" class="w-4 h-4"></i> Lançamento
-          </button>
-          <button type="button" id="btn-abrir-modal-conta" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
-            <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Cartão</span>
-          </button>
-          <button type="button" id="btn-abrir-modal-categoria" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
-            <i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> <span class="hidden md:inline">Categoria</span>
-          </button>
-          <button type="button" onclick="abrirModalRaioX()" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Raio-X Anual">
-            <i data-lucide="calendar-range" class="w-4 h-4 text-violet-400"></i> <span class="hidden md:inline">Raio-X</span>
-          </button>
+        <!-- Centro / Direita Mobile: Seletor de Mês + Modo Claro/Escuro + Privacidade -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1">
+            <button type="button" id="btn-mes-anterior" class="p-1 text-slate-400 hover:text-white transition"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+            <input type="month" id="filtro-mes" class="bg-transparent border-0 px-1 py-0.5 text-xs text-slate-200 font-semibold focus:outline-none cursor-pointer tabular-nums w-[104px] sm:w-auto text-center">
+            <button type="button" id="btn-mes-proximo" class="p-1 text-slate-400 hover:text-white transition"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+          </div>
 
-          <div class="relative">
-            <button type="button" id="btn-dropdown-exportar" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
-              <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Exportar</span>
+          <!-- Ações Desktop (Ocultas no mobile pois ficam na Bottom Bar) -->
+          <div class="hidden sm:flex items-center gap-2">
+            <button type="button" id="btn-abrir-modal" class="flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs transition shadow-md shadow-emerald-500/10 active:scale-95">
+              <i data-lucide="plus" class="w-4 h-4"></i> Lançamento
             </button>
-            <div id="menu-dropdown-exportar" class="hidden origin-top-right transition-all duration-200 absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50">
-              <button type="button" onclick="exportarDados('csv')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i> Exportar CSV</button>
-              <button type="button" onclick="exportarDados('xlsx')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> Exportar Excel</button>
-              <button type="button" onclick="exportarDados('pdf')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file" class="w-3.5 h-3.5 text-rose-400"></i> Exportar Relatório PDF</button>
+            <button type="button" id="btn-abrir-modal-conta" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
+              <i data-lucide="credit-card" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Cartão</span>
+            </button>
+            <button type="button" id="btn-abrir-modal-categoria" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
+              <i data-lucide="tags" class="w-4 h-4 text-sky-400"></i> <span class="hidden md:inline">Categoria</span>
+            </button>
+            <button type="button" onclick="abrirModalRaioX()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5" title="Raio-X Anual">
+              <i data-lucide="calendar-range" class="w-4 h-4 text-violet-400"></i> <span class="hidden md:inline">Raio-X</span>
+            </button>
+
+            <div class="relative">
+              <button type="button" id="btn-dropdown-exportar" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition border border-slate-700 flex items-center gap-1.5">
+                <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> <span class="hidden md:inline">Exportar</span>
+              </button>
+              <div id="menu-dropdown-exportar" class="hidden origin-top-right transition-all duration-200 absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50">
+                <button type="button" onclick="exportarDados('csv')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i> Exportar CSV</button>
+                <button type="button" onclick="exportarDados('xlsx')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> Exportar Excel</button>
+                <button type="button" onclick="exportarDados('pdf')" class="w-full px-3 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2 transition"><i data-lucide="file" class="w-3.5 h-3.5 text-rose-400"></i> Exportar Relatório PDF</button>
+              </div>
             </div>
           </div>
 
-          <button type="button" onclick="alternarModoClaroEscuro()" class="btn-toggle-tema-modo p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95 ml-auto sm:ml-0" title="Alternar Modo Claro/Escuro">
+          <!-- Modo Claro/Escuro (Visível no Mobile e Desktop) -->
+          <button type="button" onclick="alternarModoClaroEscuro()" class="btn-toggle-tema-modo p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95" title="Alternar Modo Claro/Escuro">
             <i data-lucide="sun" class="w-4 h-4"></i>
           </button>
 
+          <!-- Privacidade (Visível no Mobile e Desktop) -->
           <button type="button" onclick="alternarPrivacidade()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95" id="btn-modo-privacidade" title="Ocultar/Exibir Valores">
             <i data-lucide="eye" class="w-4 h-4"></i>
           </button>
 
-          <button type="button" id="btn-abrir-config" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95" title="Configurações">
+          <!-- Ajustes Desktop (No mobile fica na Bottom Bar) -->
+          <button type="button" id="btn-abrir-config" class="hidden sm:flex p-2 text-slate-400 hover:text-white hover:bg-slate-800/60 rounded-xl transition active:scale-95" title="Configurações">
             <i data-lucide="settings" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5 pb-24 sm:pb-6">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-5 pb-28 sm:pb-8">
       
       <!-- Banner Discreto de Alerta de Vencimento de Fatura -->
       <div id="container-alerta-vencimento" class="hidden space-y-2"></div>
@@ -278,13 +285,21 @@
       <div class="space-y-2.5">
         <div class="flex items-center justify-between">
           <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2"><i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i> Cartões & Contas</h2>
-          <span class="text-[10px] text-slate-500">Toque para filtrar o extrato</span>
+          <button type="button" onclick="abrirModalContaRapido()" class="sm:hidden text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Novo Cartão
+          </button>
+          <span class="hidden sm:inline text-[10px] text-slate-500">Toque para filtrar o extrato</span>
         </div>
         <div id="grid-cartoes-contas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 tabular-nums"></div>
       </div>
 
       <div class="space-y-2.5">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2"><i data-lucide="target" class="w-3.5 h-3.5 text-sky-400"></i> Limite por Categoria (Orçamento)</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2"><i data-lucide="target" class="w-3.5 h-3.5 text-sky-400"></i> Limite por Categoria (Orçamento)</h2>
+          <button type="button" onclick="abrirModalCategoriaRapido()" class="sm:hidden text-[11px] font-bold text-sky-400 flex items-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Nova Categoria
+          </button>
+        </div>
         <div id="grid-categorias-orcamento" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 tabular-nums"></div>
       </div>
 
@@ -337,9 +352,36 @@
       </div>
     </main>
 
-    <button type="button" id="btn-fab-adicionar" class="fixed bottom-6 right-6 z-40 sm:hidden w-14 h-14 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-all duration-200 active:scale-95">
-      <i data-lucide="plus" class="w-7 h-7 stroke-[2.5]"></i>
-    </button>
+    <!-- Barra de Navegação Inferior Fixa no Mobile (Bottom Tab Bar estilo App Nativo) -->
+    <nav id="mobile-bottom-bar" class="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/90 px-2 pt-1.5 pb-[calc(0.45rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.45)]">
+      <div class="grid grid-cols-4 items-center max-w-md mx-auto">
+        <!-- 1. Início -->
+        <button type="button" onclick="navegarBottomBar('inicio')" id="nav-tab-inicio" class="nav-bottom-item flex flex-col items-center justify-center gap-1 py-1 text-emerald-400 transition active:scale-95">
+          <i data-lucide="home" class="w-5 h-5"></i>
+          <span class="text-[10px] font-bold tracking-tight">Início</span>
+        </button>
+
+        <!-- 2. Raio-X -->
+        <button type="button" onclick="navegarBottomBar('raiox')" id="nav-tab-raiox" class="nav-bottom-item flex flex-col items-center justify-center gap-1 py-1 text-slate-400 hover:text-white transition active:scale-95">
+          <i data-lucide="calendar-range" class="w-5 h-5"></i>
+          <span class="text-[10px] font-semibold tracking-tight">Raio-X</span>
+        </button>
+
+        <!-- 3. + Novo (Botão Central Elevado) -->
+        <div class="flex flex-col items-center justify-center -mt-6">
+          <button type="button" id="btn-fab-adicionar" class="w-13 h-13 w-[52px] h-[52px] rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 border-2 border-slate-950 transition-transform duration-200 active:scale-90">
+            <i data-lucide="plus" class="w-6 h-6 stroke-[2.75]"></i>
+          </button>
+          <span class="text-[10px] font-bold text-slate-300 mt-1 tracking-tight">Novo</span>
+        </div>
+
+        <!-- 4. Ajustes -->
+        <button type="button" onclick="navegarBottomBar('ajustes')" id="nav-tab-ajustes" class="nav-bottom-item flex flex-col items-center justify-center gap-1 py-1 text-slate-400 hover:text-white transition active:scale-95">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+          <span class="text-[10px] font-semibold tracking-tight">Ajustes</span>
+        </button>
+      </div>
+    </nav>
   </div>
 
   <!-- 3. MODAIS & TOASTS -->
@@ -463,9 +505,34 @@
   <div id="modal-configuracoes" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-0">
     <div id="modal-config-content" class="w-full max-w-md bg-slate-900 border-t sm:border border-slate-800 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 pb-10 sm:pb-6 shadow-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 modal-spring translate-y-full sm:translate-y-10 sm:scale-95 opacity-0 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i> Configurações</h3>
+        <h3 class="text-sm font-bold text-white flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4 text-emerald-400"></i> Configurações & Atalhos</h3>
         <button type="button" id="btn-fechar-config" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
+
+      <!-- Atalhos Rápidos no Mobile (Cartões, Categorias, Exportar) -->
+      <div class="sm:hidden p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2.5">
+        <span class="text-[10px] font-bold uppercase text-slate-400 block">Gerenciar & Exportar</span>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="fecharModalAnimado('modal-configuracoes', 'modal-config-content', abrirModalContaRapido)" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 active:scale-95">
+            <i data-lucide="credit-card" class="w-3.5 h-3.5 text-emerald-400"></i> Novo Cartão
+          </button>
+          <button type="button" onclick="fecharModalAnimado('modal-configuracoes', 'modal-config-content', abrirModalCategoriaRapido)" class="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center justify-center gap-1.5 active:scale-95">
+            <i data-lucide="tags" class="w-3.5 h-3.5 text-sky-400"></i> Nova Categoria
+          </button>
+        </div>
+        <div class="grid grid-cols-3 gap-1.5 pt-1">
+          <button type="button" onclick="fecharModalAnimado('modal-configuracoes', 'modal-config-content', () => exportarDados('csv'))" class="py-2 px-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 flex items-center justify-center gap-1 active:scale-95">
+            <i data-lucide="file-text" class="w-3 h-3 text-sky-400"></i> CSV
+          </button>
+          <button type="button" onclick="fecharModalAnimado('modal-configuracoes', 'modal-config-content', () => exportarDados('xlsx'))" class="py-2 px-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 flex items-center justify-center gap-1 active:scale-95">
+            <i data-lucide="file-spreadsheet" class="w-3 h-3 text-emerald-400"></i> Excel
+          </button>
+          <button type="button" onclick="fecharModalAnimado('modal-configuracoes', 'modal-config-content', () => exportarDados('pdf'))" class="py-2 px-2 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 flex items-center justify-center gap-1 active:scale-95">
+            <i data-lucide="file" class="w-3 h-3 text-rose-400"></i> PDF
+          </button>
+        </div>
+      </div>
+
       <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3">
         <div class="flex items-center justify-between"><span class="text-[10px] font-bold uppercase text-slate-400">Meu Perfil</span><button type="button" id="config-btn-logout" class="px-2 py-1 rounded-lg text-[11px] font-medium bg-rose-500/10 text-rose-400 transition flex items-center gap-1"><i data-lucide="log-out" class="w-3 h-3"></i> Sair</button></div>
         <div class="space-y-2.5">
