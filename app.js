@@ -202,6 +202,157 @@ aplicarMascaraTelefone(authTelefone);
 aplicarMascaraTelefone(configTelefoneInput);
 
 /* ==========================================================================
+   LIMITES E IDENTIDADE VISUAL REALISTA DOS CARTÕES
+   ========================================================================== */
+function obterLimitesCartoes() {
+  try {
+    const raw = localStorage.getItem('fc_limites_cartoes');
+    const obj = raw ? JSON.parse(raw) : {};
+    return obj && typeof obj === 'object' ? obj : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function salvarLimiteCartao(contaId, limite) {
+  if (!contaId) return;
+  const limites = obterLimitesCartoes();
+  if (limite && limite > 0) {
+    limites[contaId] = Number(limite);
+  } else {
+    delete limites[contaId];
+  }
+  try {
+    localStorage.setItem('fc_limites_cartoes', JSON.stringify(limites));
+  } catch (e) {}
+}
+
+function detectarEstiloBanco(nome, isCartao) {
+  const n = (nome || '').toLowerCase();
+
+  if (!isCartao) {
+    return {
+      gradiente: 'from-emerald-950 via-slate-900 to-teal-950',
+      borda: 'border-emerald-500/30',
+      badge: 'CONTA CORRENTE',
+      bandeira: 'corrente'
+    };
+  }
+
+  if (n.includes('nubank') || n.includes('nu ') || n === 'nu' || n.includes('ultravioleta')) {
+    return {
+      gradiente: 'from-[#4c0575] via-[#6b119e] to-[#2e0249]',
+      borda: 'border-purple-400/30',
+      badge: 'NUBANK',
+      bandeira: 'mastercard'
+    };
+  }
+  if (n.includes('mercado') || n.includes('mp')) {
+    return {
+      gradiente: 'from-[#004e92] via-[#0073cc] to-[#002b54]',
+      borda: 'border-sky-400/35',
+      badge: 'MERCADO PAGO',
+      bandeira: 'visa'
+    };
+  }
+  if (n.includes('inter')) {
+    return {
+      gradiente: 'from-[#9a3412] via-[#ea580c] to-[#431407]',
+      borda: 'border-orange-400/35',
+      badge: 'INTER',
+      bandeira: 'mastercard'
+    };
+  }
+  if (n.includes('itaú') || n.includes('itau')) {
+    return {
+      gradiente: 'from-[#1e3a8a] via-[#c2410c] to-[#172554]',
+      borda: 'border-amber-400/35',
+      badge: 'ITAÚ',
+      bandeira: 'visa'
+    };
+  }
+  if (n.includes('santander')) {
+    return {
+      gradiente: 'from-[#7f1d1d] via-[#b91c1c] to-[#450a0a]',
+      borda: 'border-rose-400/35',
+      badge: 'SANTANDER',
+      bandeira: 'mastercard'
+    };
+  }
+  if (n.includes('bradesco')) {
+    return {
+      gradiente: 'from-[#881337] via-[#be123c] to-[#4c0519]',
+      borda: 'border-rose-400/35',
+      badge: 'BRADESCO',
+      bandeira: 'visa'
+    };
+  }
+  if (n.includes('c6')) {
+    return {
+      gradiente: 'from-[#18181b] via-[#27272a] to-[#09090b]',
+      borda: 'border-zinc-500/40',
+      badge: 'C6 BANK',
+      bandeira: 'mastercard'
+    };
+  }
+  if (n.includes('caixa')) {
+    return {
+      gradiente: 'from-[#1d4ed8] via-[#0369a1] to-[#1e3a8a]',
+      borda: 'border-sky-400/35',
+      badge: 'CAIXA',
+      bandeira: 'visa'
+    };
+  }
+  if (n.includes('brasil') || n === 'bb' || n.includes('ourocard')) {
+    return {
+      gradiente: 'from-[#1e3a8a] via-[#1d4ed8] to-[#854d0e]',
+      borda: 'border-yellow-400/35',
+      badge: 'BANCO DO BRASIL',
+      bandeira: 'visa'
+    };
+  }
+  if (n.includes('picpay')) {
+    return {
+      gradiente: 'from-[#065f46] via-[#10b981] to-[#022c22]',
+      borda: 'border-emerald-400/35',
+      badge: 'PICPAY',
+      bandeira: 'mastercard'
+    };
+  }
+  if (n.includes('xp') || n.includes('btg') || n.includes('black') || n.includes('infinite')) {
+    return {
+      gradiente: 'from-[#1e293b] via-[#0f172a] to-[#020617]',
+      borda: 'border-amber-400/35',
+      badge: 'BLACK / INFINITE',
+      bandeira: 'visa'
+    };
+  }
+
+  return {
+    gradiente: 'from-slate-800 via-slate-900 to-slate-950',
+    borda: 'border-amber-400/25',
+    badge: 'CRÉDITO',
+    bandeira: 'mastercard'
+  };
+}
+
+function renderizarBandeiraSVG(tipo) {
+  if (tipo === 'visa') {
+    return `<span class="text-[11px] font-black italic tracking-wider text-white/90 select-none">VISA</span>`;
+  }
+  if (tipo === 'corrente') {
+    return `<i data-lucide="landmark" class="w-4 h-4 text-emerald-300/80"></i>`;
+  }
+  // Mastercard estilizado (dois círculos sobrepostos)
+  return `
+    <span class="inline-flex items-center select-none" title="Mastercard">
+      <span class="w-3.5 h-3.5 rounded-full bg-rose-500/90 inline-block"></span>
+      <span class="w-3.5 h-3.5 rounded-full bg-amber-400/90 -ml-1.5 inline-block"></span>
+    </span>
+  `;
+}
+
+/* ==========================================================================
    CAIXINHAS / METAS DE ECONOMIA (COMPARTILHADO VIA SUPABASE)
    ========================================================================== */
 async function carregarCaixinhas() {
@@ -1143,7 +1294,7 @@ function exibirSkeletons() {
 
   const gridContas = document.getElementById('grid-cartoes-contas');
   if (gridContas) {
-    gridContas.innerHTML = Array(3).fill(`<div class="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex justify-between animate-pulse"><div class="space-y-2"><div class="h-3.5 w-24 bg-slate-800 rounded"></div><div class="h-3 w-32 bg-slate-800/70 rounded"></div></div><div class="space-y-1.5 text-right"><div class="h-2.5 w-10 bg-slate-800/70 rounded ml-auto"></div><div class="h-4 w-16 bg-slate-800 rounded"></div></div></div>`).join('');
+    gridContas.innerHTML = Array(3).fill(`<div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 h-32 flex flex-col justify-between animate-pulse"><div class="flex justify-between"><div class="h-4 w-24 bg-slate-800 rounded"></div><div class="h-4 w-12 bg-slate-800 rounded"></div></div><div class="h-6 w-28 bg-slate-800 rounded"></div></div>`).join('');
   }
 
   const gridCategorias = document.getElementById('grid-categorias-orcamento');
@@ -1540,9 +1691,13 @@ function renderizarGridContas() {
   if (!container) return;
 
   const transacoesVisao = obterTransacoesDaVisao();
+  const limitesSalvos = obterLimitesCartoes();
 
   container.innerHTML = contasUsuario.map(c => {
     const isC = c.tipo === 'Cartão de Crédito';
+    const estilo = detectarEstiloBanco(c.nome, isC);
+    const selecionado = filtroContaIdAtiva === c.id;
+
     let tot = 0;
     let pendenteFatura = 0;
 
@@ -1555,30 +1710,87 @@ function renderizarGridContas() {
       }
     });
 
+    // Barra fina de limite consumido (se limite estiver cadastrado)
+    const limiteTotal = isC ? Number(limitesSalvos[c.id] || 0) : 0;
+    let htmlBarraLimite = '';
+    if (isC && limiteTotal > 0) {
+      const pctLimite = Math.min(Math.round((tot / limiteTotal) * 100), 100);
+      const pctReal = Math.round((tot / limiteTotal) * 100);
+      const disponivel = Math.max(limiteTotal - tot, 0);
+      const corBarra = pctReal >= 90 ? 'bg-rose-400' : pctReal >= 70 ? 'bg-amber-300' : 'bg-emerald-300';
+
+      htmlBarraLimite = `
+        <div class="space-y-1 pt-1">
+          <div class="w-full bg-black/35 rounded-full h-1 overflow-hidden">
+            <div class="${corBarra} h-full transition-all duration-500" style="width:${pctLimite}%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] font-mono text-white/75">
+            <span>Disp.: ${formatarMoeda(disponivel)}</span>
+            <span>${pctReal}% de ${formatarMoeda(limiteTotal)}</span>
+          </div>
+        </div>
+      `;
+    }
+
     const btnPagarCard = (isC && pendenteFatura > 0)
-      ? `<button type="button" onclick="event.stopPropagation(); pagarFaturaEmUmClique('${c.id}')" class="mt-2 w-full py-1.5 px-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-[11px] flex items-center justify-center gap-1 transition active:scale-95">
-           <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Pagar Fatura (${formatarMoeda(pendenteFatura)})
+      ? `<button type="button" onclick="event.stopPropagation(); pagarFaturaEmUmClique('${c.id}')" class="mt-2.5 w-full py-1.5 px-2.5 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 text-white font-bold text-[11px] flex items-center justify-center gap-1 transition active:scale-95">
+           <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-300"></i> Pagar Fatura (${formatarMoeda(pendenteFatura)})
          </button>`
       : '';
 
     return `
-      <div onclick="alternarFiltroConta('${c.id}')" class="p-3.5 rounded-2xl border flex flex-col justify-between cursor-pointer transition active:scale-[0.99] ${filtroContaIdAtiva === c.id ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'}">
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full mr-0.5 ${isC ? 'bg-amber-400' : 'bg-emerald-400'}"></span>
-              <h3 class="text-xs font-bold">${c.nome}</h3>
-              <button type="button" onclick="event.stopPropagation(); editarConta('${c.id}')" class="p-1 text-slate-500 hover:text-sky-400"><i data-lucide="pencil" class="w-3 h-3"></i></button>
-              <button type="button" onclick="event.stopPropagation(); deletarConta('${c.id}', '${(c.nome || '').replace(/'/g, "\\'")}')" class="p-1 text-slate-500 hover:text-rose-400"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+      <div onclick="alternarFiltroConta('${c.id}')" class="cartao-fisico-card relative overflow-hidden p-4 rounded-2xl bg-gradient-to-br ${estilo.gradiente} border ${selecionado ? 'border-white ring-2 ring-white/80' : estilo.borda} shadow-lg flex flex-col justify-between cursor-pointer transition-all duration-200 active:scale-[0.99]">
+        <!-- Brilho decorativo sutil de cartão físico -->
+        <div class="pointer-events-none absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/10 blur-xl"></div>
+
+        <div class="space-y-2.5 relative z-10">
+          <!-- Topo: Chip metálico + Contactless + Badge Banco + Ações -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              ${isC
+                ? `<span class="w-6 h-4 rounded-[4px] bg-gradient-to-tr from-amber-300/80 via-yellow-200/90 to-amber-400/80 border border-amber-200/50 inline-flex items-center justify-center shrink-0 shadow-inner">
+                     <span class="w-3.5 h-2 border border-amber-700/40 rounded-[2px]"></span>
+                   </span>
+                   <i data-lucide="wifi" class="w-3.5 h-3.5 text-white/60 rotate-90 shrink-0"></i>`
+                : `<span class="w-6 h-6 rounded-lg bg-white/15 border border-white/20 inline-flex items-center justify-center text-emerald-300 shrink-0">
+                     <i data-lucide="wallet" class="w-3.5 h-3.5"></i>
+                   </span>`
+              }
+              <span class="text-[9px] font-bold tracking-widest uppercase px-1.5 py-0.5 rounded bg-black/25 text-white/85 truncate">${estilo.badge}</span>
             </div>
-            <div class="text-[11px] font-mono text-slate-400 mt-1">${isC ? `Fecha ${c.dia_fechamento || '--'} • Vence ${c.dia_vencimento || '--'}` : 'Corrente'}</div>
+
+            <div class="flex items-center gap-0.5 shrink-0">
+              <button type="button" onclick="event.stopPropagation(); editarConta('${c.id}')" title="Editar" class="p-1 text-white/65 hover:text-white transition"><i data-lucide="pencil" class="w-3 h-3"></i></button>
+              <button type="button" onclick="event.stopPropagation(); deletarConta('${c.id}', '${(c.nome || '').replace(/'/g, "\\'")}')" title="Excluir" class="p-1 text-white/65 hover:text-rose-300 transition"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+            </div>
           </div>
-          <div class="text-right">
-            <span class="text-[10px] text-slate-500">${isC ? 'Fatura' : 'Movi.'}</span>
-            <span class="text-sm font-bold font-mono ${isC ? 'text-amber-300' : 'text-white'} block">${formatarMoeda(tot)}</span>
+
+          <!-- Meio: Nome e Valor da Fatura / Movimentação -->
+          <div class="flex items-end justify-between gap-2">
+            <div class="min-w-0">
+              <h3 class="text-sm font-bold text-white truncate">${c.nome}</h3>
+              <div class="text-[10px] font-mono text-white/75 mt-0.5">
+                ${isC ? `Fecha dia ${c.dia_fechamento || '--'} • Vence dia ${c.dia_vencimento || '--'}` : 'Movimentação no mês'}
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-[9px] uppercase tracking-wider text-white/70 block">${isC ? 'Fatura Atual' : 'Total Mês'}</span>
+              <span class="text-base font-extrabold font-mono text-white block leading-tight">${formatarMoeda(tot)}</span>
+            </div>
+          </div>
+
+          <!-- Barra fina de limite consumido -->
+          ${htmlBarraLimite}
+        </div>
+
+        <!-- Rodapé: Bandeira + Botão Pagar Fatura -->
+        <div class="relative z-10">
+          ${btnPagarCard}
+          <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-white/10">
+            <span class="text-[10px] font-mono tracking-widest text-white/55">•••• ••••</span>
+            ${renderizarBandeiraSVG(estilo.bandeira)}
           </div>
         </div>
-        ${btnPagarCard}
       </div>`;
   }).join('');
   if (window.lucide) lucide.createIcons();
@@ -2118,7 +2330,12 @@ contaTipo?.addEventListener('change', () => {
   camposCartao?.classList.toggle('hidden', contaTipo.value !== 'Cartão de Crédito');
 });
 
-document.getElementById('btn-abrir-modal-conta')?.addEventListener('click', () => abrirModalAnimado('modal-conta', 'modal-conta-content'));
+document.getElementById('btn-abrir-modal-conta')?.addEventListener('click', () => {
+  const inpLimite = document.getElementById('conta-limite');
+  if (inpLimite) inpLimite.value = '';
+  abrirModalAnimado('modal-conta', 'modal-conta-content');
+});
+
 function fecharModalConta() {
   fecharModalAnimado('modal-conta', 'modal-conta-content', () => {
     formConta?.reset();
@@ -2141,12 +2358,17 @@ window.editarConta = function(id) {
   document.getElementById('conta-nome').value = c.nome || '';
   contaTipo.value = c.tipo || 'Cartão de Crédito';
 
+  const limitesSalvos = obterLimitesCartoes();
+  const inpLimite = document.getElementById('conta-limite');
+
   if (c.tipo === 'Cartão de Crédito') {
     camposCartao?.classList.remove('hidden');
     document.getElementById('conta-fechamento').value = c.dia_fechamento || '';
     document.getElementById('conta-vencimento').value = c.dia_vencimento || '';
+    if (inpLimite) inpLimite.value = limitesSalvos[c.id] ? Number(limitesSalvos[c.id]).toFixed(2) : '';
   } else {
     camposCartao?.classList.add('hidden');
+    if (inpLimite) inpLimite.value = '';
   }
 
   document.getElementById('conta-saldo-inicial').value = Number(c.saldo_inicial || 0).toFixed(2);
@@ -2159,6 +2381,7 @@ window.deletarConta = async function(id, nome) {
     const { error } = await client.from('contas').delete().eq('id', id);
     if (error) mostrarToast('Existem lançamentos vinculados.', 'erro');
     else {
+      salvarLimiteCartao(id, 0);
       mostrarToast('Excluída!', 'sucesso');
       if (filtroContaIdAtiva === id) alternarFiltroConta(null);
       await buscarOuCriarContas();
@@ -2178,15 +2401,22 @@ formConta?.addEventListener('submit', async (e) => {
   const t = contaTipo.value;
   const f = t === 'Cartão de Crédito' ? parseInt(document.getElementById('conta-fechamento').value) || null : null;
   const v = t === 'Cartão de Crédito' ? parseInt(document.getElementById('conta-vencimento').value) || null : null;
+  const lim = t === 'Cartão de Crédito' ? parseFloat(document.getElementById('conta-limite')?.value) || 0 : 0;
   const s = parseFloat(document.getElementById('conta-saldo-inicial').value) || 0;
 
   try {
     if (contaEditandoId) {
       const { error } = await client.from('contas').update({ nome: n, tipo: t, dia_fechamento: f, dia_vencimento: v, saldo_inicial: s }).eq('id', contaEditandoId);
       if (error) throw error;
+      salvarLimiteCartao(contaEditandoId, lim);
     } else {
-      const { error } = await client.from('contas').insert([{ nome: n, tipo: t, dia_fechamento: f, dia_vencimento: v, saldo_inicial: s, user_id: usuarioLogadoId }]);
+      const { data: novaConta, error } = await client
+        .from('contas')
+        .insert([{ nome: n, tipo: t, dia_fechamento: f, dia_vencimento: v, saldo_inicial: s, user_id: usuarioLogadoId }])
+        .select()
+        .single();
       if (error) throw error;
+      if (novaConta && novaConta.id) salvarLimiteCartao(novaConta.id, lim);
     }
     mostrarToast(contaEditandoId ? 'Conta atualizada!' : 'Conta criada!', 'sucesso');
     fecharModalConta();
